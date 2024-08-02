@@ -1,5 +1,5 @@
 [package]
-name = "test_trait_code"
+name = "test_trait_code_old"
 authors.workspace = true
 version.workspace = true
 edition.workspace = true

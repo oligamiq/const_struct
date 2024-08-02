@@ -1,12 +1,7 @@
 use crate::{
     pre::{ConstStructData, ConstStructTy},
-    TestSettingManual, TestSettingManualTy,
+    TestSettingManual,
 };
-
-pub fn tester<T: TestSettingManualTy>() {
-    let t = T::TEST_DATA;
-    println!("{:?}", t);
-}
 
 pub const WINDOW_SETTING_MANUAL: TestSettingManual = TestSettingManual {
     test_data: Some(5),

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/const_struct_derive", "crates/test_code", "crates/test_trait_code"]
+members = ["crates/const_struct_derive", "crates/test_code", "crates/test_trait_code_old"]
 
 [workspace.package]
 authors = ["oligami <nziq53@gmail.com>"]

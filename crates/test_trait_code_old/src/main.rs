@@ -1,13 +1,15 @@
 use pre::{ConstStructData, ConstStructTy, Non};
-use setting::tester;
+use tester::tester;
 
 mod pre;
 mod setting;
+mod tester;
 
 fn main() {
     tester::<setting::WindowSettingManualTy>();
 }
 
+#[derive(Copy, Clone)]
 pub struct TestSettingManual {
     test_data: Option<u32>,
     test_data2: Option<u32>,
