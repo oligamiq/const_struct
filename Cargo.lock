@@ -58,6 +58,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "test_trait_code"
+version = "0.1.0"
+
+[[package]]
 name = "test_trait_code_old"
 version = "0.1.0"
 
