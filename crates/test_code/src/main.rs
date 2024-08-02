@@ -28,10 +28,6 @@ struct TestSettingManual {
     test_data4: Option<u32>,
     test_data5: Option<u32>,
     test_data6: Option<u32>,
-    test_data7: Option<u32>,
-    test_data8: Option<u32>,
-    test_data9: Option<u32>,
-    test_data10: Option<u32>,
 }
 
 impl TestSettingManualTyImplData for TestSettingManual {
@@ -39,10 +35,6 @@ impl TestSettingManualTyImplData for TestSettingManual {
     type __B = DefaultNone;
     type __C = DefaultNone;
     type __D = DefaultNone;
-    type __E = DefaultNone;
-    type __F = DefaultNone;
-    type __G = DefaultNone;
-    type __H = DefaultNone;
     type __TAIL = TailSome<TestSettingManualTailAdd1>;
 }
 
@@ -54,10 +46,6 @@ where
             <TestSettingManual as TestSettingManualTyImplData>::__B,
             <TestSettingManual as TestSettingManualTyImplData>::__C,
             <TestSettingManual as TestSettingManualTyImplData>::__D,
-            <TestSettingManual as TestSettingManualTyImplData>::__E,
-            <TestSettingManual as TestSettingManualTyImplData>::__F,
-            <TestSettingManual as TestSettingManualTyImplData>::__G,
-            <TestSettingManual as TestSettingManualTyImplData>::__H,
             <TestSettingManual as TestSettingManualTyImplData>::__TAIL
         >,
     <TestSettingManual as TestSettingManualTyImplData>::__TAIL: TestSettingManualTyImplData,
@@ -66,10 +54,6 @@ where
         <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__B,
         <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__C,
         <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__D,
-        <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__E,
-        <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__F,
-        <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__G,
-        <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__H,
         <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__TAIL,
     >,
 {
@@ -77,10 +61,6 @@ where
     const TEST_DATA2: <TestSettingManual as TestSettingManualTyImplData>::__B = TestSettingManualTyImpl::__B;
     const TEST_DATA3: <TestSettingManual as TestSettingManualTyImplData>::__C = TestSettingManualTyImpl::__C;
     const TEST_DATA4: <TestSettingManual as TestSettingManualTyImplData>::__D = TestSettingManualTyImpl::__D;
-    const TEST_DATA5: <TestSettingManual as TestSettingManualTyImplData>::__E = TestSettingManualTyImpl::__E;
-    const TEST_DATA6: <TestSettingManual as TestSettingManualTyImplData>::__F = TestSettingManualTyImpl::__F;
-    const TEST_DATA7: <TestSettingManual as TestSettingManualTyImplData>::__G = TestSettingManualTyImpl::__G;
-    const TEST_DATA8: <TestSettingManual as TestSettingManualTyImplData>::__H = TestSettingManualTyImpl::__H;
     const TEST_DATA9: <<TestSettingManual as TestSettingManualTyImplData>::__TAIL as TestSettingManualTyImplData>::__A = {
         match TestSettingManualTyImpl::__TAIL {
             TailAddition::None => TailAddition::None,
@@ -89,10 +69,6 @@ where
                 <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__B,
                 <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__C,
                 <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__D,
-                <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__E,
-                <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__F,
-                <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__G,
-                <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__H,
                 <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__TAIL,
             >>::__A,
         }
@@ -112,9 +88,5 @@ impl TestSettingManualTyImplData for TestSettingManualTailAdd1 {
     type __B = DefaultNone;
     type __C = DefaultNone;
     type __D = DefaultNone;
-    type __E = DefaultNone;
-    type __F = DefaultNone;
-    type __G = DefaultNone;
-    type __H = DefaultNone;
     type __TAIL = TailSome<DefaultNone>;
 }
