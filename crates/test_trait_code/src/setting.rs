@@ -1,7 +1,4 @@
-use crate::{
-    pre::ConstStruct,
-    TestSettingManual,
-};
+use crate::{pre::ConstStruct, TestSettingManual};
 
 pub const WINDOW_SETTING_MANUAL: TestSettingManual = TestSettingManual {
     test_data: Some(5),
@@ -12,8 +9,6 @@ pub const WINDOW_SETTING_MANUAL: TestSettingManual = TestSettingManual {
 
 pub struct WindowSettingManualTy;
 
-impl
-    ConstStruct<TestSettingManual> for WindowSettingManualTy
-{
+impl ConstStruct<TestSettingManual> for WindowSettingManualTy {
     const __DATA: TestSettingManual = WINDOW_SETTING_MANUAL;
 }
