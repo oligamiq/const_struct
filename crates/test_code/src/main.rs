@@ -51,7 +51,10 @@ impl<T: ConstStructImplData> ConstStructImplTy for T {
     type __E = DefaultNone;
 }
 
-pub trait TestSettingManualTy: ConstStructImplData {
+pub trait TestSettingManualTy: ConstStructImplData
+where
+    Self: ConstStructImplData<__A = Option<u32>, __B = Option<u32>, __C = Option<u32>, __D = Option<u32>, __E = DefaultNone>
+{
     const TEST_DATA: <Self as ConstStructImplTy>::__A = Self::__A;
     const TEST_DATA2: <Self as ConstStructImplTy>::__B = Self::__B;
     const TEST_DATA3: <Self as ConstStructImplTy>::__C = Self::__C;
