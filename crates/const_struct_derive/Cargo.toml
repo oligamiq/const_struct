@@ -12,3 +12,7 @@ proc-macro2 = "1.0"
 quote = "1.0"
 syn = {version = "2.0", features = ["full", "extra-traits"]}
 convert_case = "0.6"
+
+[package.metadata.release]
+tag = true
+tag-prefix =""

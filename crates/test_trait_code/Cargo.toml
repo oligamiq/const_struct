@@ -1,13 +1,10 @@
 [package]
-name = "test_code"
+name = "test_trait_code"
 authors.workspace = true
 version.workspace = true
 edition.workspace = true
 description.workspace = true
 publish = false
-
-[dependencies]
-const_struct_derive.workspace = true
 
 [package.metadata.release]
 release = false

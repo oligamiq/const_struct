@@ -1,11 +1,20 @@
+[workspace]
+resolver = "2"
+members = ["crates/const_struct_derive", "crates/test_code", "crates/test_trait_code"]
+
 [workspace.package]
 authors = ["oligami <nziq53@gmail.com>"]
 version = "0.1.0"
 edition = "2021"
 description = "macro that allows const structures to be passed as types"
+license = "MIT"
+rust-version = "1.80.0"
 
-[workspace]
-resolver = "2"
-members = ["crates/const_struct_derive", "crates/test_code"]
+[workspace.dependencies]
+const_struct_derive = { path = "crates/const_struct_derive" }
+
+[workspace.metadata.release]
+tag = false
 
 # https://doc.rust-lang.org/cargo/reference/workspaces.html
+# https://zenn.dev/eduidl/articles/rust-workspace-tips
