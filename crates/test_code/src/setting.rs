@@ -26,10 +26,23 @@ pub const WINDOW_SETTING_MANUAL: TestSettingManual = TestSettingManual {
 
 pub struct WindowSettingManualTy;
 
-impl ConstStructImplData for WindowSettingManualTy {
-    const __A: <Self as ConstStructImplTy>::__A = WINDOW_SETTING_MANUAL.__get_data().__a;
-    const __B: <Self as ConstStructImplTy>::__B = WINDOW_SETTING_MANUAL.__get_data().__b;
-    const __C: <Self as ConstStructImplTy>::__C = WINDOW_SETTING_MANUAL.__get_data().__c;
-    const __D: <Self as ConstStructImplTy>::__D = WINDOW_SETTING_MANUAL.__get_data().__d;
-    const __E: <Self as ConstStructImplTy>::__E = WINDOW_SETTING_MANUAL.__get_data().__e;
+impl
+    ConstStructImplData<
+        <TestSettingManual as ConstStructImplTy>::__A,
+        <TestSettingManual as ConstStructImplTy>::__B,
+        <TestSettingManual as ConstStructImplTy>::__C,
+        <TestSettingManual as ConstStructImplTy>::__D,
+        <TestSettingManual as ConstStructImplTy>::__E,
+    > for WindowSettingManualTy
+{
+    const __A: <TestSettingManual as ConstStructImplTy>::__A =
+        WINDOW_SETTING_MANUAL.__get_data().__a;
+    const __B: <TestSettingManual as ConstStructImplTy>::__B =
+        WINDOW_SETTING_MANUAL.__get_data().__b;
+    const __C: <TestSettingManual as ConstStructImplTy>::__C =
+        WINDOW_SETTING_MANUAL.__get_data().__c;
+    const __D: <TestSettingManual as ConstStructImplTy>::__D =
+        WINDOW_SETTING_MANUAL.__get_data().__d;
+    const __E: <TestSettingManual as ConstStructImplTy>::__E =
+        WINDOW_SETTING_MANUAL.__get_data().__e;
 }

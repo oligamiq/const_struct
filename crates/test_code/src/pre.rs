@@ -1,9 +1,17 @@
-pub trait ConstStructImplData: ConstStructImplTy {
-    const __A: Self::__A;
-    const __B: Self::__B;
-    const __C: Self::__C;
-    const __D: Self::__D;
-    const __E: Self::__E;
+pub trait ConstStructImplData<A, B, C, D, E> {
+    const __A: A;
+    const __B: B;
+    const __C: C;
+    const __D: D;
+    const __E: E;
+}
+
+pub trait ConstStructImplTyWrapper<T: ConstStructImplTy> {
+    const __A: <T as ConstStructImplTy>::__A;
+    const __B: <T as ConstStructImplTy>::__B;
+    const __C: <T as ConstStructImplTy>::__C;
+    const __D: <T as ConstStructImplTy>::__D;
+    const __E: <T as ConstStructImplTy>::__E;
 }
 
 pub trait ConstStructImplTy {
