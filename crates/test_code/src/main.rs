@@ -2,11 +2,14 @@ use std::marker::PhantomData;
 
 use const_struct_derive::ConstStruct;
 use pre::{ConstStructImplData, ConstStructImplTy, DefaultNone};
+use setting::{tester, WindowSettingManualTy, WINDOW_SETTING_MANUAL};
 
 mod pre;
 mod setting;
 
-fn main() {}
+fn main() {
+    tester::<setting::WindowSettingManualTy>();
+}
 
 #[derive(ConstStruct)]
 struct TestSetting {
@@ -49,17 +52,16 @@ impl ConstStructImplTy for TestSettingManual {
 }
 
 pub trait TestSettingManualTy:
-    ConstStructImplData<
-        <TestSettingManual as ConstStructImplTy>::__A,
-        <TestSettingManual as ConstStructImplTy>::__B,
-        <TestSettingManual as ConstStructImplTy>::__C,
-        <TestSettingManual as ConstStructImplTy>::__D,
-        <TestSettingManual as ConstStructImplTy>::__E,
-    >
+    ConstStructImplData<Option<u32>, Option<u32>, Option<u32>, Option<u32>, DefaultNone>
 {
-    const TEST_DATA: <TestSettingManual as ConstStructImplTy>::__A = ConstStructImplData::__A;
-    const TEST_DATA2: <TestSettingManual as ConstStructImplTy>::__B = ConstStructImplData::__B;
-    const TEST_DATA3: <TestSettingManual as ConstStructImplTy>::__C = ConstStructImplData::__C;
-    const TEST_DATA4: <TestSettingManual as ConstStructImplTy>::__D = ConstStructImplData::__D;
-    const TEST_DATA5: <TestSettingManual as ConstStructImplTy>::__E = ConstStructImplData::__E;
+    const TEST_DATA: Option<u32> = Self::__A;
+    const TEST_DATA2: Option<u32> = Self::__B;
+    const TEST_DATA3: Option<u32> = Self::__C;
+    const TEST_DATA4: Option<u32> = Self::__D;
+    const TEST_DATA5: DefaultNone = Self::__E;
+}
+
+impl<T: ConstStructImplData<Option<u32>, Option<u32>, Option<u32>, Option<u32>, DefaultNone>>
+    TestSettingManualTy for T
+{
 }
