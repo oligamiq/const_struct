@@ -1,4 +1,4 @@
-pub trait ConstStructImplData<A, B, C, D, E> {
+pub trait ConstStructData<A, B, C, D, E> {
     const __A: A;
     const __B: B;
     const __C: C;
@@ -6,15 +6,15 @@ pub trait ConstStructImplData<A, B, C, D, E> {
     const __E: E;
 }
 
-pub trait ConstStructImplTyWrapper<T: ConstStructImplTy> {
-    const __A: <T as ConstStructImplTy>::__A;
-    const __B: <T as ConstStructImplTy>::__B;
-    const __C: <T as ConstStructImplTy>::__C;
-    const __D: <T as ConstStructImplTy>::__D;
-    const __E: <T as ConstStructImplTy>::__E;
+pub trait ConstStructTyWrapper<T: ConstStructTy> {
+    const __A: <T as ConstStructTy>::__A;
+    const __B: <T as ConstStructTy>::__B;
+    const __C: <T as ConstStructTy>::__C;
+    const __D: <T as ConstStructTy>::__D;
+    const __E: <T as ConstStructTy>::__E;
 }
 
-pub trait ConstStructImplTy {
+pub trait ConstStructTy {
     type __A;
     type __B;
     type __C;
@@ -22,7 +22,7 @@ pub trait ConstStructImplTy {
     type __E;
 }
 
-pub struct ConstStructImpl<A, B, C, D, E> {
+pub struct ConstStruct<A, B, C, D, E> {
     pub __a: A,
     pub __b: B,
     pub __c: C,
@@ -30,4 +30,4 @@ pub struct ConstStructImpl<A, B, C, D, E> {
     pub __e: E,
 }
 
-pub struct DefaultNone;
+pub struct Non;

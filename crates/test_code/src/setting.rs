@@ -1,7 +1,7 @@
 use const_struct_derive::const_struct;
 
 use crate::{
-    pre::{ConstStructImplData, ConstStructImplTy},
+    pre::{ConstStructData, ConstStructTy},
     TestSetting, TestSettingManual, TestSettingManualTy,
 };
 
@@ -27,22 +27,22 @@ pub const WINDOW_SETTING_MANUAL: TestSettingManual = TestSettingManual {
 pub struct WindowSettingManualTy;
 
 impl
-    ConstStructImplData<
-        <TestSettingManual as ConstStructImplTy>::__A,
-        <TestSettingManual as ConstStructImplTy>::__B,
-        <TestSettingManual as ConstStructImplTy>::__C,
-        <TestSettingManual as ConstStructImplTy>::__D,
-        <TestSettingManual as ConstStructImplTy>::__E,
+    ConstStructData<
+        <TestSettingManual as ConstStructTy>::__A,
+        <TestSettingManual as ConstStructTy>::__B,
+        <TestSettingManual as ConstStructTy>::__C,
+        <TestSettingManual as ConstStructTy>::__D,
+        <TestSettingManual as ConstStructTy>::__E,
     > for WindowSettingManualTy
 {
-    const __A: <TestSettingManual as ConstStructImplTy>::__A =
+    const __A: <TestSettingManual as ConstStructTy>::__A =
         WINDOW_SETTING_MANUAL.__get_data().__a;
-    const __B: <TestSettingManual as ConstStructImplTy>::__B =
+    const __B: <TestSettingManual as ConstStructTy>::__B =
         WINDOW_SETTING_MANUAL.__get_data().__b;
-    const __C: <TestSettingManual as ConstStructImplTy>::__C =
+    const __C: <TestSettingManual as ConstStructTy>::__C =
         WINDOW_SETTING_MANUAL.__get_data().__c;
-    const __D: <TestSettingManual as ConstStructImplTy>::__D =
+    const __D: <TestSettingManual as ConstStructTy>::__D =
         WINDOW_SETTING_MANUAL.__get_data().__d;
-    const __E: <TestSettingManual as ConstStructImplTy>::__E =
+    const __E: <TestSettingManual as ConstStructTy>::__E =
         WINDOW_SETTING_MANUAL.__get_data().__e;
 }
