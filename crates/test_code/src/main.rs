@@ -43,7 +43,7 @@ impl TestSettingManual {
     }
 }
 
-impl ConstStructImplTy for TestSettingManual {
+impl<T: ConstStructImplData> ConstStructImplTy for T {
     type __A = Option<u32>;
     type __B = Option<u32>;
     type __C = Option<u32>;
@@ -51,17 +51,12 @@ impl ConstStructImplTy for TestSettingManual {
     type __E = DefaultNone;
 }
 
-pub trait TestSettingManualTy:
-    ConstStructImplData<Option<u32>, Option<u32>, Option<u32>, Option<u32>, DefaultNone>
-{
-    const TEST_DATA: Option<u32> = Self::__A;
-    const TEST_DATA2: Option<u32> = Self::__B;
-    const TEST_DATA3: Option<u32> = Self::__C;
-    const TEST_DATA4: Option<u32> = Self::__D;
-    const TEST_DATA5: DefaultNone = Self::__E;
+pub trait TestSettingManualTy: ConstStructImplData {
+    const TEST_DATA: <Self as ConstStructImplTy>::__A = Self::__A;
+    const TEST_DATA2: <Self as ConstStructImplTy>::__B = Self::__B;
+    const TEST_DATA3: <Self as ConstStructImplTy>::__C = Self::__C;
+    const TEST_DATA4: <Self as ConstStructImplTy>::__D = Self::__D;
+    const TEST_DATA5: <Self as ConstStructImplTy>::__E = Self::__E;
 }
 
-impl<T: ConstStructImplData<Option<u32>, Option<u32>, Option<u32>, Option<u32>, DefaultNone>>
-    TestSettingManualTy for T
-{
-}
+impl<T: ConstStructImplData> TestSettingManualTy for T {}
