@@ -1,0 +1,11 @@
+[workspace.package]
+authors = ["oligami <nziq53@gmail.com>"]
+version = "0.1.0"
+edition = "2021"
+description = "macro that allows const structures to be passed as types"
+
+[workspace]
+resolver = "2"
+members = ["crates/const_struct_derive", "crates/test_code"]
+
+# https://doc.rust-lang.org/cargo/reference/workspaces.html

@@ -1,0 +1,9 @@
+[package]
+name = "test_code"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+
+[dependencies]
+const_struct_derive = { path = "../const_struct_derive" }
