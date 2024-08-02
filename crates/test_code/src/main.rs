@@ -38,24 +38,60 @@ impl TestSettingManualTyImplData for TestSettingManual {
     type __TAIL = TailSome<TestSettingManualTailAdd1>;
 }
 
+// trait TestSettingManualTy
+// where
+//     Self:
+//         TestSettingManualTyImpl<
+//             <TestSettingManual as TestSettingManualTyImplData>::__A,
+//             <TestSettingManual as TestSettingManualTyImplData>::__B,
+//             <TestSettingManual as TestSettingManualTyImplData>::__C,
+//             <TestSettingManual as TestSettingManualTyImplData>::__D,
+//             <TestSettingManual as TestSettingManualTyImplData>::__TAIL
+//         >,
+//     <TestSettingManual as TestSettingManualTyImplData>::__TAIL: TestSettingManualTyImplData,
+//     <TestSettingManual as TestSettingManualTyImplData>::__TAIL: TestSettingManualTyImpl<
+//         <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__A,
+//         <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__B,
+//         <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__C,
+//         <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__D,
+//         <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__TAIL,
+//     >,
+// {
+//     const TEST_DATA: <TestSettingManual as TestSettingManualTyImplData>::__A = TestSettingManualTyImpl::__A;
+//     const TEST_DATA2: <TestSettingManual as TestSettingManualTyImplData>::__B = TestSettingManualTyImpl::__B;
+//     const TEST_DATA3: <TestSettingManual as TestSettingManualTyImplData>::__C = TestSettingManualTyImpl::__C;
+//     const TEST_DATA4: <TestSettingManual as TestSettingManualTyImplData>::__D = TestSettingManualTyImpl::__D;
+//     const TEST_DATA9: <<TestSettingManual as TestSettingManualTyImplData>::__TAIL as TestSettingManualTyImplData>::__A = {
+//         match TestSettingManualTyImpl::__TAIL {
+//             TailAddition::None => TailAddition::None,
+//             TailAddition::Some(v) => <<TestSettingManual as TestSettingManualTyImplData>::__TAIL as TestSettingManualTyImpl<
+//                 <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__A,
+//                 <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__B,
+//                 <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__C,
+//                 <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__D,
+//                 <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__TAIL,
+//             >>::__A,
+//         }
+//     };
+//     const TEST_DATA10: <<TestSettingManual as TestSettingManualTyImplData>::__TAIL as TestSettingManualTyImplData>::__B = {
+//         match TestSettingManualTyImpl::__TAIL {
+//             TailAddition::None => TailAddition::None,
+//             TailAddition::Some(v) => TailAddition::Some(TestSettingManualTailAdd1),
+//         }
+//     };
+// }
+
 trait TestSettingManualTy
 where
     Self:
         TestSettingManualTyImpl<
-            <TestSettingManual as TestSettingManualTyImplData>::__A,
-            <TestSettingManual as TestSettingManualTyImplData>::__B,
-            <TestSettingManual as TestSettingManualTyImplData>::__C,
-            <TestSettingManual as TestSettingManualTyImplData>::__D,
-            <TestSettingManual as TestSettingManualTyImplData>::__TAIL
+            Option<u32>,
+            DefaultNone,
+            DefaultNone,
+            DefaultNone,
+            TailSome<TestSettingManualTailAdd1>
         >,
-    <TestSettingManual as TestSettingManualTyImplData>::__TAIL: TestSettingManualTyImplData,
-    <TestSettingManual as TestSettingManualTyImplData>::__TAIL: TestSettingManualTyImpl<
-        <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__A,
-        <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__B,
-        <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__C,
-        <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__D,
-        <TestSettingManualTailAdd1 as TestSettingManualTyImplData>::__TAIL,
-    >,
+    TailSome<TestSettingManualTailAdd1>: TestSettingManualTyImplData,
 {
     const TEST_DATA: <TestSettingManual as TestSettingManualTyImplData>::__A = TestSettingManualTyImpl::__A;
     const TEST_DATA2: <TestSettingManual as TestSettingManualTyImplData>::__B = TestSettingManualTyImpl::__B;
@@ -81,6 +117,7 @@ where
     };
 }
 
+
 struct TestSettingManualTailAdd1;
 
 impl TestSettingManualTyImplData for TestSettingManualTailAdd1 {
@@ -90,3 +127,8 @@ impl TestSettingManualTyImplData for TestSettingManualTailAdd1 {
     type __D = DefaultNone;
     type __TAIL = TailSome<DefaultNone>;
 }
+
+trait TestSettingManualTy
+where
+    Self:
+        
