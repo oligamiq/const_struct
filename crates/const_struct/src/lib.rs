@@ -6,3 +6,5 @@ pub use const_struct_derive::*;
 pub trait ConstStructTraits<T> {
     const __DATA: T;
 }
+
+

@@ -256,10 +256,13 @@ fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<TokenStr
             .push(syn::GenericParam::Type(generics_name));
         new_generics
     };
+    // 関数名を変更
+    let new_name = format!("{}_const", root_ident);
     let new_input = syn::ItemFn {
         sig: syn::Signature {
+            ident: syn::Ident::new(&new_name, new_input.sig.ident.span()),
             generics: new_generics,
-            ..new_input.sig.clone()
+            ..new_input.sig
         },
         ..new_input
     };
@@ -295,6 +298,13 @@ fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<TokenStr
     }, |ident| {
         ident == root_ident
     });
+    let new_input = ItemFn {
+        sig: syn::Signature {
+
+            ..new_input.sig
+        },
+        ..new_input
+    };
 
     // dbg!(ty);
 

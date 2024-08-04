@@ -44,3 +44,46 @@ impl Tester2 {
         println!("{:?}", t);
     }
 }
+
+
+// trait F32Ty {
+//     const __DATA: f32;
+// }
+
+// macro_rules! F32 {
+//     ($num: literal) => {
+//         struct F32TyImpl;
+
+//         impl F32Ty for F32TyImpl {
+//             const __DATA: f32 = $num;
+//         }
+//     };
+// }
+
+// struct F32_3_0;
+
+// impl F32Ty for F32_3_0 {
+//     const __DATA: f32 = 3 as f32;
+// }
+
+// const fn f32_to_u32(f: f32) -> u32 {
+//     unsafe { std::mem::transmute(f) }
+// }
+
+// const fn u32_to_f32(i: u32) -> f32 {
+//     unsafe { std::mem::transmute(i) }
+// }
+
+// type F32Ty = u32;
+
+// fn tester_inner_f<const N: F32Ty>() {
+//     println!("{:?}", N);
+// }
+
+// fn tester_f() {
+//     tester_inner_f::<{
+//         f32_to_u32(3.0)
+//     }>();
+// }
+
+

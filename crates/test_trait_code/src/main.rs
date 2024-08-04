@@ -9,6 +9,20 @@ mod tester;
 fn main() {
     tester::<setting::WindowSettingManualTy>();
     tester_2(WINDOW_SETTING_MANUAL);
+
+    match {
+        #[cfg(feature = "dynamic")]
+        {
+            Some("data")
+        }
+        #[cfg(not(feature = "dynamic"))]
+        {
+            Option::<&str>::None
+        }
+    } {
+        Some(data) => println!("data: {}", data),
+        None => println!("data: None"),
+    }
 }
 
 #[derive(Debug)]

@@ -16,17 +16,6 @@ impl TestSetting {
     }
 }
 
-// pub fn tester<T: TestSettingTy>() {
-//     let t = T::__DATA.abc_def;
-//     println!("{:?}", t);
-// }
-
-// #[cfg(feature = "test")]
-// fn test1() {
-//     let t = TestSetting::default();
-//     println!("{:?}", t);
-// }
-
 #[const_compat(test_setting, #[cfg(not(feature = "dynamic"))])]
 pub fn tester(test_setting: TestSetting) {
     let t = test_setting.abc_def;
@@ -38,7 +27,9 @@ pub fn tester(test_setting: TestSetting) {
 
     println!("{:?}", test_setting);
 }
+// integers, `bool` and `char`
 
+// #[const_compat(i, #[cfg(not(feature = "dynamic"))])]
 fn tester_inner(i: u32) {
     println!("{:?}", i);
 }
