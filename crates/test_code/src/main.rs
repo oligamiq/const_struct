@@ -1,18 +1,21 @@
-use std::marker::PhantomData;
+#![no_std]
 
-use const_struct_derive::ConstStruct;
+use const_struct::const_struct;
+use setting::{tester, TestSetting};
 
 mod setting;
 
-fn main() {}
+#[const_struct]
+const WINDOW_SETTING: TestSetting = {
+    let mut c = TestSetting::default();
+    c.a = Some(5);
+    c
+};
 
-#[derive(ConstStruct)]
-struct TestSetting {
-    a: Option<u32>,
-}
+fn main() {
+    #[cfg(feature = "dynamic")]
+    tester::<WindowSettingTy>();
 
-impl TestSetting {
-    pub const fn default() -> Self {
-        Self { a: None }
-    }
+    #[cfg(not(feature = "dynamic"))]
+    tester(WINDOW_SETTING);
 }

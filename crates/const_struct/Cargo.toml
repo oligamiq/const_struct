@@ -1,0 +1,15 @@
+[package]
+name = "const_struct"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+const_struct_derive.workspace = true
+
+[package.metadata.release]
+tag = true
+tag-prefix =""

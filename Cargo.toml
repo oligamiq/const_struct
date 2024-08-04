@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
-members = ["crates/const_struct_derive", "crates/test_code", "crates/test_trait_code_old", "crates/test_trait_code"]
+members = ["crates/const_struct_derive", "crates/test_code", "crates/test_trait_code_old", "crates/test_trait_code", "crates/const_struct"]
+default-members = ["crates/const_struct_derive", "crates/const_struct"]
 
 [workspace.package]
 authors = ["oligami <nziq53@gmail.com>"]
@@ -12,6 +13,7 @@ rust-version = "1.80.0"
 
 [workspace.dependencies]
 const_struct_derive = { path = "crates/const_struct_derive" }
+const_struct = { path = "crates/const_struct" }
 
 [workspace.metadata.release]
 tag = false

@@ -7,7 +7,12 @@ description.workspace = true
 publish = false
 
 [dependencies]
-const_struct_derive.workspace = true
+const_struct.workspace = true
+no-std-compat = { version = "0.4.1", features = ["compat_macros", "std", "alloc"] }
 
 [package.metadata.release]
 release = false
+
+[features]
+dynamic = []
+default = ["dynamic"]
