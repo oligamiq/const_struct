@@ -257,10 +257,10 @@ fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<TokenStr
         new_generics
     };
     // 関数名を変更
-    let new_name = format!("{}_const", root_ident);
+    // let new_name = format!("{}_const", root_ident);
     let new_input = syn::ItemFn {
         sig: syn::Signature {
-            ident: syn::Ident::new(&new_name, new_input.sig.ident.span()),
+            // ident: syn::Ident::new(&new_name, new_input.sig.ident.span()),
             generics: new_generics,
             ..new_input.sig
         },
