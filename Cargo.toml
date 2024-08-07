@@ -20,3 +20,8 @@ tag = false
 
 # https://doc.rust-lang.org/cargo/reference/workspaces.html
 # https://zenn.dev/eduidl/articles/rust-workspace-tips
+
+[profile.dev]
+# Disabling debug info speeds up builds a bunch,
+# and we don't rely on it for debugging that much.
+debug = 0
