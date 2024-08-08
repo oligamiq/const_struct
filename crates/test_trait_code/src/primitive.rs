@@ -14,12 +14,6 @@ impl<const T: u32> F32Ty for F32<T> {
     const VALUE: f32 = Self::__DATA;
 }
 
-impl<const T: u32> Into<f32> for F32<T> {
-    fn into(self) -> f32 {
-        Self::__DATA
-    }
-}
-
 macro_rules! F32 {
     ($value:expr) => {
         F32::<{ unsafe { transmute(($value) as f32) } }>
