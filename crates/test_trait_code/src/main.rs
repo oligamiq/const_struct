@@ -3,9 +3,9 @@ use setting::WINDOW_SETTING_MANUAL;
 use tester::{tester, tester_2};
 
 mod pre;
+mod primitive;
 mod setting;
 mod tester;
-mod primitive;
 
 fn main() {
     tester::<setting::WindowSettingManualTy>();
