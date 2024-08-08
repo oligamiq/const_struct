@@ -2,9 +2,9 @@ use pre::{ConstStructData, ConstStructTy, Non};
 use tester::tester;
 
 mod pre;
+mod primitive;
 mod setting;
 mod tester;
-mod primitive;
 
 fn main() {
     tester::<setting::WindowSettingManualTy>();
