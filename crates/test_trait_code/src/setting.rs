@@ -14,14 +14,12 @@ impl ConstStruct<TestSettingManual> for WindowSettingManualTy {
     const __DATA: TestSettingManual = WINDOW_SETTING_MANUAL;
 }
 
-pub trait U32Ty {
-    const __DATA: u32;
+pub trait F32Ty {
+    const __DATA: f32;
 }
 
-impl<T: U32TyImpl> U32Ty for u32 {
-    const __DATA: u32 = T::__DATA;
-}
+pub struct F32_1;
 
-pub trait U32TyImpl {
-    const __DATA: Self;
+impl F32Ty for F32_1 {
+    const __DATA: f32 = 1.0;
 }

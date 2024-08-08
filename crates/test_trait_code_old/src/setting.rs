@@ -21,14 +21,9 @@ impl
         <TestSettingManual as ConstStructTy>::__E,
     > for WindowSettingManualTy
 {
-    const __A: <TestSettingManual as ConstStructTy>::__A =
-        WINDOW_SETTING_MANUAL.__get_data().__a;
-    const __B: <TestSettingManual as ConstStructTy>::__B =
-        WINDOW_SETTING_MANUAL.__get_data().__b;
-    const __C: <TestSettingManual as ConstStructTy>::__C =
-        WINDOW_SETTING_MANUAL.__get_data().__c;
-    const __D: <TestSettingManual as ConstStructTy>::__D =
-        WINDOW_SETTING_MANUAL.__get_data().__d;
-    const __E: <TestSettingManual as ConstStructTy>::__E =
-        WINDOW_SETTING_MANUAL.__get_data().__e;
+    const __A: <TestSettingManual as ConstStructTy>::__A = WINDOW_SETTING_MANUAL.__get_data().__a;
+    const __B: <TestSettingManual as ConstStructTy>::__B = WINDOW_SETTING_MANUAL.__get_data().__b;
+    const __C: <TestSettingManual as ConstStructTy>::__C = WINDOW_SETTING_MANUAL.__get_data().__c;
+    const __D: <TestSettingManual as ConstStructTy>::__D = WINDOW_SETTING_MANUAL.__get_data().__d;
+    const __E: <TestSettingManual as ConstStructTy>::__E = WINDOW_SETTING_MANUAL.__get_data().__e;
 }

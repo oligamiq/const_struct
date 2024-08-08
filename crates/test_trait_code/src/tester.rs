@@ -36,7 +36,9 @@ pub struct Tester2 {
 
 impl Tester2 {
     pub fn new(test_setting_manual: TestSettingManual) -> Self {
-        Self { test_setting_manual }
+        Self {
+            test_setting_manual,
+        }
     }
 
     pub fn tester(&self) {
@@ -44,7 +46,6 @@ impl Tester2 {
         println!("{:?}", t);
     }
 }
-
 
 // trait F32Ty {
 //     const __DATA: f32;
@@ -85,5 +86,3 @@ impl Tester2 {
 //         f32_to_u32(3.0)
 //     }>();
 // }
-
-

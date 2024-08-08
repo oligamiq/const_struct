@@ -7,10 +7,8 @@ use quote::{quote, ToTokens};
 use rewriter::Rewriter as _;
 use syn::{
     parse::{Parse, Parser},
-    parse_macro_input, parse_quote, parse_str,
-    token::Token,
-    Attribute, Data, DataStruct, DeriveInput, Expr, ExprMacro, Fields, FieldsNamed, Ident,
-    ItemConst, ItemFn, Meta, MetaList, PatMacro, Token, TypeParam,
+    parse_macro_input, parse_str, Attribute, Data, DataStruct, DeriveInput, Expr, Fields,
+    FieldsNamed, Ident, ItemConst, ItemFn, Meta, Token, TypeParam,
 };
 
 mod rewriter;
@@ -287,22 +285,20 @@ fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<TokenStr
     };
 
     let new_input = new_input;
-    let new_input = new_input.rewrite(|path_segment| {
-        if path_segment.ident == root_ident {
-            let __data: syn::PathSegment = parse_str("__DATA").unwrap();
-            let new_generic_name: syn::PathSegment = parse_str(&new_generic_name).unwrap();
-            vec![new_generic_name, __data].into_iter().collect()
-        } else {
-            vec![path_segment].into_iter().collect()
-        }
-    }, |ident| {
-        ident == root_ident
-    });
-    let new_input = ItemFn {
-        sig: syn::Signature {
-
-            ..new_input.sig
+    let new_input = new_input.rewrite(
+        |path_segment| {
+            if path_segment.ident == root_ident {
+                let __data: syn::PathSegment = parse_str("__DATA").unwrap();
+                let new_generic_name: syn::PathSegment = parse_str(&new_generic_name).unwrap();
+                vec![new_generic_name, __data].into_iter().collect()
+            } else {
+                vec![path_segment].into_iter().collect()
+            }
         },
+        |ident| ident == root_ident,
+    );
+    let new_input = ItemFn {
+        sig: syn::Signature { ..new_input.sig },
         ..new_input
     };
 
