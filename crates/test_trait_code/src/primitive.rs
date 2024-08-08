@@ -4,12 +4,20 @@ use std::mem::transmute;
 
 pub trait F32Ty {
     const __DATA: f32;
+    const VALUE: f32;
 }
 
 pub struct F32<const T: u32>;
 
 impl<const T: u32> F32Ty for F32<T> {
     const __DATA: f32 = unsafe { transmute(T) };
+    const VALUE: f32 = Self::__DATA;
+}
+
+impl<const T: u32> Into<f32> for F32<T> {
+    fn into(self) -> f32 {
+        Self::__DATA
+    }
 }
 
 macro_rules! F32 {
