@@ -125,16 +125,16 @@ pub fn const_compat(attr: RawTokenStream, item: RawTokenStream) -> RawTokenStrea
                 Err(err) => err.to_compile_error().into(),
             }
         }
-        Err(err) => match syn::parse::<Expr>(item) {
-            Ok(input) => {
-                let output = generate_const_compat_expr(input, attr.into());
-                match output {
-                    Ok(output) => output.into(),
-                    Err(err) => err.to_compile_error().into(),
-                }
-            }
-            Err(_) => err.to_compile_error().into(),
-        },
+        // Err(err) => match syn::parse::<Expr>(item) {
+        //     Ok(input) => {
+        //         let output = generate_const_compat_expr(input, attr.into());
+        //         match output {
+        //             Ok(output) => output.into(),
+        //             Err(err) => err.to_compile_error().into(),
+        //         }
+        //     }
+            Err(err) => err.to_compile_error().into(),
+        // },
     }
     // let output = generate_const_compat(input);
     // match output {
@@ -188,6 +188,10 @@ fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<TokenStr
                 "Second attribute must be an attribute",
             ))
         }
+    };
+    let second_cfg = match iter.next() {
+        Some(ConstCompatAttr::Attribute(cfg)) => Some(cfg),
+        _ => None,
     };
     match iter.next() {
         None => {}
@@ -265,23 +269,29 @@ fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<TokenStr
         ..new_input
     };
 
-    let not_root_cfg = root_cfg.clone();
-    let meta = not_root_cfg.meta;
-    let meta = match meta {
-        Meta::List(list) => {
-            let old_token = list.tokens.clone();
-            let new_token = quote! { not(#old_token) };
-            let new_meta = Meta::List(syn::MetaList {
-                tokens: new_token,
-                ..list
-            });
-            new_meta
-        }
-        _ => return Err(syn::Error::new_spanned(meta, "Expected a list")),
-    };
-    let not_root_cfg = Attribute {
-        meta,
-        ..not_root_cfg
+    let not_root_cfg = if let Some(cfg) = second_cfg {
+        cfg
+    }
+    else {
+        let not_root_cfg = root_cfg.clone();
+        let meta = not_root_cfg.meta;
+        let meta = match meta {
+            Meta::List(list) => {
+                let old_token = list.tokens.clone();
+                let new_token = quote! { not(#old_token) };
+                let new_meta = Meta::List(syn::MetaList {
+                    tokens: new_token,
+                    ..list
+                });
+                new_meta
+            }
+            _ => return Err(syn::Error::new_spanned(meta, "Expected a list")),
+        };
+        let not_root_cfg = Attribute {
+            meta,
+            ..not_root_cfg
+        };
+        not_root_cfg
     };
 
     let new_input = new_input;
