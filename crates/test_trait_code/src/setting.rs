@@ -13,13 +13,3 @@ pub struct WindowSettingManualTy;
 impl ConstStruct<TestSettingManual> for WindowSettingManualTy {
     const __DATA: TestSettingManual = WINDOW_SETTING_MANUAL;
 }
-
-pub trait F32Ty {
-    const __DATA: f32;
-}
-
-pub struct F32_1;
-
-impl F32Ty for F32_1 {
-    const __DATA: f32 = 1.0;
-}

@@ -5,6 +5,7 @@ use tester::{tester, tester_2};
 mod pre;
 mod setting;
 mod tester;
+mod primitive;
 
 fn main() {
     tester::<setting::WindowSettingManualTy>();

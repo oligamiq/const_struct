@@ -4,6 +4,7 @@ use tester::tester;
 mod pre;
 mod setting;
 mod tester;
+mod primitive;
 
 fn main() {
     tester::<setting::WindowSettingManualTy>();

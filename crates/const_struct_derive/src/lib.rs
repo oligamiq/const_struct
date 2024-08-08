@@ -133,7 +133,7 @@ pub fn const_compat(attr: RawTokenStream, item: RawTokenStream) -> RawTokenStrea
         //             Err(err) => err.to_compile_error().into(),
         //         }
         //     }
-            Err(err) => err.to_compile_error().into(),
+        Err(err) => err.to_compile_error().into(),
         // },
     }
     // let output = generate_const_compat(input);
@@ -271,8 +271,7 @@ fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<TokenStr
 
     let not_root_cfg = if let Some(cfg) = second_cfg {
         cfg
-    }
-    else {
+    } else {
         let not_root_cfg = root_cfg.clone();
         let meta = not_root_cfg.meta;
         let meta = match meta {
