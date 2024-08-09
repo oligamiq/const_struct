@@ -23,22 +23,29 @@ impl<const U: usize> ConstStructPrimData for ConstStructPrimUsize<U> {
     const __DATA: Self::Data = U;
 }
 
-pub struct ConstStructPrimStr<const P0: char, const Size: usize, Tail> {
+pub struct ConstStructPrimStr<const P0: u128, const Size: usize, Tail> {
     pub __phantom: core::marker::PhantomData<Tail>,
 }
 
-impl<const P0: char, const Size: usize, const OldSize: usize, T: ConstStructPrimData<Data = [char; OldSize]>> ConstStructPrimData for ConstStructPrimStr<P0, Size, T> {
-    type Data = [char; Size];
+impl<
+        const P0: u128,
+        const Size: usize,
+        const OldSize: usize,
+        T: ConstStructPrimData<Data = [u128; OldSize]>,
+    > ConstStructPrimData for ConstStructPrimStr<P0, Size, T>
+{
+    type Data = [u128; Size];
+
     // DATA + P0
     const __DATA: Self::Data = {
         let mut new_data = [P0; Size];
-        let new_data_mut: &mut [char; OldSize] = match (&mut new_data).first_chunk_mut() {
-            Some(new_data_mut) => new_data_mut,
-            None => panic!("Failed to get first chunk mutable"),
-        };
-        core::mem::replace(new_data_mut, T::__DATA);
         let old_data = T::__DATA;
-        new_data_mut.copy_from_slice(&old_data);
+        let mut i = 0;
+        while i < Size - 1 {
+            new_data[i] = old_data[i];
+            i += 1;
+        }
+        new_data[Size - 1] = P0;
         new_data
     };
 }
@@ -59,3 +66,8 @@ impl<const B: bool, U: ConstStructPrimData> ConstStructPrimData for ConstStructP
 pub struct ConstStructPrimNone;
 
 pub struct ConstStructPrimEnd;
+
+pub trait ConstStructPrimRef {
+    type Data;
+    const __DATA: Self::Data;
+}

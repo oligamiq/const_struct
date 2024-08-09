@@ -1,12 +1,12 @@
 use core::str;
-use std::{ptr::slice_from_raw_parts, str};
+use std::{ptr::slice_from_raw_parts};
 
 use pre::ConstStructTraits;
 use primitive::some::{OptionTy, PrimitiveTraits};
 use setting::WINDOW_SETTING_MANUAL;
 use struct_prim::{
     ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption,
-    ConstStructPrimRef, ConstStructPrimStr, ConstStructPrimU32,
+    ConstStructPrimStr, ConstStructPrimU32,
 };
 use tester::{tester, tester_2};
 
@@ -63,8 +63,6 @@ type TestSettingManualTyPrimWrapper<
     const F: u32,
     const G: bool,
     const H: u32,
-    const I: usize,
-    const J: usize,
 > = ConstStructPrimAny<
     TestSettingManual,
     ConstStructPrimAny<
@@ -75,10 +73,7 @@ type TestSettingManualTyPrimWrapper<
                 ConstStructPrimU32<F>,
                 ConstStructPrimAny<
                     ConstStructPrimOption<G, ConstStructPrimU32<H>>,
-                    ConstStructPrimAny<
-                        ConstStructPrimRef<I, ConstStructPrimStr<J>>,
-                        ConstStructPrimEnd,
-                    >,
+                    ConstStructPrimEnd,
                 >,
             >,
         >,
@@ -94,13 +89,11 @@ impl<
         const F: u32,
         const G: bool,
         const H: u32,
-        const I: usize,
-        const J: usize,
-    > PrimitiveTraits for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, I, J>
+    > PrimitiveTraits for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H>
 {
     type DATATYPE = TestSettingManual;
     const __DATA: Self::DATATYPE =
-        <TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, I, J> as ConstStructTraits<
+        <TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H> as ConstStructTraits<
             TestSettingManual,
         >>::__DATA;
 }
@@ -114,10 +107,8 @@ impl<
         const F: u32,
         const G: bool,
         const H: u32,
-        const I: usize,
-        const J: usize,
     > ConstStructTraits<TestSettingManual>
-    for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, I, J>
+    for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H>
 {
     const __DATA: TestSettingManual = {
         TestSettingManual {
@@ -125,7 +116,7 @@ impl<
             test_data2: <ConstStructPrimOption::<C, ConstStructPrimOption<D, ConstStructPrimU32<E>>> as ConstStructPrimData>::__DATA,
             test_data3: <ConstStructPrimU32::<F> as ConstStructPrimData>::__DATA,
             test_data4: <ConstStructPrimOption::<G, ConstStructPrimU32<H>> as ConstStructPrimData>::__DATA,
-            str: unsafe { str::from_utf8_unchecked(&*slice_from_raw_parts(<ConstStructPrimRef::<I, ConstStructPrimStr<J>> as ConstStructPrimData>::__DATA as *const _, J)) },
+            str: "abc_def",
         }
     };
 }
@@ -138,6 +129,11 @@ macro_rules! TestSettingManual {
                 v.test_data.is_some()
             }, ConstStructPrimU32<{
                 let v: TestSettingManual = $value;
+                struct TTTT {}
+                impl crate::struct_prim::ConstStructPrimRef for TTTT {
+                    type Data = [u128; 20];
+                    const __DATA: Self::Data = [0; 20];
+                }
                 match v.test_data {
                     Some(data) => data,
                     None => 0,
@@ -176,16 +172,7 @@ macro_rules! TestSettingManual {
                                 Some(data) => data,
                                 None => 0,
                             }
-                        }>>,
-                            ConstStructPrimAny<ConstStructPrimRef<{
-                                let v: TestSettingManual = $value;
-                                unsafe { core::mem::transmute(str.as_ptr()) }
-                            }, ConstStructPrimStr<{
-                                let v: TestSettingManual = $value;
-                                v.str.len()
-                            }>>,
-                                ConstStructPrimEnd
-                            >
+                        }>>, ConstStructPrimEnd,
                         >
                     >
                 >
