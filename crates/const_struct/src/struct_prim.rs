@@ -27,4 +27,8 @@ ConstStructPrimBoxBySizes!(128);
 ConstStructPrimBoxBySizes!(size);
 ConstStructPrimBoxBySizes!(char, 32);
 
-pub struct ConstStructPrimEnd;
+pub struct ConstStructPrimOption<const B: bool, T> {
+    pub __phantom: core::marker::PhantomData<T>,
+}
+
+pub struct ConstStructPrimNone;

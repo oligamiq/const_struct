@@ -1,11 +1,19 @@
-use pre::{ConstStruct, ConstStructPrimAny, ConstStructPrimBoxMem32, ConstStructPrimEnd};
+use core::str;
+use std::{ptr::slice_from_raw_parts, str};
+
+use pre::ConstStructTraits;
 use primitive::some::{OptionTy, PrimitiveTraits};
 use setting::WINDOW_SETTING_MANUAL;
+use struct_prim::{
+    ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption,
+    ConstStructPrimRef, ConstStructPrimStr, ConstStructPrimU32,
+};
 use tester::{tester, tester_2};
 
 mod pre;
 mod primitive;
 mod setting;
+mod struct_prim;
 mod tester;
 
 fn main() {
@@ -30,82 +38,159 @@ fn main() {
 #[derive(Debug)]
 pub struct TestSettingManual {
     test_data: Option<u32>,
-    test_data2: Option<u32>,
-    test_data3: Option<u32>,
+    test_data2: Option<Option<u32>>,
+    test_data3: u32,
     test_data4: Option<u32>,
     str: &'static str,
 }
 
-pub trait TestSettingManualTy: ConstStruct<TestSettingManual> {
+pub trait TestSettingManualTy: ConstStructTraits<TestSettingManual> {
     const TEST_DATA: Option<u32> = Self::__DATA.test_data;
-    const TEST_DATA2: Option<u32> = Self::__DATA.test_data2;
-    const TEST_DATA3: Option<u32> = Self::__DATA.test_data3;
+    const TEST_DATA2: Option<Option<u32>> = Self::__DATA.test_data2;
+    const TEST_DATA3: u32 = Self::__DATA.test_data3;
     const TEST_DATA4: Option<u32> = Self::__DATA.test_data4;
     const STR: &'static str = Self::__DATA.str;
 }
 
-impl<T: ConstStruct<TestSettingManual>> TestSettingManualTy for T {}
+impl<T: ConstStructTraits<TestSettingManual>> TestSettingManualTy for T {}
 
-type TestSettingManualTyPrimWrapper<const A: u32, const B: u32, const C: u32, const D: u32> =
+type TestSettingManualTyPrimWrapper<
+    const A: bool,
+    const B: u32,
+    const C: bool,
+    const D: bool,
+    const E: u32,
+    const F: u32,
+    const G: bool,
+    const H: u32,
+    const I: usize,
+    const J: usize,
+> = ConstStructPrimAny<
+    TestSettingManual,
     ConstStructPrimAny<
-        TestSettingManual,
-        ConstStructPrimBoxMem32<
-            A,
-            ConstStructPrimBoxMem32<B, ConstStructPrimBoxMem32<C, ConstStructPrimBoxMem32<D, ConstStructPrimEnd>>>,
+        ConstStructPrimOption<A, ConstStructPrimU32<B>>,
+        ConstStructPrimAny<
+            ConstStructPrimOption<C, ConstStructPrimOption<D, ConstStructPrimU32<E>>>,
+            ConstStructPrimAny<
+                ConstStructPrimU32<F>,
+                ConstStructPrimAny<
+                    ConstStructPrimOption<G, ConstStructPrimU32<H>>,
+                    ConstStructPrimAny<
+                        ConstStructPrimRef<I, ConstStructPrimStr<J>>,
+                        ConstStructPrimEnd,
+                    >,
+                >,
+            >,
         >,
-    >;
+    >,
+>;
 
-impl<const A: u32, const B: u32, const C: u32, const D: u32> PrimitiveTraits
-    for TestSettingManualTyPrimWrapper<A, B, C, D>
+impl<
+        const A: bool,
+        const B: u32,
+        const C: bool,
+        const D: bool,
+        const E: u32,
+        const F: u32,
+        const G: bool,
+        const H: u32,
+        const I: usize,
+        const J: usize,
+    > PrimitiveTraits for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, I, J>
 {
     type DATATYPE = TestSettingManual;
-    const __DATA: Self::DATATYPE = <TestSettingManualTyPrimWrapper<A, B, C, D> as ConstStruct<TestSettingManual>>::__DATA;
+    const __DATA: Self::DATATYPE =
+        <TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, I, J> as ConstStructTraits<
+            TestSettingManual,
+        >>::__DATA;
 }
 
-impl<const A: u32, const B: u32, const C: u32, const D: u32> ConstStruct<TestSettingManual>
-    for TestSettingManualTyPrimWrapper<A, B, C, D>
+impl<
+        const A: bool,
+        const B: u32,
+        const C: bool,
+        const D: bool,
+        const E: u32,
+        const F: u32,
+        const G: bool,
+        const H: u32,
+        const I: usize,
+        const J: usize,
+    > ConstStructTraits<TestSettingManual>
+    for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, I, J>
 {
-    const __DATA: TestSettingManual = TestSettingManual {
-        test_data: Some(A as u32),
-        test_data2: Some(B as u32),
-        test_data3: Some(C as u32),
-        test_data4: Some(D as u32),
-        str: "abc_def",
+    const __DATA: TestSettingManual = {
+        TestSettingManual {
+            test_data: <ConstStructPrimOption::<A, ConstStructPrimU32<B>> as ConstStructPrimData>::__DATA,
+            test_data2: <ConstStructPrimOption::<C, ConstStructPrimOption<D, ConstStructPrimU32<E>>> as ConstStructPrimData>::__DATA,
+            test_data3: <ConstStructPrimU32::<F> as ConstStructPrimData>::__DATA,
+            test_data4: <ConstStructPrimOption::<G, ConstStructPrimU32<H>> as ConstStructPrimData>::__DATA,
+            str: unsafe { str::from_utf8_unchecked(&*slice_from_raw_parts(<ConstStructPrimRef::<I, ConstStructPrimStr<J>> as ConstStructPrimData>::__DATA as *const _, J)) },
+        }
     };
 }
 
 macro_rules! TestSettingManual {
     ($value:expr) => {
         ConstStructPrimAny<TestSettingManual,
-        ConstStructPrimBoxMem32<{
-            let value: TestSettingManual = $value;
-
-            match value.test_data {
-                Some(data) => data,
-                None => 0,
-            }
-        }, ConstStructPrimBoxMem32<{
-            let value: TestSettingManual = $value;
-
-            match value.test_data2 {
-                Some(data) => data,
-                None => 0,
-            }
-        }, ConstStructPrimBoxMem32<{
-            let value: TestSettingManual = $value;
-
-            match value.test_data3 {
-                Some(data) => data,
-                None => 0,
-            }
-        }, ConstStructPrimBoxMem32<{
-            let value: TestSettingManual = $value;
-
-            match value.test_data4 {
-                Some(data) => data,
-                None => 0,
-            }
-        }, ConstStructPrimEnd>>>>>
+            ConstStructPrimAny<ConstStructPrimOption<{
+                let v: TestSettingManual = $value;
+                v.test_data.is_some()
+            }, ConstStructPrimU32<{
+                let v: TestSettingManual = $value;
+                match v.test_data {
+                    Some(data) => data,
+                    None => 0,
+                }
+            }>>,
+                ConstStructPrimAny<
+                ConstStructPrimOption<
+                    {
+                        let v: TestSettingManual = $value;
+                        v.test_data2.is_some()
+                    },
+                    ConstStructPrimOption<{
+                        match $value.test_data2 {
+                            Some(data) => data.is_some(),
+                            None => false,
+                        }
+                    }, ConstStructPrimU32<{
+                        match $value.test_data2 {
+                            Some(data) => match data {
+                                Some(data) => data,
+                                None => 0,
+                            },
+                            None => 0,
+                        }
+                    }>>>,
+                    ConstStructPrimAny<ConstStructPrimU32<{
+                        let v: TestSettingManual = $value;
+                        v.test_data3
+                    }>,
+                        ConstStructPrimAny<ConstStructPrimOption<{
+                            let v: TestSettingManual = $value;
+                            v.test_data4.is_some()
+                        }, ConstStructPrimU32<{
+                            let v: TestSettingManual = $value;
+                            match v.test_data4 {
+                                Some(data) => data,
+                                None => 0,
+                            }
+                        }>>,
+                            ConstStructPrimAny<ConstStructPrimRef<{
+                                let v: TestSettingManual = $value;
+                                unsafe { core::mem::transmute(str.as_ptr()) }
+                            }, ConstStructPrimStr<{
+                                let v: TestSettingManual = $value;
+                                v.str.len()
+                            }>>,
+                                ConstStructPrimEnd
+                            >
+                        >
+                    >
+                >
+            >
+        >
     };
 }
 
@@ -114,7 +199,7 @@ impl TestSettingManual {
         Self {
             test_data: None,
             test_data2: None,
-            test_data3: None,
+            test_data3: 0,
             test_data4: None,
             str: "abc_def",
         }
@@ -133,8 +218,8 @@ fn tester_prim() {
         Some!(Some!(TestSettingManual!({
             TestSettingManual {
                 test_data: Some(5),
-                test_data2: Some(10),
-                test_data3: None,
+                test_data2: Some(Some(10)),
+                test_data3: 0,
                 test_data4: Some(15),
                 str: "abc_def",
             }
@@ -144,8 +229,8 @@ fn tester_prim() {
     let ty: TestSettingManual!({
         TestSettingManual {
             test_data: Some(5),
-            test_data2: Some(10),
-            test_data3: None,
+            test_data2: Some(None),
+            test_data3: 0,
             test_data4: Some(15),
             str: "abc_def",
         }

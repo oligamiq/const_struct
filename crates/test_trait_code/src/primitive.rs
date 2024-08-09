@@ -2,20 +2,60 @@
 
 use std::mem::transmute;
 
+use some::PrimitiveTraits;
+
+use crate::pre::ConstStructTraits;
+
 pub trait F32Ty {
     const __DATA: f32;
     const VALUE: f32 = Self::__DATA;
 }
 
-pub struct F32<const T: u32>;
+pub struct F32Impl<const T: u32>;
 
-impl<const T: u32> F32Ty for F32<T> {
+impl<const T: u32> F32Ty for F32Impl<T> {
     const __DATA: f32 = unsafe { transmute(T) };
 }
 
+impl<U: F32Ty, const T: u32> ConstStructTraits<F32Impl<T>> for U {
+    const __DATA: F32Impl<T> = F32Impl::<T>;
+}
+
+impl<const T: u32> PrimitiveTraits for F32Impl<T> {
+    type DATATYPE = f32;
+    const __DATA: Self::DATATYPE = <F32Impl<T> as F32Ty>::__DATA;
+}
+
+#[macro_export]
 macro_rules! F32 {
     ($value:expr) => {
-        F32::<{ unsafe { transmute(($value) as f32) } }>
+        $crate::primitive::F32Impl::<{ unsafe { core::mem::transmute(($value) as f32) } }>
+    };
+}
+
+pub trait U32Ty {
+    const __DATA: u32;
+    const VALUE: u32 = Self::__DATA;
+}
+
+pub struct U32Impl<const T: u32>;
+impl<const T: u32> U32Ty for U32Impl<T> {
+    const __DATA: u32 = unsafe { transmute(T) };
+}
+
+impl<U: U32Ty, const T: u32> ConstStructTraits<U32Impl<T>> for U {
+    const __DATA: U32Impl<T> = U32Impl::<T>;
+}
+
+impl<const T: u32> PrimitiveTraits for U32Impl<T> {
+    type DATATYPE = u32;
+    const __DATA: Self::DATATYPE = <U32Impl<T> as U32Ty>::__DATA;
+}
+
+#[macro_export]
+macro_rules! U32 {
+    ($value:expr) => {
+        $crate::primitive::U32Impl::<{ unsafe { core::mem::transmute(($value) as u32) } }>
     };
 }
 
