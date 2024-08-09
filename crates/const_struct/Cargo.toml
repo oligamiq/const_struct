@@ -9,6 +9,7 @@ rust-version.workspace = true
 
 [dependencies]
 const_struct_derive.workspace = true
+paste = "1.0.15"
 
 [package.metadata.release]
 tag = true
