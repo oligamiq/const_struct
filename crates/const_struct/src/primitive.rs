@@ -78,14 +78,14 @@ impl<T> OptionTy<T> for NoneImpl {
 #[macro_export]
 macro_rules! Some {
     ($value:ty) => {
-        OptionImpl<$value>
+        $crate::primitive::OptionImpl<$value>
     };
 }
 
 #[macro_export]
 macro_rules! None {
     () => {
-        NoneImpl
+        $crate::primitive::NoneImpl
     };
 }
 
@@ -98,8 +98,7 @@ pub const fn tester_inner_u32<T: U32Ty>() -> u32 {
 }
 
 pub const fn tester_inner_option<T: OptionTy<f32>>() -> Option<f32> {
-    let s = T::__DATA;
-    s
+    T::VALUE
 }
 
 #[test]
