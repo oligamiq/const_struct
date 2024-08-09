@@ -1,7 +1,7 @@
 use const_struct::{const_compat, ConstStruct};
 use no_std_compat::prelude::v1::*;
 
-#[derive(ConstStruct, Debug)]
+#[derive(ConstStruct, Debug, PartialEq)]
 pub struct TestSetting {
     pub a: Option<u32>,
     abc_def: &'static str,

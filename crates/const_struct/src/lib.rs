@@ -7,3 +7,7 @@ pub use const_struct_derive::*;
 pub trait ConstStructTraits<T> {
     const __DATA: T;
 }
+
+pub trait ConstStructPrimImplType {
+    type PrimType;
+}
