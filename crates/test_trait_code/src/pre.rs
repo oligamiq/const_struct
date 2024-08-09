@@ -2,10 +2,6 @@ pub trait ConstStruct<T> {
     const __DATA: T;
 }
 
-pub trait ConstStructPrimImplType {
-    type PrimType<const U: u32, T>;
-}
-
 pub struct ConstStructPrimAny<U, T> {
     __phantom: core::marker::PhantomData<(U, T)>,
 }

@@ -1,7 +1,4 @@
-use pre::{
-    ConstStruct, ConstStructPrimAny, ConstStructPrimBoxMem32, ConstStructPrimEnd,
-    ConstStructPrimImplType,
-};
+use pre::{ConstStruct, ConstStructPrimAny, ConstStructPrimBoxMem32, ConstStructPrimEnd};
 use setting::WINDOW_SETTING_MANUAL;
 use tester::{tester, tester_2};
 
