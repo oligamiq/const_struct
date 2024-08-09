@@ -61,25 +61,31 @@ pub trait OptionTy<T> {
     const VALUE: Option<T> = Self::__DATA;
 }
 
-pub struct OptionImpl<const B: bool, T: PrimitiveTraits> {
+pub struct OptionImpl<T: PrimitiveTraits> {
     __phantom: core::marker::PhantomData<T>,
 }
 
-impl<const B: bool, T: PrimitiveTraits> OptionTy<T::DATATYPE> for OptionImpl<B, T> {
-    const __DATA: Option<T::DATATYPE> = if B { Some(T::__DATA) } else { None };
+impl<T: PrimitiveTraits> OptionTy<T::DATATYPE> for OptionImpl<T> {
+    const __DATA: Option<T::DATATYPE> = Some(T::__DATA);
+}
+
+pub struct NoneImpl;
+
+impl<T> OptionTy<T> for NoneImpl {
+    const __DATA: Option<T> = None;
 }
 
 #[macro_export]
 macro_rules! Some {
     ($value:ty) => {
-        OptionImpl<true, $value>
+        OptionImpl<$value>
     };
 }
 
 #[macro_export]
 macro_rules! None {
     () => {
-        OptionImpl<false>
+        NoneImpl
     };
 }
 
