@@ -121,7 +121,7 @@ impl TestSettingManual {
     }
 }
 
-fn tester_with_option<T: OptionTy<TestSettingManual>>() {
+fn tester_with_option<T: OptionTy<Option<TestSettingManual>>>() {
     let t = T::__DATA;
     println!("{:?}", t);
     println!("{:?}", T::__DATA);
@@ -130,7 +130,7 @@ fn tester_with_option<T: OptionTy<TestSettingManual>>() {
 #[test]
 fn tester_prim() {
     tester_with_option::<
-        Some!(TestSettingManual!({
+        Some!(Some!(TestSettingManual!({
             TestSettingManual {
                 test_data: Some(5),
                 test_data2: Some(10),
@@ -138,7 +138,7 @@ fn tester_prim() {
                 test_data4: Some(15),
                 str: "abc_def",
             }
-        })),
+        }))),
     >();
 
     let ty: TestSettingManual!({

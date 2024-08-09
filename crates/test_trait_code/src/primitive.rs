@@ -35,7 +35,12 @@ pub mod some {
     }
 
     impl<T: PrimitiveTraits> OptionTy<T::DATATYPE> for OptionImpl<T> {
-        const __DATA: Option<T::DATATYPE> = Some(T::__DATA);
+        const __DATA: Option<T::DATATYPE> = Some(<T as PrimitiveTraits>::__DATA);
+    }
+
+    impl<T: PrimitiveTraits> PrimitiveTraits for OptionImpl<T> {
+        type DATATYPE = Option<T::DATATYPE>;
+        const __DATA: Self::DATATYPE = Some(<T as PrimitiveTraits>::__DATA);
     }
 
     pub struct NoneImpl;
