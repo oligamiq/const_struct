@@ -1,4 +1,7 @@
-use pre::{ConstStruct, ConstStructPrimImplType, TestSettingManualBox, TestSettingManualEnd};
+use pre::{
+    ConstStruct, ConstStructPrimAny, ConstStructPrimBoxMem32, ConstStructPrimEnd,
+    ConstStructPrimImplType,
+};
 use setting::WINDOW_SETTING_MANUAL;
 use tester::{tester, tester_2};
 
@@ -46,35 +49,81 @@ pub trait TestSettingManualTy: ConstStruct<TestSettingManual> {
 impl<T: ConstStruct<TestSettingManual>> TestSettingManualTy for T {}
 
 impl<const A: u32, const B: u32, const C: u32, const D: u32> ConstStruct<TestSettingManual>
-    for TestSettingManualBox<
-        A,
-        TestSettingManualBox<B, TestSettingManualBox<C, TestSettingManualEnd<D>>>,
+    for ConstStructPrimAny<
+        TestSettingManual,
+        ConstStructPrimBoxMem32<
+            A,
+            ConstStructPrimBoxMem32<B, ConstStructPrimBoxMem32<C, ConstStructPrimEnd<D>>>,
+        >,
     >
 {
     const __DATA: TestSettingManual = TestSettingManual {
         test_data: Some(A as u32),
         test_data2: Some(B as u32),
         test_data3: Some(C as u32),
-        test_data4: None,
+        test_data4: Some(D as u32),
         str: "abc_def",
     };
 }
 
-macro_rules! TestSettingManualImplType {
+macro_rules! TestSettingManual {
     ($value:expr) => {
-        TestSettingManualBox<{
-            $value * 10
-        }, TestSettingManualBox<{
-            $value / 2
-        }, TestSettingManualBox<{
-            $value / 2
-        }, TestSettingManualEnd<{
-            $value / 3
-        }>>>>
+        ConstStructPrimAny<TestSettingManual,
+        ConstStructPrimBoxMem32<{
+            let value: TestSettingManual = $value;
+
+            match value.test_data {
+                Some(data) => data,
+                None => 0,
+            }
+        }, ConstStructPrimBoxMem32<{
+            let value: TestSettingManual = $value;
+
+            match value.test_data2 {
+                Some(data) => data,
+                None => 0,
+            }
+        }, ConstStructPrimBoxMem32<{
+            let value: TestSettingManual = $value;
+
+            match value.test_data3 {
+                Some(data) => data,
+                None => 0,
+            }
+        }, ConstStructPrimEnd<{
+            let value: TestSettingManual = $value;
+
+            match value.test_data4 {
+                Some(data) => data,
+                None => 0,
+            }
+        }>>>>>
     };
+}
+
+impl TestSettingManual {
+    pub const fn default() -> Self {
+        Self {
+            test_data: None,
+            test_data2: None,
+            test_data3: None,
+            test_data4: None,
+            str: "abc_def",
+        }
+    }
 }
 
 #[test]
 fn tester_prim() {
-    tester::<TestSettingManualImplType!(5)>();
+    tester::<
+        TestSettingManual!({
+            TestSettingManual {
+                test_data: Some(5),
+                test_data2: Some(10),
+                test_data3: None,
+                test_data4: Some(15),
+                str: "abc_def",
+            }
+        }),
+    >();
 }
