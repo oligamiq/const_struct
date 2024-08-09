@@ -23,25 +23,25 @@ macro_rules! PrimTraitBySizes {
                     const VALUE: $name = Self::__DATA;
                 }
 
-                pub struct [<$name:camel>]<const T: $base>;
+                pub struct [<$name:camel Impl>]<const T: $base>;
 
-                impl<const T: $base> [<$name:camel Ty>] for [<$name:camel>]<T> {
+                impl<const T: $base> [<$name:camel Ty>] for [<$name:camel Impl>]<T> {
                     const __DATA: $name = unsafe { transmute(T) };
                 }
 
-                impl<U: [<$name:camel Ty>], const T: $base> ConstStructTraits<[<$name:camel>]<T>> for U {
-                    const __DATA: [<$name:camel>]<T> = [<$name:camel>]::<T>;
+                impl<U: [<$name:camel Ty>], const T: $base> ConstStructTraits<[<$name:camel Impl>]<T>> for U {
+                    const __DATA: [<$name:camel Impl>]<T> = [<$name:camel Impl>]::<T>;
                 }
 
-                impl<const T: $base> PrimitiveTraits for [<$name:camel>]<T> {
+                impl<const T: $base> PrimitiveTraits for [<$name:camel Impl>]<T> {
                     type DATATYPE = $name;
-                    const __DATA: Self::DATATYPE = <[<$name:camel>]<T> as [<$name:camel Ty>]>::__DATA;
+                    const __DATA: Self::DATATYPE = <[<$name:camel Impl>]<T> as [<$name:camel Ty>]>::__DATA;
                 }
 
                 #[macro_export]
                 macro_rules! [<$name:camel>] {
                     ($value:expr) => {
-                        [<$name:camel>]::<{ unsafe { core::mem::transmute::<$name, $base>(($value)) } }>
+                        $crate::primitive::[<$name:camel Impl>]::<{ unsafe { core::mem::transmute::<$name, $base>(($value)) } }>
                     };
                 }
             }
