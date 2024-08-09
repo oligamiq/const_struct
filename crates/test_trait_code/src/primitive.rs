@@ -19,6 +19,46 @@ macro_rules! F32 {
     };
 }
 
+pub mod some {
+    pub trait PrimitiveTraits {
+        type DATATYPE;
+        const __DATA: Self::DATATYPE;
+    }
+
+    pub trait OptionTy<T> {
+        const __DATA: Option<T>;
+        const VALUE: Option<T> = Self::__DATA;
+    }
+
+    pub struct OptionImpl<T: PrimitiveTraits> {
+        __phantom: core::marker::PhantomData<T>,
+    }
+
+    impl<T: PrimitiveTraits> OptionTy<T::DATATYPE> for OptionImpl<T> {
+        const __DATA: Option<T::DATATYPE> = Some(T::__DATA);
+    }
+
+    pub struct NoneImpl;
+
+    impl<T> OptionTy<T> for NoneImpl {
+        const __DATA: Option<T> = None;
+    }
+
+    #[macro_export]
+    macro_rules! Some {
+    ($value:ty) => {
+        $crate::primitive::some::OptionImpl<$value>
+    };
+}
+
+    #[macro_export]
+    macro_rules! None {
+        () => {
+            $crate::primitive::NoneImpl
+        };
+    }
+}
+
 pub const fn tester_inner<T: F32Ty>() -> f32 {
     T::__DATA
 }

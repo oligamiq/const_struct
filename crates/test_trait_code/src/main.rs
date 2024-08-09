@@ -1,4 +1,5 @@
 use pre::{ConstStruct, ConstStructPrimAny, ConstStructPrimBoxMem32, ConstStructPrimEnd};
+use primitive::some::{OptionTy, PrimitiveTraits};
 use setting::WINDOW_SETTING_MANUAL;
 use tester::{tester, tester_2};
 
@@ -45,14 +46,24 @@ pub trait TestSettingManualTy: ConstStruct<TestSettingManual> {
 
 impl<T: ConstStruct<TestSettingManual>> TestSettingManualTy for T {}
 
-impl<const A: u32, const B: u32, const C: u32, const D: u32> ConstStruct<TestSettingManual>
-    for ConstStructPrimAny<
+type TestSettingManualTyPrimWrapper<const A: u32, const B: u32, const C: u32, const D: u32> =
+    ConstStructPrimAny<
         TestSettingManual,
         ConstStructPrimBoxMem32<
             A,
             ConstStructPrimBoxMem32<B, ConstStructPrimBoxMem32<C, ConstStructPrimEnd<D>>>,
         >,
-    >
+    >;
+
+impl<const A: u32, const B: u32, const C: u32, const D: u32> PrimitiveTraits
+    for TestSettingManualTyPrimWrapper<A, B, C, D>
+{
+    type DATATYPE = TestSettingManual;
+    const __DATA: Self::DATATYPE = <TestSettingManualTyPrimWrapper<A, B, C, D> as ConstStruct<TestSettingManual>>::__DATA;
+}
+
+impl<const A: u32, const B: u32, const C: u32, const D: u32> ConstStruct<TestSettingManual>
+    for TestSettingManualTyPrimWrapper<A, B, C, D>
 {
     const __DATA: TestSettingManual = TestSettingManual {
         test_data: Some(A as u32),
@@ -110,10 +121,16 @@ impl TestSettingManual {
     }
 }
 
+fn tester_with_option<T: OptionTy<TestSettingManual>>() {
+    let t = T::__DATA;
+    println!("{:?}", t);
+    println!("{:?}", T::__DATA);
+}
+
 #[test]
 fn tester_prim() {
-    tester::<
-        TestSettingManual!({
+    tester_with_option::<
+        Some!(TestSettingManual!({
             TestSettingManual {
                 test_data: Some(5),
                 test_data2: Some(10),
@@ -121,7 +138,7 @@ fn tester_prim() {
                 test_data4: Some(15),
                 str: "abc_def",
             }
-        }),
+        })),
     >();
 
     let ty: TestSettingManual!({
@@ -136,5 +153,4 @@ fn tester_prim() {
         __phantom: core::marker::PhantomData,
     };
     println!("size: {:?}", core::mem::size_of_val(&ty));
-
 }
