@@ -2,6 +2,11 @@ use core::mem::transmute;
 use paste::paste;
 use crate::ConstStructTraits;
 
+pub trait PrimitiveTraits {
+    type DATATYPE;
+    const __DATA: Self::DATATYPE;
+}
+
 macro_rules! PrimTraitBySizes {
     ($size:literal, $($name:ident),*) => {
         $(
@@ -28,6 +33,11 @@ macro_rules! PrimTraitBySizes {
                     const __DATA: [<$name:camel>]<T> = [<$name:camel>]::<T>;
                 }
 
+                impl<const T: $base> PrimitiveTraits for [<$name:camel>]<T> {
+                    type DATATYPE = $name;
+                    const __DATA: Self::DATATYPE = <[<$name:camel>]<T> as [<$name:camel Ty>]>::__DATA;
+                }
+
                 #[macro_export]
                 macro_rules! [<$name:camel>] {
                     ($value:expr) => {
@@ -46,25 +56,30 @@ PrimTraitBySizes!(64, f64, u64, i64);
 PrimTraitBySizes!(128, u128, i128);
 PrimTraitBySizes!(usize, usize, isize);
 
-pub trait OptionTy<T: ConstStructTraits<T>, U> {
-    type TYPE: U;
-
+pub trait OptionTy<T> {
     const __DATA: Option<T>;
     const VALUE: Option<T> = Self::__DATA;
 }
 
-pub struct OptionImpl<const B: bool, T: ConstStructTraits<T>> {
+pub struct OptionImpl<const B: bool, T: PrimitiveTraits> {
     __phantom: core::marker::PhantomData<T>,
 }
 
-impl<const B: bool, T: ConstStructTraits<T>> OptionTy<T> for OptionImpl<B, T> {
-    const __DATA: Option<T> = if B { Some(T::__DATA) } else { None };
+impl<const B: bool, T: PrimitiveTraits> OptionTy<T::DATATYPE> for OptionImpl<B, T> {
+    const __DATA: Option<T::DATATYPE> = if B { Some(T::__DATA) } else { None };
 }
 
 #[macro_export]
 macro_rules! Some {
     ($value:ty) => {
         OptionImpl<true, $value>
+    };
+}
+
+#[macro_export]
+macro_rules! None {
+    () => {
+        OptionImpl<false>
     };
 }
 
@@ -76,8 +91,9 @@ pub const fn tester_inner_u32<T: U32Ty>() -> u32 {
     T::VALUE
 }
 
-pub const fn tester_inner_option<T: OptionTy<F>, F: F32Ty + ConstStructTraits<F>>() -> Option<f32> {
-    let s = T::__DATA.take();
+pub const fn tester_inner_option<T: OptionTy<f32>>() -> Option<f32> {
+    let s = T::__DATA;
+    s
 }
 
 #[test]
@@ -85,5 +101,6 @@ pub fn call_tester() {
     let s = F32!(-0.5);
     debug_assert_eq!(core::mem::size_of_val(&s), 0);
     debug_assert_eq!(tester_inner::<F32!(-0.5)>(), -0.5);
-    debug_assert_eq!(tester_inner_option::<Some!(F32!(-25.333))>(), -25.333);
+    debug_assert_eq!(tester_inner_option::<Some!(F32!(-25.333))>(), Some(-25.333f32));
+    debug_assert_eq!(tester_inner_option::<None!()>(), None);
 }
