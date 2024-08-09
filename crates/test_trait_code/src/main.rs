@@ -1,4 +1,4 @@
-use pre::{ConstStruct, ConstStructPrimImplType};
+use pre::{ConstStruct, ConstStructPrimImplType, TestSettingManualEnd, TestSettingManualBox};
 use setting::WINDOW_SETTING_MANUAL;
 use tester::{tester, tester_2};
 
@@ -45,43 +45,31 @@ pub trait TestSettingManualTy: ConstStruct<TestSettingManual> {
 
 impl<T: ConstStruct<TestSettingManual>> TestSettingManualTy for T {}
 
-pub struct TestSettingManualImpl1<const U: u128, T> {
-    __phantom: core::marker::PhantomData<T>,
-}
-
-impl ConstStructPrimImplType for TestSettingManual {
-    type PrimType<const U: u128, TestSettingManualImpl2> = TestSettingManualImpl1<U, TestSettingManualImpl2>;
-}
-
-pub struct TestSettingManualImpl2<const U: u128, T> {
-    __phantom: core::marker::PhantomData<T>,
-}
-
-impl<const S: u128> ConstStructPrimImplType for TestSettingManualImpl2<S, u32> {
-    type PrimType<const U: u128, TestSettingManualImpl3> = TestSettingManualImpl2<U, TestSettingManualImpl3>;
-}
-
-pub struct TestSettingManualImpl3<const U: u128>;
-
-impl<const S: u128> ConstStructPrimImplType for TestSettingManualImpl3<S> {
-    type PrimType<const U: u128, T> = TestSettingManualImpl3<U>;
+impl<const A: u32, const B: u32, const C: u32, const D: u32> ConstStruct<TestSettingManual> for TestSettingManualBox<A, TestSettingManualBox<B, TestSettingManualBox<C, TestSettingManualEnd<D>>>> {
+    const __DATA: TestSettingManual = TestSettingManual {
+        test_data: Some(A as u32),
+        test_data2: Some(B as u32),
+        test_data3: Some(C as u32),
+        test_data4: None,
+        str: "abc_def",
+    };
 }
 
 macro_rules! TestSettingManualImplType {
     ($value:expr) => {
-        <TestSettingManual as ConstStructPrimImplType>::PrimType<{
+        TestSettingManualBox<{
             $value * 10
-        }, TestSettingManualImpl2<{
+        }, TestSettingManualBox<{
             $value / 2
-        }, TestSettingManualImpl2<{
+        }, TestSettingManualBox<{
             $value / 2
-        }, TestSettingManualImpl3<{
+        }, TestSettingManualEnd<{
             $value / 3
         }>>>>
     };
 }
 
+#[test]
 fn tester_prim() {
-    let data: TestSettingManualImplType!(5);
-    println!("{:?}", data);
+    tester::<TestSettingManualImplType!(5)>();
 }
