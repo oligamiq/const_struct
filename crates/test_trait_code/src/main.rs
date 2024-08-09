@@ -123,4 +123,18 @@ fn tester_prim() {
             }
         }),
     >();
+
+    let ty: TestSettingManual!({
+        TestSettingManual {
+            test_data: Some(5),
+            test_data2: Some(10),
+            test_data3: None,
+            test_data4: Some(15),
+            str: "abc_def",
+        }
+    }) = ConstStructPrimAny {
+        __phantom: core::marker::PhantomData,
+    };
+    println!("size: {:?}", core::mem::size_of_val(&ty));
+
 }
