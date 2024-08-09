@@ -1,4 +1,7 @@
-use const_struct::{primitive::{F32Ty, OptionTy, U32Ty}, F32, U32, Some, None};
+use const_struct::{
+    primitive::{F32Ty, OptionTy, U32Ty},
+    None, Some, F32, U32,
+};
 
 use crate::setting::TestSetting;
 

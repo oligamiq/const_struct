@@ -3,8 +3,8 @@
 use const_struct::const_struct;
 use setting::{tester, TestSetting};
 
-mod setting;
 mod primitive;
+mod setting;
 
 #[const_struct]
 const WINDOW_SETTING: TestSetting = {

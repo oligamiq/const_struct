@@ -1,4 +1,4 @@
-use pre::{ConstStruct, ConstStructPrimImplType, TestSettingManualEnd, TestSettingManualBox};
+use pre::{ConstStruct, ConstStructPrimImplType, TestSettingManualBox, TestSettingManualEnd};
 use setting::WINDOW_SETTING_MANUAL;
 use tester::{tester, tester_2};
 
@@ -45,7 +45,12 @@ pub trait TestSettingManualTy: ConstStruct<TestSettingManual> {
 
 impl<T: ConstStruct<TestSettingManual>> TestSettingManualTy for T {}
 
-impl<const A: u32, const B: u32, const C: u32, const D: u32> ConstStruct<TestSettingManual> for TestSettingManualBox<A, TestSettingManualBox<B, TestSettingManualBox<C, TestSettingManualEnd<D>>>> {
+impl<const A: u32, const B: u32, const C: u32, const D: u32> ConstStruct<TestSettingManual>
+    for TestSettingManualBox<
+        A,
+        TestSettingManualBox<B, TestSettingManualBox<C, TestSettingManualEnd<D>>>,
+    >
+{
     const __DATA: TestSettingManual = TestSettingManual {
         test_data: Some(A as u32),
         test_data2: Some(B as u32),

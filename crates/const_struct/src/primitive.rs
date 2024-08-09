@@ -1,6 +1,6 @@
+use crate::ConstStructTraits;
 use core::mem::transmute;
 use paste::paste;
-use crate::ConstStructTraits;
 
 pub trait PrimitiveTraits {
     type DATATYPE;
@@ -106,6 +106,9 @@ pub fn call_tester() {
     let s = F32!(-0.5);
     debug_assert_eq!(core::mem::size_of_val(&s), 0);
     debug_assert_eq!(tester_inner::<F32!(-0.5)>(), -0.5);
-    debug_assert_eq!(tester_inner_option::<Some!(F32!(-25.333))>(), Some(-25.333f32));
+    debug_assert_eq!(
+        tester_inner_option::<Some!(F32!(-25.333))>(),
+        Some(-25.333f32)
+    );
     debug_assert_eq!(tester_inner_option::<None!()>(), None);
 }
