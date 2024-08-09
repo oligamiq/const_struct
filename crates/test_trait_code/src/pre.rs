@@ -10,4 +10,4 @@ pub struct ConstStructPrimBoxMem32<const U: u32, T> {
     __phantom: core::marker::PhantomData<T>,
 }
 
-pub struct ConstStructPrimEnd<const U: u32>;
+pub struct ConstStructPrimEnd;

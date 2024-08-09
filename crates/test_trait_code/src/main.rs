@@ -51,7 +51,7 @@ type TestSettingManualTyPrimWrapper<const A: u32, const B: u32, const C: u32, co
         TestSettingManual,
         ConstStructPrimBoxMem32<
             A,
-            ConstStructPrimBoxMem32<B, ConstStructPrimBoxMem32<C, ConstStructPrimEnd<D>>>,
+            ConstStructPrimBoxMem32<B, ConstStructPrimBoxMem32<C, ConstStructPrimBoxMem32<D, ConstStructPrimEnd>>>,
         >,
     >;
 
@@ -98,14 +98,14 @@ macro_rules! TestSettingManual {
                 Some(data) => data,
                 None => 0,
             }
-        }, ConstStructPrimEnd<{
+        }, ConstStructPrimBoxMem32<{
             let value: TestSettingManual = $value;
 
             match value.test_data4 {
                 Some(data) => data,
                 None => 0,
             }
-        }>>>>>
+        }, ConstStructPrimEnd>>>>>
     };
 }
 
