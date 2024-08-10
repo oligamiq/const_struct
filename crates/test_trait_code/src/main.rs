@@ -197,7 +197,12 @@ macro_rules! TestSettingManual {
                         }, {
                             let v: TestSettingManual = $value;
                             let chars = v.str.as_bytes();
-                            chars[5] as char
+                            let len = chars.len();
+                            if len > 5 {
+                                chars[5] as char
+                            } else {
+                                '\0'
+                            }
                         }>, ConstStructPrimEnd>
                         >
                     >
