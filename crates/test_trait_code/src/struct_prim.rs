@@ -1,4 +1,7 @@
-use std::{any::Any, ptr::{slice_from_raw_parts, slice_from_raw_parts_mut}};
+use std::{
+    any::Any,
+    ptr::{slice_from_raw_parts, slice_from_raw_parts_mut},
+};
 
 use crate::{pre::ConstStructTraits, primitive::some::PrimitiveTraits, TestSettingManual};
 
@@ -78,8 +81,9 @@ pub struct ConstStructPrimU8VecRef<const LEN: usize, Tail> {
     pub __phantom: core::marker::PhantomData<Tail>,
 }
 
-impl<const SIZE: usize, const LEN: usize, T: ConstStructPrimData<Data = [u8; SIZE]>,
-> ConstStructPrimData for ConstStructPrimU8VecRef<LEN, T> {
+impl<const SIZE: usize, const LEN: usize, T: ConstStructPrimData<Data = [u8; SIZE]>>
+    ConstStructPrimData for ConstStructPrimU8VecRef<LEN, T>
+{
     type Data = &'static [u8];
     const __DATA: &'static [u8] = {
         if LEN < SIZE {
@@ -90,16 +94,50 @@ impl<const SIZE: usize, const LEN: usize, T: ConstStructPrimData<Data = [u8; SIZ
     };
 }
 
-pub type StrWrapper5<const A: u128, const B: u128, const C: u128, const D: u128, const E: u128, const LEN: usize> =
-ConstStructPrimU8VecRef<LEN, ConstStructPrimU8Vec<E, 80, ConstStructPrimU8Vec<D, 64, ConstStructPrimU8Vec<C, 48, ConstStructPrimU8Vec<B, 32, ConstStructPrimU8Vec<A, 16, ConstStructPrimEnd>>>>>>;
+pub struct ConstStructPrimStrRef<Tail> {
+    pub __phantom: core::marker::PhantomData<Tail>,
+}
 
-pub const fn str_to_u128<const Offset: usize>(s: &str) -> u128 {
+impl<T: ConstStructPrimData<Data = &'static [u8]>> ConstStructPrimData
+    for ConstStructPrimStrRef<T>
+{
+    type Data = &'static str;
+    const __DATA: &'static str = reduce_from_utf8(T::__DATA);
+}
+
+pub type StrWrapper5<
+    const A: u128,
+    const B: u128,
+    const C: u128,
+    const D: u128,
+    const E: u128,
+    const LEN: usize,
+> = ConstStructPrimStrRef<
+    ConstStructPrimU8VecRef<
+        LEN,
+        ConstStructPrimU8Vec<
+            E,
+            80,
+            ConstStructPrimU8Vec<
+                D,
+                64,
+                ConstStructPrimU8Vec<
+                    C,
+                    48,
+                    ConstStructPrimU8Vec<B, 32, ConstStructPrimU8Vec<A, 16, ConstStructPrimEnd>>,
+                >,
+            >,
+        >,
+    >,
+>;
+
+pub const fn str_to_u128<const OFFSET: usize>(s: &str) -> u128 {
     let chars = s.as_bytes();
     let chars_len = chars.len();
     let mut target_chars = [0u8; 16];
     let mut i = 0;
-    while i + Offset < chars_len && i < 16 {
-        target_chars[i] = chars[i + Offset];
+    while i + OFFSET < chars_len && i < 16 {
+        target_chars[i] = chars[i + OFFSET];
         i += 1;
     }
     unsafe { core::mem::transmute(target_chars) }
@@ -107,7 +145,7 @@ pub const fn str_to_u128<const Offset: usize>(s: &str) -> u128 {
 
 pub const fn reduce_from_utf8(v: &'static [u8]) -> &str {
     let mut i = v.len();
-    while i > 0{
+    while i > 0 {
         match core::str::from_utf8(unsafe { core::slice::from_raw_parts(v.as_ptr(), i) }) {
             Ok(data) => return data,
             Err(_) => i -= 1,

@@ -5,7 +5,8 @@ use pre::ConstStructTraits;
 use primitive::some::{OptionTy, PrimitiveTraits};
 use setting::WINDOW_SETTING_MANUAL;
 use struct_prim::{
-    reduce_from_utf8, ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption, ConstStructPrimU32, ConstStructPrimU8VecRef
+    reduce_from_utf8, ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd,
+    ConstStructPrimOption, ConstStructPrimU32, ConstStructPrimU8VecRef,
 };
 use tester::{tester, tester_2};
 
@@ -89,7 +90,7 @@ impl<
         const F: u32,
         const G: bool,
         const H: u32,
-        S: ConstStructPrimData<Data = &'static [u8]>,
+        S: ConstStructPrimData<Data = &'static str>,
     > PrimitiveTraits for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, S>
 {
     type DATATYPE = TestSettingManual;
@@ -108,7 +109,7 @@ impl<
         const F: u32,
         const G: bool,
         const H: u32,
-        S: ConstStructPrimData<Data = &'static [u8]>,
+        S: ConstStructPrimData<Data = &'static str>,
     > ConstStructTraits<TestSettingManual>
     for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, S>
 {
@@ -118,7 +119,7 @@ impl<
             test_data2: <ConstStructPrimOption::<C, ConstStructPrimOption<D, ConstStructPrimU32<E>>> as ConstStructPrimData>::__DATA,
             test_data3: <ConstStructPrimU32::<F> as ConstStructPrimData>::__DATA,
             test_data4: <ConstStructPrimOption::<G, ConstStructPrimU32<H>> as ConstStructPrimData>::__DATA,
-            str: reduce_from_utf8(S::__DATA),
+            str: S::__DATA,
         }
     };
 }
@@ -228,8 +229,7 @@ pub fn tester_prim() {
                 test_data2: Some(Some(10)),
                 test_data3: 0,
                 test_data4: Some(15),
-                str: "",
-                // str: "おはようございます。あなたの名前は何ですか？ 私の名前は、コンピュータです。",
+                str: "おはようございます。あなたの名前は何ですか？ 私の名前は、コンピュータです。",
             }
         }))),
     >();
