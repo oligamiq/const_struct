@@ -90,7 +90,7 @@ impl<const SIZE: usize, const LEN: usize, T: ConstStructPrimData<Data = [u8; SIZ
     };
 }
 
-pub type StrWrapper2<const A: u128, const B: u128, const C: u128, const D: u128, const E: u128, const LEN: usize> =
+pub type StrWrapper5<const A: u128, const B: u128, const C: u128, const D: u128, const E: u128, const LEN: usize> =
 ConstStructPrimU8VecRef<LEN, ConstStructPrimU8Vec<E, 80, ConstStructPrimU8Vec<D, 64, ConstStructPrimU8Vec<C, 48, ConstStructPrimU8Vec<B, 32, ConstStructPrimU8Vec<A, 16, ConstStructPrimEnd>>>>>>;
 
 pub const fn str_to_u128<const Offset: usize>(s: &str) -> u128 {

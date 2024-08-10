@@ -169,7 +169,7 @@ macro_rules! TestSettingManual {
                                 Some(data) => data,
                                 None => 0,
                             }
-                        }>>, ConstStructPrimAny<crate::struct_prim::StrWrapper2<{
+                        }>>, ConstStructPrimAny<crate::struct_prim::StrWrapper5<{
                             let v: TestSettingManual = $value;
                             crate::struct_prim::str_to_u128::<0>(v.str)
                         }, {
