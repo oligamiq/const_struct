@@ -25,29 +25,33 @@ impl<const U: usize> ConstStructPrimData for ConstStructPrimUsize<U> {
     const __DATA: Self::Data = U;
 }
 
-pub struct ConstStructPrimStr<const P0: u128, const Size: usize, Tail> {
+pub struct ConstStructPrimStr<const P0: u128, const SIZE: usize, Tail> {
     pub __phantom: core::marker::PhantomData<Tail>,
 }
 
 impl<
         const P0: u128,
-        const Size: usize,
-        const OldSize: usize,
-        T: ConstStructPrimData<Data = [u128; OldSize]>,
-    > ConstStructPrimData for ConstStructPrimStr<P0, Size, T>
+        const SIZE: usize,
+        const OLD_SIZE: usize,
+        T: ConstStructPrimData<Data = [u32; OLD_SIZE]>,
+    > ConstStructPrimData for ConstStructPrimStr<P0, SIZE, T>
 {
-    type Data = [u128; Size];
+    type Data = [u32; SIZE];
 
     // DATA + P0
     const __DATA: Self::Data = {
-        let mut new_data = [P0; Size];
+        let mut new_data = [0u32; SIZE];
         let old_data = T::__DATA;
         let mut i = 0;
-        while i < Size - 1 {
+        while i < SIZE - 4 {
             new_data[i] = old_data[i];
             i += 1;
         }
-        new_data[Size - 1] = P0;
+        let u32_data: [u32; 4] = unsafe { core::mem::transmute(P0) };
+        new_data[SIZE - 4] = u32_data[0];
+        new_data[SIZE - 3] = u32_data[1];
+        new_data[SIZE - 2] = u32_data[2];
+        new_data[SIZE - 1] = u32_data[3];
         new_data
     };
 }
