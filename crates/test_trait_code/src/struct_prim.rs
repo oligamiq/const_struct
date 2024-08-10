@@ -115,6 +115,7 @@ pub const fn reduce_from_utf8(v: &'static [u8]) -> &str {
     }
     ""
 }
+
 pub struct ConstStructPrimOption<const B: bool, U> {
     pub __phantom: core::marker::PhantomData<U>,
 }

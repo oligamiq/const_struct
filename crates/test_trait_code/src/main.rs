@@ -5,7 +5,7 @@ use pre::ConstStructTraits;
 use primitive::some::{OptionTy, PrimitiveTraits};
 use setting::WINDOW_SETTING_MANUAL;
 use struct_prim::{
-    reduce_from_utf8, ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption, ConstStructPrimRef, ConstStructPrimStrRef, ConstStructPrimU32, ConstStructPrimU8VecRef
+    reduce_from_utf8, ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption, ConstStructPrimU32, ConstStructPrimU8VecRef
 };
 use tester::{tester, tester_2};
 
@@ -216,7 +216,11 @@ fn tester_with_option<T: OptionTy<Option<TestSettingManual>>>() {
 }
 
 #[test]
-fn tester_prim() {
+fn call_tester_prim() {
+    tester_prim();
+}
+
+pub fn tester_prim() {
     tester_with_option::<
         Some!(Some!(TestSettingManual!({
             TestSettingManual {
