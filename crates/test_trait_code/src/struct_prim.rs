@@ -29,6 +29,8 @@ pub struct ConstStructPrimStr<const P0: u128, const SIZE: usize, Tail> {
     pub __phantom: core::marker::PhantomData<Tail>,
 }
 
+pub struct ConstStructPrimEnd;
+
 impl<
         const P0: u128,
         const SIZE: usize,
@@ -55,6 +57,24 @@ impl<
         new_data
     };
 }
+
+impl<const P0: u128, const SIZE: usize> ConstStructPrimData for ConstStructPrimStr<P0, SIZE, ConstStructPrimEnd> {
+    type Data = [u32; SIZE];
+    const __DATA: Self::Data = {
+        let mut new_data = [0u32; SIZE];
+        let u32_data: [u32; 4] = unsafe { core::mem::transmute(P0) };
+        new_data[SIZE - 4] = u32_data[0];
+        new_data[SIZE - 3] = u32_data[1];
+        new_data[SIZE - 2] = u32_data[2];
+        new_data[SIZE - 1] = u32_data[3];
+        new_data
+    };
+}
+
+pub type StrWrapper2<const A: u128, const B: u128, const C: u128, const D: u128> =
+    ConstStructPrimStr<A, 16, ConstStructPrimStr<B, 12, ConstStructPrimStr<C, 8, ConstStructPrimStr<D, 4, ConstStructPrimEnd>>>>;
+
+const C: [u32; 16] = <StrWrapper2<0, 0, 0, 0> as ConstStructPrimData>::__DATA;
 
 pub struct ConstStructPrimStrRef<S: ConstStructPrimRef> {
     pub __phantom: core::marker::PhantomData<S>,

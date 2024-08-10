@@ -174,7 +174,7 @@ macro_rules! TestSettingManual {
                                 Some(data) => data,
                                 None => 0,
                             }
-                        }>>, ConstStructPrimAny<crate::struct_prim::StrWrapper<{
+                        }>>, ConstStructPrimAny<crate::struct_prim::StrWrapper2<{
                             let v: TestSettingManual = $value;
                             let chars = v.str.as_bytes();
                             chars[0] as char
