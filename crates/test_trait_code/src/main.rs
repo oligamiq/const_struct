@@ -5,8 +5,7 @@ use pre::ConstStructTraits;
 use primitive::some::{OptionTy, PrimitiveTraits};
 use setting::WINDOW_SETTING_MANUAL;
 use struct_prim::{
-    ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption,
-    ConstStructPrimRef, ConstStructPrimStr, ConstStructPrimStrRef, ConstStructPrimU32,
+    reduce_from_utf8, ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption, ConstStructPrimRef, ConstStructPrimStrRef, ConstStructPrimU32, ConstStructPrimU8VecRef
 };
 use tester::{tester, tester_2};
 
@@ -90,8 +89,7 @@ impl<
         const F: u32,
         const G: bool,
         const H: u32,
-        S: ConstStructPrimRef<Data = [u8; LEN]>,
-        const LEN: usize,
+        S: ConstStructPrimData<Data = &'static [u8]>,
     > PrimitiveTraits for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, S>
 {
     type DATATYPE = TestSettingManual;
@@ -110,8 +108,7 @@ impl<
         const F: u32,
         const G: bool,
         const H: u32,
-        S: ConstStructPrimRef<Data = [u8; LEN]>,
-        const LEN: usize,
+        S: ConstStructPrimData<Data = &'static [u8]>,
     > ConstStructTraits<TestSettingManual>
     for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, S>
 {
@@ -121,9 +118,7 @@ impl<
             test_data2: <ConstStructPrimOption::<C, ConstStructPrimOption<D, ConstStructPrimU32<E>>> as ConstStructPrimData>::__DATA,
             test_data3: <ConstStructPrimU32::<F> as ConstStructPrimData>::__DATA,
             test_data4: <ConstStructPrimOption::<G, ConstStructPrimU32<H>> as ConstStructPrimData>::__DATA,
-            str: {
-                unsafe { str::from_utf8_unchecked(&*slice_from_raw_parts(S::__DATA.as_ptr(), LEN)) }
-            },
+            str: reduce_from_utf8(S::__DATA),
         }
     };
 }
@@ -176,34 +171,24 @@ macro_rules! TestSettingManual {
                             }
                         }>>, ConstStructPrimAny<crate::struct_prim::StrWrapper2<{
                             let v: TestSettingManual = $value;
-                            let chars = v.str.as_bytes();
-                            chars[0] as char
+                            crate::struct_prim::str_to_u128::<0>(v.str)
                         }, {
                             let v: TestSettingManual = $value;
-                            let chars = v.str.as_bytes();
-                            chars[1] as char
+                            crate::struct_prim::str_to_u128::<16>(v.str)
                         }, {
                             let v: TestSettingManual = $value;
-                            let chars = v.str.as_bytes();
-                            chars[2] as char
+                            crate::struct_prim::str_to_u128::<32>(v.str)
                         }, {
                             let v: TestSettingManual = $value;
-                            let chars = v.str.as_bytes();
-                            chars[3] as char
+                            crate::struct_prim::str_to_u128::<48>(v.str)
                         }, {
                             let v: TestSettingManual = $value;
-                            let chars = v.str.as_bytes();
-                            chars[4] as char
+                            crate::struct_prim::str_to_u128::<64>(v.str)
                         }, {
                             let v: TestSettingManual = $value;
-                            let chars = v.str.as_bytes();
-                            let len = chars.len();
-                            if len > 5 {
-                                chars[5] as char
-                            } else {
-                                '\0'
-                            }
-                        }>, ConstStructPrimEnd>
+                            v.str.len()
+                        }
+                        >, ConstStructPrimEnd>
                         >
                     >
                 >
@@ -239,7 +224,7 @@ fn tester_prim() {
                 test_data2: Some(Some(10)),
                 test_data3: 0,
                 test_data4: Some(15),
-                str: "hogehoge",
+                str: "おはようございます。あなたの名前は何ですか？ 私の名前は、コンピュータです。",
             }
         }))),
     >();
@@ -255,10 +240,6 @@ fn tester_prim() {
     }) = ConstStructPrimAny {
         __phantom: core::marker::PhantomData,
     };
-
-    // let v: TestSettingManual = ty;
-    // let chars = v.str.as_bytes();
-    // chars[0];
 
     println!("size: {:?}", core::mem::size_of_val(&ty));
 }
