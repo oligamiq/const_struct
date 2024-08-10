@@ -1,5 +1,7 @@
 use std::ptr::{slice_from_raw_parts, slice_from_raw_parts_mut};
 
+use crate::{pre::ConstStructTraits, primitive::some::PrimitiveTraits, TestSettingManual};
+
 pub struct ConstStructPrimAny<Key, Tail> {
     pub __phantom: core::marker::PhantomData<(Key, Tail)>,
 }
@@ -50,6 +52,10 @@ impl<
     };
 }
 
+pub struct ConstStructPrimStrRef<S: ConstStructPrimRef> {
+    pub __phantom: core::marker::PhantomData<S>,
+}
+
 pub struct ConstStructPrimOption<const B: bool, U> {
     pub __phantom: core::marker::PhantomData<U>,
 }
@@ -68,6 +74,44 @@ pub struct ConstStructPrimNone;
 pub struct ConstStructPrimEnd;
 
 pub trait ConstStructPrimRef {
-    type Data;
+    type Data: ?Sized;
     const __DATA: Self::Data;
+}
+
+pub struct ConstStructPrimChar<const C: char> {}
+
+pub struct StrWrapperStruct;
+
+pub type StrWrapper<
+    const A: char,
+    const B: char,
+    const C: char,
+    const D: char,
+    const E: char,
+    const F: char,
+> = ConstStructPrimAny<
+    ConstStructPrimChar<A>,
+    ConstStructPrimAny<
+        ConstStructPrimChar<B>,
+        ConstStructPrimAny<
+            ConstStructPrimChar<C>,
+            ConstStructPrimAny<
+                ConstStructPrimChar<D>,
+                ConstStructPrimAny<
+                    ConstStructPrimChar<E>,
+                    ConstStructPrimAny<ConstStructPrimChar<F>, ConstStructPrimEnd>,
+                >,
+            >,
+        >,
+    >,
+>;
+
+impl<const A: char, const B: char, const C: char, const D: char, const E: char, const F: char>
+    ConstStructPrimRef for StrWrapper<A, B, C, D, E, F>
+{
+    type Data = [u8; 6];
+    const __DATA: [u8; 6] = {
+        let data = [A as u8, B as u8, C as u8, D as u8, E as u8, F as u8];
+        data
+    };
 }

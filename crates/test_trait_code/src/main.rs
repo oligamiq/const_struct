@@ -1,12 +1,12 @@
 use core::str;
-use std::{ptr::slice_from_raw_parts};
+use std::ptr::slice_from_raw_parts;
 
 use pre::ConstStructTraits;
 use primitive::some::{OptionTy, PrimitiveTraits};
 use setting::WINDOW_SETTING_MANUAL;
 use struct_prim::{
     ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption,
-    ConstStructPrimStr, ConstStructPrimU32,
+    ConstStructPrimRef, ConstStructPrimStr, ConstStructPrimStrRef, ConstStructPrimU32,
 };
 use tester::{tester, tester_2};
 
@@ -63,6 +63,7 @@ type TestSettingManualTyPrimWrapper<
     const F: u32,
     const G: bool,
     const H: u32,
+    S,
 > = ConstStructPrimAny<
     TestSettingManual,
     ConstStructPrimAny<
@@ -73,7 +74,7 @@ type TestSettingManualTyPrimWrapper<
                 ConstStructPrimU32<F>,
                 ConstStructPrimAny<
                     ConstStructPrimOption<G, ConstStructPrimU32<H>>,
-                    ConstStructPrimEnd,
+                    ConstStructPrimAny<S, ConstStructPrimEnd>,
                 >,
             >,
         >,
@@ -89,11 +90,13 @@ impl<
         const F: u32,
         const G: bool,
         const H: u32,
-    > PrimitiveTraits for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H>
+        S: ConstStructPrimRef<Data = [u8; LEN]>,
+        const LEN: usize,
+    > PrimitiveTraits for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, S>
 {
     type DATATYPE = TestSettingManual;
     const __DATA: Self::DATATYPE =
-        <TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H> as ConstStructTraits<
+        <TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, S> as ConstStructTraits<
             TestSettingManual,
         >>::__DATA;
 }
@@ -107,8 +110,10 @@ impl<
         const F: u32,
         const G: bool,
         const H: u32,
+        S: ConstStructPrimRef<Data = [u8; LEN]>,
+        const LEN: usize,
     > ConstStructTraits<TestSettingManual>
-    for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H>
+    for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, S>
 {
     const __DATA: TestSettingManual = {
         TestSettingManual {
@@ -116,7 +121,9 @@ impl<
             test_data2: <ConstStructPrimOption::<C, ConstStructPrimOption<D, ConstStructPrimU32<E>>> as ConstStructPrimData>::__DATA,
             test_data3: <ConstStructPrimU32::<F> as ConstStructPrimData>::__DATA,
             test_data4: <ConstStructPrimOption::<G, ConstStructPrimU32<H>> as ConstStructPrimData>::__DATA,
-            str: "abc_def",
+            str: {
+                unsafe { str::from_utf8_unchecked(&*slice_from_raw_parts(S::__DATA.as_ptr(), LEN)) }
+            },
         }
     };
 }
@@ -129,11 +136,6 @@ macro_rules! TestSettingManual {
                 v.test_data.is_some()
             }, ConstStructPrimU32<{
                 let v: TestSettingManual = $value;
-                struct TTTT {}
-                impl crate::struct_prim::ConstStructPrimRef for TTTT {
-                    type Data = [u128; 20];
-                    const __DATA: Self::Data = [0; 20];
-                }
                 match v.test_data {
                     Some(data) => data,
                     None => 0,
@@ -172,7 +174,31 @@ macro_rules! TestSettingManual {
                                 Some(data) => data,
                                 None => 0,
                             }
-                        }>>, ConstStructPrimEnd,
+                        }>>, ConstStructPrimAny<crate::struct_prim::StrWrapper<{
+                            let v: TestSettingManual = $value;
+                            let chars = v.str.as_bytes();
+                            chars[0] as char
+                        }, {
+                            let v: TestSettingManual = $value;
+                            let chars = v.str.as_bytes();
+                            chars[1] as char
+                        }, {
+                            let v: TestSettingManual = $value;
+                            let chars = v.str.as_bytes();
+                            chars[2] as char
+                        }, {
+                            let v: TestSettingManual = $value;
+                            let chars = v.str.as_bytes();
+                            chars[3] as char
+                        }, {
+                            let v: TestSettingManual = $value;
+                            let chars = v.str.as_bytes();
+                            chars[4] as char
+                        }, {
+                            let v: TestSettingManual = $value;
+                            let chars = v.str.as_bytes();
+                            chars[5] as char
+                        }>, ConstStructPrimEnd>
                         >
                     >
                 >
@@ -208,7 +234,7 @@ fn tester_prim() {
                 test_data2: Some(Some(10)),
                 test_data3: 0,
                 test_data4: Some(15),
-                str: "abc_def",
+                str: "hogehoge",
             }
         }))),
     >();
@@ -224,5 +250,10 @@ fn tester_prim() {
     }) = ConstStructPrimAny {
         __phantom: core::marker::PhantomData,
     };
+
+    // let v: TestSettingManual = ty;
+    // let chars = v.str.as_bytes();
+    // chars[0];
+
     println!("size: {:?}", core::mem::size_of_val(&ty));
 }
