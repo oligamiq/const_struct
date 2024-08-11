@@ -82,6 +82,7 @@ dependencies = [
 name = "test_trait_code"
 version = "0.1.0"
 dependencies = [
+ "const_struct_derive",
  "paste",
 ]
 
