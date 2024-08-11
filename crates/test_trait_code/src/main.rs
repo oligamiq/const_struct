@@ -11,6 +11,7 @@ use struct_prim::{
 use tester::{tester, tester_2};
 
 mod generics;
+mod generics_with_const;
 mod pre;
 mod primitive;
 mod setting;
