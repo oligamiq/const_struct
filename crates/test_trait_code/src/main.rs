@@ -53,72 +53,47 @@ pub trait TestSettingManualTy: ConstStructTraits<TestSettingManual> {
 
 impl<T: ConstStructTraits<TestSettingManual>> TestSettingManualTy for T {}
 
-type TestSettingManualTyPrimWrapper<
-    const A: bool,
-    const B: u32,
-    const C: bool,
-    const D: bool,
-    const E: u32,
-    const F: u32,
-    const G: bool,
-    const H: u32,
-    S,
-> = ConstStructPrimAny<
+type TestSettingManualTyPrimWrapper<A, B, C, D, S> = ConstStructPrimAny<
     TestSettingManual,
     ConstStructPrimAny<
-        ConstStructPrimOption<A, ConstStructPrimU32<B>>,
+        A,
         ConstStructPrimAny<
-            ConstStructPrimOption<C, ConstStructPrimOption<D, ConstStructPrimU32<E>>>,
-            ConstStructPrimAny<
-                ConstStructPrimU32<F>,
-                ConstStructPrimAny<
-                    ConstStructPrimOption<G, ConstStructPrimU32<H>>,
-                    ConstStructPrimAny<S, ConstStructPrimEnd>,
-                >,
-            >,
+            B,
+            ConstStructPrimAny<C, ConstStructPrimAny<D, ConstStructPrimAny<S, ConstStructPrimEnd>>>,
         >,
     >,
 >;
 
 impl<
-        const A: bool,
-        const B: u32,
-        const C: bool,
-        const D: bool,
-        const E: u32,
-        const F: u32,
-        const G: bool,
-        const H: u32,
+        A: ConstStructPrimData<Data = Option<u32>>,
+        B: ConstStructPrimData<Data = Option<Option<u32>>>,
+        C: ConstStructPrimData<Data = u32>,
+        D: ConstStructPrimData<Data = Option<u32>>,
         S: ConstStructPrimData<Data = &'static str>,
-    > PrimitiveTraits for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, S>
+    > PrimitiveTraits for TestSettingManualTyPrimWrapper<A, B, C, D, S>
 {
     type DATATYPE = TestSettingManual;
     const __DATA: Self::DATATYPE =
-        <TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, S> as ConstStructTraits<
+        <TestSettingManualTyPrimWrapper<A, B, C, D, S> as ConstStructTraits<
             TestSettingManual,
         >>::__DATA;
 }
 
 impl<
-        const A: bool,
-        const B: u32,
-        const C: bool,
-        const D: bool,
-        const E: u32,
-        const F: u32,
-        const G: bool,
-        const H: u32,
+        A: ConstStructPrimData<Data = Option<u32>>,
+        B: ConstStructPrimData<Data = Option<Option<u32>>>,
+        C: ConstStructPrimData<Data = u32>,
+        D: ConstStructPrimData<Data = Option<u32>>,
         S: ConstStructPrimData<Data = &'static str>,
-    > ConstStructTraits<TestSettingManual>
-    for TestSettingManualTyPrimWrapper<A, B, C, D, E, F, G, H, S>
+    > ConstStructTraits<TestSettingManual> for TestSettingManualTyPrimWrapper<A, B, C, D, S>
 {
     const __DATA: TestSettingManual = {
         TestSettingManual {
-            test_data: <ConstStructPrimOption::<A, ConstStructPrimU32<B>> as ConstStructPrimData>::__DATA,
-            test_data2: <ConstStructPrimOption::<C, ConstStructPrimOption<D, ConstStructPrimU32<E>>> as ConstStructPrimData>::__DATA,
-            test_data3: <ConstStructPrimU32::<F> as ConstStructPrimData>::__DATA,
-            test_data4: <ConstStructPrimOption::<G, ConstStructPrimU32<H>> as ConstStructPrimData>::__DATA,
-            str: S::__DATA,
+            test_data: <A as ConstStructPrimData>::__DATA,
+            test_data2: <B as ConstStructPrimData>::__DATA,
+            test_data3: <C as ConstStructPrimData>::__DATA,
+            test_data4: <D as ConstStructPrimData>::__DATA,
+            str: <S as ConstStructPrimData>::__DATA,
         }
     };
 }
