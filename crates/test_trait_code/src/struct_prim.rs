@@ -162,6 +162,17 @@ pub const fn str_to_u128<const OFFSET: usize>(s: &str) -> u128 {
     unsafe { core::mem::transmute(target_chars) }
 }
 
+pub const fn vec_u8_to_u128<const OFFSET: usize>(v: &[u8]) -> u128 {
+    let v_len = v.len();
+    let mut target_chars = [0u8; 16];
+    let mut i = 0;
+    while i + OFFSET < v_len && i < 16 {
+        target_chars[i] = v[i + OFFSET];
+        i += 1;
+    }
+    unsafe { core::mem::transmute(target_chars) }
+}
+
 pub const fn reduce_from_utf8(v: &'static [u8]) -> &str {
     let mut i = v.len();
     while i > 0 {

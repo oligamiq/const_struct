@@ -5,7 +5,8 @@ use primitive::some::{OptionTy, PrimitiveTraits};
 use setting::WINDOW_SETTING_MANUAL;
 use struct_prim::{
     reduce_from_utf8, ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd,
-    ConstStructPrimOption, ConstStructPrimU32, ConstStructPrimU8VecRef,
+    ConstStructPrimOption, ConstStructPrimU32, ConstStructPrimU8Vec, ConstStructPrimU8VecLimit,
+    ConstStructPrimU8VecRef,
 };
 use tester::{tester, tester_2};
 
@@ -39,7 +40,7 @@ pub struct TestSettingManual {
     test_data: Option<u32>,
     test_data2: Option<Option<u32>>,
     test_data3: u32,
-    test_data4: Option<u32>,
+    test_data4: [u8; 20],
     str: &'static str,
 }
 
@@ -47,7 +48,7 @@ pub trait TestSettingManualTy: ConstStructTraits<TestSettingManual> {
     const TEST_DATA: Option<u32> = Self::__DATA.test_data;
     const TEST_DATA2: Option<Option<u32>> = Self::__DATA.test_data2;
     const TEST_DATA3: u32 = Self::__DATA.test_data3;
-    const TEST_DATA4: Option<u32> = Self::__DATA.test_data4;
+    const TEST_DATA4: [u8; 20] = Self::__DATA.test_data4;
     const STR: &'static str = Self::__DATA.str;
 }
 
@@ -68,7 +69,7 @@ impl<
         A: ConstStructPrimData<Data = Option<u32>>,
         B: ConstStructPrimData<Data = Option<Option<u32>>>,
         C: ConstStructPrimData<Data = u32>,
-        D: ConstStructPrimData<Data = Option<u32>>,
+        D: ConstStructPrimData<Data = [u8; 20]>,
         S: ConstStructPrimData<Data = &'static str>,
     > PrimitiveTraits for TestSettingManualTyPrimWrapper<A, B, C, D, S>
 {
@@ -83,7 +84,7 @@ impl<
         A: ConstStructPrimData<Data = Option<u32>>,
         B: ConstStructPrimData<Data = Option<Option<u32>>>,
         C: ConstStructPrimData<Data = u32>,
-        D: ConstStructPrimData<Data = Option<u32>>,
+        D: ConstStructPrimData<Data = [u8; 20]>,
         S: ConstStructPrimData<Data = &'static str>,
     > ConstStructTraits<TestSettingManual> for TestSettingManualTyPrimWrapper<A, B, C, D, S>
 {
@@ -135,16 +136,25 @@ macro_rules! TestSettingManual {
                         let v: TestSettingManual = $value;
                         v.test_data3
                     }>,
-                        ConstStructPrimAny<ConstStructPrimOption<{
-                            let v: TestSettingManual = $value;
-                            v.test_data4.is_some()
-                        }, ConstStructPrimU32<{
-                            let v: TestSettingManual = $value;
-                            match v.test_data4 {
-                                Some(data) => data,
-                                None => 0,
+                        ConstStructPrimAny<
+                        ConstStructPrimU8VecLimit<
+                            {
+                                let v: TestSettingManual = $value;
+                                v.test_data4.len()
+                            },
+                            ConstStructPrimU8Vec<
+                            {
+                                let v: TestSettingManual = $value;
+                                crate::struct_prim::vec_u8_to_u128::<16>(&v.test_data4)
                             }
-                        }>>, ConstStructPrimAny<crate::struct_prim::StrWrapper5<{
+                            ,32
+                            , ConstStructPrimU8Vec<{
+                                let v: TestSettingManual = $value;
+                                crate::struct_prim::vec_u8_to_u128::<0>(&v.test_data4)
+                            }, 16, ConstStructPrimEnd>
+                            >
+                        >
+                        , ConstStructPrimAny<crate::struct_prim::StrWrapper5<{
                             let v: TestSettingManual = $value;
                             crate::struct_prim::str_to_u128::<0>(v.str)
                         }, {
@@ -178,7 +188,7 @@ impl TestSettingManual {
             test_data: None,
             test_data2: None,
             test_data3: 0,
-            test_data4: None,
+            test_data4: [1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67],
             str: "abc_def",
         }
     }
@@ -202,7 +212,7 @@ pub fn tester_prim() {
                 test_data: Some(5),
                 test_data2: Some(Some(10)),
                 test_data3: 0,
-                test_data4: Some(15),
+                test_data4: [1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67],
                 str: "おはようございます。あなたの名前は何ですか？ 私の名前は、コンピュータです。",
             }
         }))),
@@ -213,7 +223,7 @@ pub fn tester_prim() {
             test_data: Some(5),
             test_data2: Some(None),
             test_data3: 0,
-            test_data4: Some(15),
+            test_data4: [1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67],
             str: "abc_def",
         }
     }) = ConstStructPrimAny {
