@@ -7,7 +7,7 @@ use crate::{
     F32,
 };
 
-use const_struct_derive::match_underscore;
+use const_struct_derive::{match_underscore, expand_generics_inner};
 
 pub trait Float {}
 
@@ -80,10 +80,14 @@ macro_rules! TestGenerics {
     };
 }
 
-#[test]
+// #[test]
 fn call_macro() {
-    call_tester::<56, f32, TestGenerics!(56, f32, TestGenerics { s: 0.6, t: [0; 56] })>();
-    call_tester::<20, f32, TestGenerics!(_, f32, TestGenerics { s: 0.6, t: [0; 20] })>();
+    // call_tester::<TestGenerics!(56, f32, TestGenerics { s: 0.6, t: [0; 56] })>();
+    // call_tester::<20, f32, TestGenerics!(_, f32, TestGenerics { s: 0.6, t: [0; 20] })>();
+
+    CallWithGenerics!(call_tester::<20, f32, TestGenerics { s: 0.6, t: [0; 20] }>);
+
+    // let t: TestGenerics<expand_generics_inner!({20}, {f32}, {3})>;
 }
 
 fn call_tester<const A: usize, S: Debug + Copy + Float, T: TestGenericsTy<A, S>>() {

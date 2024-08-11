@@ -79,6 +79,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "test_gen_code"
+version = "0.1.0"
+dependencies = [
+ "const_struct_derive",
+ "paste",
+]
+
+[[package]]
 name = "test_trait_code"
 version = "0.1.0"
 dependencies = [
