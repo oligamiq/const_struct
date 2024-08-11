@@ -81,6 +81,9 @@ dependencies = [
 [[package]]
 name = "test_trait_code"
 version = "0.1.0"
+dependencies = [
+ "paste",
+]
 
 [[package]]
 name = "test_trait_code_old"

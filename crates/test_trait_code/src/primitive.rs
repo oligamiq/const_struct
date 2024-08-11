@@ -4,13 +4,14 @@ use core::mem::transmute;
 
 use some::PrimitiveTraits;
 
-use crate::pre::ConstStructTraits;
+use crate::{pre::ConstStructTraits, struct_prim::ConstStructPrimData};
 
 pub trait F32Ty {
     const __DATA: f32;
     const VALUE: f32 = Self::__DATA;
 }
 
+#[derive(Debug, Copy, Clone)]
 pub struct F32Impl<const T: u32>;
 
 impl<const T: u32> F32Ty for F32Impl<T> {
@@ -26,10 +27,15 @@ impl<const T: u32> PrimitiveTraits for F32Impl<T> {
     const __DATA: Self::DATATYPE = <F32Impl<T> as F32Ty>::__DATA;
 }
 
+impl<const T: u32> ConstStructPrimData for F32Impl<T> {
+    type Data = f32;
+    const __DATA: f32 = <F32Impl<T> as F32Ty>::__DATA;
+}
+
 #[macro_export]
 macro_rules! F32 {
     ($value:expr) => {
-        $crate::primitive::F32Impl::<{ unsafe { core::mem::transmute(($value) as f32) } }>
+        $crate::primitive::F32Impl::<{ unsafe { core::mem::transmute::<f32, u32>($value) } }>
     };
 }
 

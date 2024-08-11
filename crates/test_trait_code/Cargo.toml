@@ -8,3 +8,6 @@ publish = false
 
 [package.metadata.release]
 release = false
+
+[dependencies]
+paste = "*"

@@ -10,6 +10,7 @@ use struct_prim::{
 };
 use tester::{tester, tester_2};
 
+mod generics;
 mod pre;
 mod primitive;
 mod setting;
@@ -223,7 +224,8 @@ fn call_tester_prim() {
 }
 
 pub fn tester_prim() {
-    tester_with_option::<14,
+    tester_with_option::<
+        14,
         Some!(Some!(TestSettingManual!({
             TestSettingManual {
                 test_data: Some(5),
