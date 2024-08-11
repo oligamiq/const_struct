@@ -36,8 +36,8 @@ pub struct ConstStructPrimU8VecLimit<const SIZE: usize, Tail> {
     pub __phantom: core::marker::PhantomData<Tail>,
 }
 
-impl<const SIZE: usize, const OLD_SIZE: usize, T: ConstStructPrimData<Data = [u8; OLD_SIZE]>> ConstStructPrimData
-    for ConstStructPrimU8VecLimit<SIZE, T>
+impl<const SIZE: usize, const OLD_SIZE: usize, T: ConstStructPrimData<Data = [u8; OLD_SIZE]>>
+    ConstStructPrimData for ConstStructPrimU8VecLimit<SIZE, T>
 {
     type Data = [u8; SIZE];
     const __DATA: Self::Data = {
