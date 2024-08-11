@@ -32,6 +32,31 @@ pub struct ConstStructPrimU8Vec<const P0: u128, const SIZE: usize, Tail> {
     pub __phantom: core::marker::PhantomData<Tail>,
 }
 
+pub struct ConstStructPrimU8VecLimit<const SIZE: usize, Tail> {
+    pub __phantom: core::marker::PhantomData<Tail>,
+}
+
+impl<const SIZE: usize, const OLD_SIZE: usize, T: ConstStructPrimData<Data = [u8; OLD_SIZE]>> ConstStructPrimData
+    for ConstStructPrimU8VecLimit<SIZE, T>
+{
+    type Data = [u8; SIZE];
+    const __DATA: Self::Data = {
+        let mut new_data = [0u8; SIZE];
+        let old_data = T::__DATA;
+        let mut i = 0;
+        while i < SIZE {
+            if i < OLD_SIZE {
+                new_data[i] = old_data[i];
+            } else {
+                // new_data[i] = 0;
+                panic!("Size limit exceeded");
+            }
+            i += 1;
+        }
+        new_data
+    };
+}
+
 pub struct ConstStructPrimEnd;
 
 impl<
