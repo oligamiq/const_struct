@@ -53,7 +53,7 @@ macro_rules! TestGenerics {
         paste::paste! {
             ConstStructPrimAny<TestGenerics<{
                 const_struct_derive::match_underscore!($a, {
-                    pub const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
+                    const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
                         A
                     }
 
@@ -63,7 +63,7 @@ macro_rules! TestGenerics {
                 [<$s:camel>]!({
                     let value: TestGenerics<{
                         const_struct_derive::match_underscore!($a, {
-                            pub const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
+                            const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
                                 A
                             }
 
