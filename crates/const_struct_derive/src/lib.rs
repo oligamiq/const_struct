@@ -12,6 +12,7 @@ use syn::{
 };
 
 mod rewriter;
+mod util_macro;
 
 #[proc_macro_derive(ConstStruct)]
 pub fn const_struct_derive(input: RawTokenStream) -> RawTokenStream {
@@ -332,4 +333,10 @@ fn generate_const_compat_expr(input: Expr, attr: TokenStream) -> Result<TokenStr
         #input
     };
     Ok(output)
+}
+
+#[proc_macro]
+pub fn match_underscore(input: RawTokenStream) -> RawTokenStream {
+    let output = util_macro::match_underscore(input);
+    output.into()
 }
