@@ -1,6 +1,6 @@
 use crate::{pre::ConstStructTraits, TestSettingManual};
 
-pub const WINDOW_SETTING_MANUAL: TestSettingManual = TestSettingManual {
+pub const WINDOW_SETTING_MANUAL: TestSettingManual<20> = TestSettingManual {
     test_data: Some(5),
     test_data2: None,
     test_data3: 0,
@@ -10,6 +10,6 @@ pub const WINDOW_SETTING_MANUAL: TestSettingManual = TestSettingManual {
 
 pub struct WindowSettingManualTy;
 
-impl ConstStructTraits<TestSettingManual> for WindowSettingManualTy {
-    const __DATA: TestSettingManual = WINDOW_SETTING_MANUAL;
+impl ConstStructTraits<TestSettingManual<20>> for WindowSettingManualTy {
+    const __DATA: TestSettingManual<20> = WINDOW_SETTING_MANUAL;
 }

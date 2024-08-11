@@ -1,23 +1,23 @@
 use crate::{TestSettingManual, TestSettingManualTy};
 
-pub fn tester<T: TestSettingManualTy>() {
+pub fn tester<T: TestSettingManualTy<20>>() {
     let t = T::TEST_DATA;
     let sl = T::__DATA;
     println!("{:?}", t);
     println!("{:?}", sl);
 }
 
-pub fn tester_2(test_setting_manual: TestSettingManual) {
+pub fn tester_2(test_setting_manual: TestSettingManual<20>) {
     let t = test_setting_manual.test_data;
     println!("{:?}", t);
     println!("{:?}", test_setting_manual);
 }
 
-pub struct Tester<T: TestSettingManualTy> {
+pub struct Tester<T: TestSettingManualTy<20>> {
     _phantom: core::marker::PhantomData<T>,
 }
 
-impl<T: TestSettingManualTy> Tester<T> {
+impl<T: TestSettingManualTy<20>> Tester<T> {
     pub fn new() -> Self {
         Self {
             _phantom: core::marker::PhantomData,
@@ -31,11 +31,11 @@ impl<T: TestSettingManualTy> Tester<T> {
 }
 
 pub struct Tester2 {
-    test_setting_manual: TestSettingManual,
+    test_setting_manual: TestSettingManual<20>,
 }
 
 impl Tester2 {
-    pub fn new(test_setting_manual: TestSettingManual) -> Self {
+    pub fn new(test_setting_manual: TestSettingManual<20>) -> Self {
         Self {
             test_setting_manual,
         }
