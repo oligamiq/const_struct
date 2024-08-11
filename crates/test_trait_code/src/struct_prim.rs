@@ -43,8 +43,7 @@ impl<const SIZE: usize, const OLD_SIZE: usize, T: ConstStructPrimData<Data = [u8
             if i < OLD_SIZE {
                 new_data[i] = old_data[i];
             } else {
-                // new_data[i] = 0;
-                panic!("Size limit exceeded");
+                new_data[i] = 0;
             }
             i += 1;
         }
