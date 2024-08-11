@@ -7,6 +7,8 @@ use crate::{
     F32,
 };
 
+use const_struct_derive::match_underscore;
+
 pub trait Float {}
 
 impl Float for f32 {}
@@ -52,7 +54,7 @@ macro_rules! TestGenerics {
     ($a:tt, $s:expr, $value:expr) => {
         paste::paste! {
             ConstStructPrimAny<TestGenerics<{
-                const_struct_derive::match_underscore!($a, {
+                match_underscore!($a, {
                     const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
                         A
                     }
@@ -62,7 +64,7 @@ macro_rules! TestGenerics {
             }, $s>, ConstStructPrimAny<
                 [<$s:camel>]!({
                     let value: TestGenerics<{
-                        const_struct_derive::match_underscore!($a, {
+                        match_underscore!($a, {
                             const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
                                 A
                             }
@@ -87,4 +89,5 @@ fn call_macro() {
 fn call_tester<const A: usize, S: Debug + Copy + Float, T: TestGenericsTy<A, S>>() {
     println!("{:?}", T::__DATA);
     println!("{:?}", A);
+    println!("{:?}", T::S);
 }
