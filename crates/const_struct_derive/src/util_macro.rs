@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use proc_macro2::{Literal, TokenTree};
+use proc_macro2::TokenTree;
 use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
