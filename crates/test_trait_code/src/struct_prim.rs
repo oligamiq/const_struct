@@ -187,24 +187,4 @@ impl<const B: bool, U: ConstStructPrimData> ConstStructPrimData for ConstStructP
     };
 }
 
-// <{
-//     let v: TestSettingManual = $value;
-//     crate::struct_prim::str_to_u128::<0>(v.str)
-// }, {
-//     let v: TestSettingManual = $value;
-//     crate::struct_prim::str_to_u128::<16>(v.str)
-// }, {
-//     let v: TestSettingManual = $value;
-//     crate::struct_prim::str_to_u128::<32>(v.str)
-// }, {
-//     let v: TestSettingManual = $value;
-//     crate::struct_prim::str_to_u128::<48>(v.str)
-// }, {
-//     let v: TestSettingManual = $value;
-//     crate::struct_prim::str_to_u128::<64>(v.str)
-// }, {
-//     let v: TestSettingManual = $value;
-//     v.str.len()
-// }
-
 pub struct ConstStructPrimNone;
