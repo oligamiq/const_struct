@@ -1,4 +1,4 @@
-use std::mem::transmute;
+use core::mem::transmute;
 
 pub trait F32Ty<const N: u32> {
     const __DATA: f32 = unsafe { transmute(N) };

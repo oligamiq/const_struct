@@ -14,13 +14,13 @@ pub fn tester_2(test_setting_manual: TestSettingManual) {
 }
 
 pub struct Tester<T: TestSettingManualTy> {
-    _phantom: std::marker::PhantomData<T>,
+    _phantom: core::marker::PhantomData<T>,
 }
 
 impl<T: TestSettingManualTy> Tester<T> {
     pub fn new() -> Self {
         Self {
-            _phantom: std::marker::PhantomData,
+            _phantom: core::marker::PhantomData,
         }
     }
 
@@ -68,11 +68,11 @@ impl Tester2 {
 // }
 
 // const fn f32_to_u32(f: f32) -> u32 {
-//     unsafe { std::mem::transmute(f) }
+//     unsafe { core::mem::transmute(f) }
 // }
 
 // const fn u32_to_f32(i: u32) -> f32 {
-//     unsafe { std::mem::transmute(i) }
+//     unsafe { core::mem::transmute(i) }
 // }
 
 // type F32Ty = u32;

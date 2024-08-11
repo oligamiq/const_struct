@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use std::mem::transmute;
+use core::mem::transmute;
 
 use some::PrimitiveTraits;
 
