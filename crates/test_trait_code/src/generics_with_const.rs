@@ -50,6 +50,7 @@ impl<const A: usize, S: Float + Copy, TestGenericsS: ConstStructPrimData<Data = 
     };
 }
 
+#[macro_export]
 macro_rules! TestGenerics {
     (TestGenericsGetConstGenerics0, $value:expr) => {
         {
