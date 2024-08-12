@@ -1,6 +1,6 @@
 use crate::ConstStructTraits;
-use paste::paste;
 use core::mem::transmute;
+use paste::paste;
 
 pub trait PrimitiveTraits {
     type DATATYPE;
@@ -63,3 +63,24 @@ PrimTraitBySizes!(32, u32, i32, f32, char);
 PrimTraitBySizes!(64, u64, i64, f64);
 PrimTraitBySizes!(128, u128, i128);
 PrimTraitBySizes!(usize, usize, isize);
+
+#[cfg(test)]
+mod tests {
+    use crate::primitive::{F32Ty, U32Ty, _F32 as F32, _U32 as U32};
+
+    pub const fn tester_inner<T: F32Ty>() -> f32 {
+        T::VALUE
+    }
+
+    pub const fn tester_inner_u32<T: U32Ty>() -> u32 {
+        T::VALUE
+    }
+
+    #[test]
+    pub fn call_tester() {
+        let s = F32!(-0.5);
+        debug_assert_eq!(core::mem::size_of_val(&s), 0);
+        debug_assert_eq!(tester_inner::<F32!(-0.5)>(), -0.5);
+        debug_assert_eq!(tester_inner_u32::<U32!(0)>(), 0);
+    }
+}

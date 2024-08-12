@@ -41,6 +41,7 @@ macro_rules! None {
 #[cfg(test)]
 mod tests {
     use crate::primitive::{F32Ty, U32Ty, _F32 as F32, _U32 as U32};
+    use core::mem;
 
     use super::OptionTy;
 
@@ -58,7 +59,7 @@ mod tests {
 
     #[test]
     pub fn call_tester() {
-        let s = F32!(-0.5);
+        let s: Some!(F32!(-25.333)) = unsafe { mem::zeroed() };
         debug_assert_eq!(core::mem::size_of_val(&s), 0);
         debug_assert_eq!(tester_inner::<F32!(-0.5)>(), -0.5);
         debug_assert_eq!(
