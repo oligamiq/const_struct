@@ -1,4 +1,4 @@
-use crate::{pre::ConstStructTraits, TestSettingManual};
+use crate::{pre::ConstStructTraits, primitive::some::PrimitiveTraits, TestSettingManual};
 
 pub const WINDOW_SETTING_MANUAL: TestSettingManual<20> = TestSettingManual {
     test_data: Some(5),
@@ -10,6 +10,7 @@ pub const WINDOW_SETTING_MANUAL: TestSettingManual<20> = TestSettingManual {
 
 pub struct WindowSettingManualTy;
 
-impl ConstStructTraits<TestSettingManual<20>> for WindowSettingManualTy {
-    const __DATA: TestSettingManual<20> = WINDOW_SETTING_MANUAL;
+impl PrimitiveTraits for WindowSettingManualTy {
+    type DATATYPE = TestSettingManual<20>;
+    const __DATA: Self::DATATYPE = WINDOW_SETTING_MANUAL;
 }

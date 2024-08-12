@@ -1,4 +1,3 @@
-use crate::ConstStructTraits;
 use core::mem::transmute;
 use paste::paste;
 
@@ -29,10 +28,6 @@ macro_rules! PrimTraitBySizes {
                 #[allow(clippy::transmute_int_to_bool)]
                 impl<const T: $base> [<$name:camel Ty>] for [<$name:camel Impl>]<T> {
                     const __DATA: $name = unsafe { transmute::<$base, $name>(T) };
-                }
-
-                impl<U: [<$name:camel Ty>], const T: $base> ConstStructTraits<[<$name:camel Impl>]<T>> for U {
-                    const __DATA: [<$name:camel Impl>]<T> = [<$name:camel Impl>]::<T>;
                 }
 
                 impl<const T: $base> PrimitiveTraits for [<$name:camel Impl>]<T> {
