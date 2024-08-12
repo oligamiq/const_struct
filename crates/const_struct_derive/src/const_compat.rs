@@ -141,19 +141,17 @@ pub fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<Toke
             Meta::List(list) => {
                 let old_token = list.tokens.clone();
                 let new_token = quote! { not(#old_token) };
-                let new_meta = Meta::List(syn::MetaList {
+                Meta::List(syn::MetaList {
                     tokens: new_token,
                     ..list
-                });
-                new_meta
+                })
             }
             _ => return Err(syn::Error::new_spanned(meta, "Expected a list")),
         };
-        let not_root_cfg = Attribute {
+        Attribute {
             meta,
             ..not_root_cfg
-        };
-        not_root_cfg
+        }
     };
 
     let new_input = new_input;

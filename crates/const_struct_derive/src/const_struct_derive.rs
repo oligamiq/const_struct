@@ -48,8 +48,8 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         impl<T: ::const_struct::ConstStructTraits<#name>> #trait_name for T {}
     };
 
-    return Ok(quote! {
+    Ok(quote! {
         #new_trait
         #trait_impl
-    });
+    })
 }

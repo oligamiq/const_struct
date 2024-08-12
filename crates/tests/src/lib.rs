@@ -45,7 +45,7 @@ mod tests2 {
 
 #[cfg(test)]
 mod tests3 {
-    use const_struct::{primitive::OptionTy, F32, Some};
+    use const_struct::{primitive::OptionTy, Some, F32};
 
     pub fn tester<A: OptionTy<Option<f32>>>() {
         println!("a: {:?}", A::__DATA);

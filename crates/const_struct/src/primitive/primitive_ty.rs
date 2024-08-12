@@ -1,6 +1,6 @@
 use crate::ConstStructTraits;
-use core::mem::transmute;
 use paste::paste;
+use core::mem::transmute;
 
 pub trait PrimitiveTraits {
     type DATATYPE;
@@ -25,8 +25,10 @@ macro_rules! PrimTraitBySizes {
 
                 pub struct [<$name:camel Impl>]<const T: $base>;
 
+                #[allow(clippy::useless_transmute)]
+                #[allow(clippy::transmute_int_to_bool)]
                 impl<const T: $base> [<$name:camel Ty>] for [<$name:camel Impl>]<T> {
-                    const __DATA: $name = unsafe { transmute(T) };
+                    const __DATA: $name = unsafe { transmute::<$base, $name>(T) };
                 }
 
                 impl<U: [<$name:camel Ty>], const T: $base> ConstStructTraits<[<$name:camel Impl>]<T>> for U {
@@ -39,6 +41,7 @@ macro_rules! PrimTraitBySizes {
                 }
 
                 #[macro_export]
+                #[allow(clippy::useless_transmute)]
                 macro_rules! [<$name:camel>] {
                     ($value:expr) => {
                         $crate::primitive::[<$name:camel Impl>]::<{ unsafe { core::mem::transmute::<$name, $base>(($value)) } }>
@@ -56,7 +59,7 @@ macro_rules! PrimTraitBySizes {
 
 PrimTraitBySizes!(8, u8, i8, bool);
 PrimTraitBySizes!(16, u16, i16);
-PrimTraitBySizes!(32, f32, u32, i32, char);
-PrimTraitBySizes!(64, f64, u64, i64);
+PrimTraitBySizes!(32, u32, i32, f32, char);
+PrimTraitBySizes!(64, u64, i64, f64);
 PrimTraitBySizes!(128, u128, i128);
 PrimTraitBySizes!(usize, usize, isize);
