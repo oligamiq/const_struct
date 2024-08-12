@@ -14,17 +14,13 @@ pub trait F32Ty {
 #[derive(Debug, Copy, Clone)]
 pub struct F32Impl<const T: u32>;
 
-impl<const T: u32> F32Ty for F32Impl<T> {
-    const __DATA: f32 = unsafe { transmute(T) };
-}
-
-impl<U: F32Ty, const T: u32> ConstStructTraits<F32Impl<T>> for U {
-    const __DATA: F32Impl<T> = F32Impl::<T>;
+impl<T: PrimitiveTraits<DATATYPE = f32>> F32Ty for T {
+    const __DATA: f32 = <T as PrimitiveTraits>::__DATA;
 }
 
 impl<const T: u32> PrimitiveTraits for F32Impl<T> {
     type DATATYPE = f32;
-    const __DATA: Self::DATATYPE = <F32Impl<T> as F32Ty>::__DATA;
+    const __DATA: f32 = unsafe { transmute(T) };
 }
 
 impl<const T: u32> ConstStructPrimData for F32Impl<T> {

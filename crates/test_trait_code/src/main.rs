@@ -1,6 +1,6 @@
 use core::str;
 
-use primitive::some::{OptionTy, PrimitiveTraits};
+use primitive::{some::{OptionTy, PrimitiveTraits}, F32Ty};
 use setting::WINDOW_SETTING_MANUAL;
 use struct_prim::{
     ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd,
@@ -237,4 +237,22 @@ pub fn tester_prim() {
     };
 
     println!("size: {:?}", core::mem::size_of_val(&ty));
+}
+
+const PI: f32 = 3.14159;
+
+struct PiTy;
+
+impl PrimitiveTraits for PiTy {
+    type DATATYPE = f32;
+    const __DATA: Self::DATATYPE = PI;
+}
+
+fn tester_pi<T: F32Ty>() {
+    println!("PI: {}", T::__DATA);
+}
+
+#[test]
+fn call_tester_pi() {
+    tester_pi::<PiTy>();
 }
