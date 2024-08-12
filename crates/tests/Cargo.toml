@@ -1,0 +1,11 @@
+[package]
+name = "tests"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+const_struct.workspace = true

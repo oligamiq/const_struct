@@ -1,7 +1,10 @@
 {
     "cSpell.words": [
+        "Compat",
         "elems",
+        "println",
         "Punct",
+        "struct",
         "turbofish"
     ]
 }
