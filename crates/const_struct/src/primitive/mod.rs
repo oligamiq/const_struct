@@ -4,3 +4,5 @@ pub mod option;
 pub use option::*;
 pub mod tuple;
 pub use tuple::*;
+pub mod unit;
+pub use unit::*;

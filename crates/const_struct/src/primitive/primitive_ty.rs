@@ -79,8 +79,8 @@ mod tests {
     #[test]
     pub fn call_tester() {
         let s = F32!(-0.5);
-        debug_assert_eq!(core::mem::size_of_val(&s), 0);
-        debug_assert_eq!(tester_inner::<F32!(-0.5)>(), -0.5);
-        debug_assert_eq!(tester_inner_u32::<U32!(0)>(), 0);
+        assert_eq!(core::mem::size_of_val(&s), 0);
+        assert_eq!(tester_inner::<F32!(-0.5)>(), -0.5);
+        assert_eq!(tester_inner_u32::<U32!(0)>(), 0);
     }
 }

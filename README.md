@@ -16,6 +16,7 @@ It is currently under development, and the `main` branch may break.<br>
 It can be made public, but there might be no compatibility between major versions.<br>
 If compatibility is broken, the major version will be increased. However, at this point, there are no plans to increase the major version.
 ※This is Translated with ChatGPT [The original README.md](README-ja.md) is written in Japanese.
+So this document may be out of date.
 
 # Usage
 When receiving a struct, add `Ty` to the end of its name.<br>
@@ -94,7 +95,7 @@ Since it expands a lot and there are many trait interactions, it is believed to 
 The type passed as generics must implement the inside macro, and since it is used internally, it needs to be imported.<br>
 You can use trait bounds, but since trait bounds are expanded internally to check the type of the received argument, it is recommended to specify the absolute path using $crate if using trait bounds. Otherwise, import errors may occur.<br>
 
-## Composite Types
+## Composite Types(Option)
 When receiving composite types, only the outermost type should have Ty appended.
 Support for tuples is postponed and not yet available.
 ```rust
@@ -106,6 +107,22 @@ pub fn tester<A: OptionTy<Option<f32>>>() {
 
 fn main() {
     tester::<Some!(Some!(F32!(0.5)))>();
+}
+```
+
+## Composite Types(Tuple)
+When receiving a composite type, wrap it with `TupleTy`.
+The maximum number of elements is 10.
+
+```rust
+use const_struct::{primitive::TupleTy, F32, F64, U32};
+
+pub fn tester<A: TupleTy<(f32, f64, u32)>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+fn main() {
+    tester::<(F32!(0.5), F64!(0.5), U32!(0))>();
 }
 ```
 
@@ -141,6 +158,5 @@ pub fn tester(test_setting: TestSetting) {
 
 ## Manual Implementation Without Using Macros: Untested
 - Primitive types (outside macros)
-- Composite types (tuples)
 - Generics in outside macros for structs
 - ConstStruct, outside macros, and inside macros for enums

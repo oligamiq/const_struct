@@ -60,13 +60,13 @@ mod tests {
     #[test]
     pub fn call_tester() {
         let s: Some!(F32!(-25.333)) = unsafe { mem::zeroed() };
-        debug_assert_eq!(core::mem::size_of_val(&s), 0);
-        debug_assert_eq!(tester_inner::<F32!(-0.5)>(), -0.5);
-        debug_assert_eq!(
+        assert_eq!(core::mem::size_of_val(&s), 0);
+        assert_eq!(tester_inner::<F32!(-0.5)>(), -0.5);
+        assert_eq!(
             tester_inner_option::<Some!(F32!(-25.333))>(),
             Some(-25.333f32)
         );
-        debug_assert_eq!(tester_inner_option::<None!()>(), None);
-        debug_assert_eq!(tester_inner_u32::<U32!(0)>(), 0);
+        assert_eq!(tester_inner_option::<None!()>(), None);
+        assert_eq!(tester_inner_u32::<U32!(0)>(), 0);
     }
 }
