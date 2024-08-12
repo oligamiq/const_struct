@@ -100,9 +100,8 @@ constの都合上、ジェネリック引数はCopyを必要とします。<br>
 ```rust
 ```
 
-## 複合型
-複合型を受け取る場合には、一番外側の型だけTyを付けます。
-タプルの対応は後回しにしているため、できていません。
+## 複合型(Option)
+複合型を受け取る場合には、一番外側の型だけTyを付けます。<br>
 ```rust
 use const_struct::{primitive::OptionTy, F32, Some};
 
@@ -112,6 +111,21 @@ pub fn tester<A: OptionTy<Option<f32>>>() {
 
 fn main() {
     tester::<Some!(Some!(F32!(0.5)))>();
+}
+```
+
+## 複合型(Tuple)
+複合型を受け取る場合には、TupleTyでまとめます。<br>
+最大は10個までです。<br>
+```rust
+use const_struct::{primitive::TupleTy, F32, F64, U32};
+
+pub fn tester<A: TupleTy<(f32, f64, u32)>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+fn main() {
+    tester::<(F32!(0.5), F64!(0.5), U32!(0))>();
 }
 ```
 

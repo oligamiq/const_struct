@@ -56,3 +56,17 @@ mod tests3 {
         tester::<Some!(Some!(F32!(0.5)))>();
     }
 }
+
+#[cfg(test)]
+mod tests4 {
+    use const_struct::{primitive::TupleTy, F32, F64, U32};
+
+    pub fn tester<A: TupleTy<(f32, f64, u32)>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    #[test]
+    fn main() {
+        tester::<(F32!(0.5), F64!(0.5), U32!(0))>();
+    }
+}
