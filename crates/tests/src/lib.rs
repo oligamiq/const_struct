@@ -70,3 +70,20 @@ mod tests4 {
         tester::<(F32!(0.5), F64!(0.5), U32!(0))>();
     }
 }
+
+#[cfg(test)]
+mod tests5 {
+    use const_struct::{const_struct, primitive::F32Ty};
+
+    pub fn tester<A: F32Ty>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    #[const_struct]
+    const PI: f32 = 3.14159265358979;
+
+    #[test]
+    fn main() {
+        tester::<PiTy>();
+    }
+}
