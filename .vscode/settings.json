@@ -2,10 +2,12 @@
     "cSpell.words": [
         "Compat",
         "elems",
+        "isize",
         "println",
         "Punct",
         "struct",
         "structs",
-        "turbofish"
+        "turbofish",
+        "usize"
     ]
 }

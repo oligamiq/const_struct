@@ -32,6 +32,7 @@ no_stdで使うことができます。<br>
 プリミティブ型を使う場合は、`primitive`モジュールを使います。<br>
 そして、渡すときは、名前をキャメルケースに変換した名前で定義されているマクロを使います。<br>
 プリミティブ型の場合は、`VALUE`でもアクセスできます。<br>
+対応している型は、u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize, f32, f64, char, bool, Unitです。<br>
 
 ```rust
 use const_struct::{primitive::F32Ty, F32};
