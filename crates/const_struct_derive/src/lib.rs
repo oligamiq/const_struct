@@ -63,14 +63,8 @@ pub fn const_compat(attr: RawTokenStream, item: RawTokenStream) -> RawTokenStrea
 pub fn call_with_generics(input: RawTokenStream) -> RawTokenStream {
     let output = util_macro::expand_call_fn_with_generics(input.into());
     match output {
-        Ok(output) => {
-            // let output = quote::quote!{
-            //     <#output>
-            // };
-            let output: RawTokenStream = output.into();
-            println!("token_stream: {}", output.to_string());
-            output
-        }
+        Ok(output) => output.into(),
+
         Err(err) => err.to_compile_error().into(),
     }
 }

@@ -7,7 +7,7 @@ use crate::{
     F32,
 };
 
-use const_struct_derive::{call_with_generics};
+use const_struct_derive::call_with_generics;
 
 pub trait Float {}
 
@@ -60,17 +60,17 @@ macro_rules! match_underscore {
 }
 
 pub mod tt {
-use crate::{
-    pre::ConstStructTraits,
-    primitive::{some::PrimitiveTraits, F32Ty},
-    struct_prim::{ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd},
-    F32,
-};
+    use crate::{
+        pre::ConstStructTraits,
+        primitive::{some::PrimitiveTraits, F32Ty},
+        struct_prim::{ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd},
+        F32,
+    };
 
-use const_struct_derive::{call_with_generics};
+    use const_struct_derive::call_with_generics;
 
-#[macro_export]
-macro_rules! TestGenerics {
+    #[macro_export]
+    macro_rules! TestGenerics {
     (TestGenericsGetConstGenerics0, $value:expr) => {
         {
             const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
@@ -115,11 +115,17 @@ fn call_macro() {
     call_with_generics!(call_tester::<
         7,
         crate::TestGenerics!(_, f32, TestGenerics { s: 0.6, t: [0; 56] }),
-        9
+        9,
     >());
 }
 
-fn call_tester<const C: usize, const A: usize, S: Debug + Copy + Float, T: TestGenericsTy<A, S>, const U: usize>() {
+fn call_tester<
+    const C: usize,
+    const A: usize,
+    S: Debug + Copy + Float,
+    T: TestGenericsTy<A, S>,
+    const U: usize,
+>() {
     println!("{:?}", T::__DATA);
     println!("{:?}", A);
     println!("{:?}", T::S);

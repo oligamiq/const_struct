@@ -230,12 +230,12 @@ where
             AddAssign(_) | SubAssign(_) | MulAssign(_) | DivAssign(_) | RemAssign(_)
             | BitXorAssign(_) | BitAndAssign(_) | BitOrAssign(_) | ShlAssign(_) | ShrAssign(_) => {
                 self.right = Box::new(self.right.rewrite(f, u));
-                return self;
+                self
             }
             _ => {
                 self.left = Box::new(self.left.rewrite(f.clone(), u.clone()));
                 self.right = Box::new(self.right.rewrite(f, u));
-                return self;
+                self
             }
         }
     }

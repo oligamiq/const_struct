@@ -1,26 +1,8 @@
 use parse::{Parse, ParseStream, Parser as _};
-use proc_macro::TokenStream as RawTokenStream;
-use proc_macro2::{TokenStream, TokenTree};
+use proc_macro2::TokenStream;
 use punctuated::Punctuated;
 use quote::{quote, ToTokens};
 use syn::*;
-use token::Paren;
-
-pub struct TtAndTt {
-    input: Expr,
-    _comma: Token![,],
-    tt_is_underscore: Expr,
-}
-
-impl Parse for TtAndTt {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        Ok(Self {
-            input: input.parse()?,
-            _comma: input.parse()?,
-            tt_is_underscore: input.parse()?,
-        })
-    }
-}
 
 // example
 // call_tester::<TestGenerics!(56, f32, TestGenerics { s: 0.6, t: [0; 56] })>()
@@ -143,9 +125,9 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
                 new_generic.push(arg.clone());
 
-                return new_generic;
+                new_generic
             }
-            _ => return vec![arg.clone()],
+            _ => vec![arg.clone()],
         })
         .collect::<Punctuated<GenericArgument, Token![,]>>();
 
