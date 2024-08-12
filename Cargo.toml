@@ -5,7 +5,7 @@ default-members = ["crates/const_struct_derive", "crates/const_struct"]
 
 [workspace.package]
 authors = ["oligami <nziq53@gmail.com>"]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "macro that allows const structures to be passed as const generics"
 license = "MIT"
