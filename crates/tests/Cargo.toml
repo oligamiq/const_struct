@@ -6,6 +6,10 @@ edition.workspace = true
 description.workspace = true
 license.workspace = true
 rust-version.workspace = true
+publish = false
 
 [dependencies]
 const_struct.workspace = true
+
+[package.metadata.release]
+release = false
