@@ -13,8 +13,7 @@ documentation.workspace = true
 publish = true
 
 [dependencies]
-# const_struct_derive.workspace = true
-const_struct_derive = "0.2.0"
+const_struct_derive = { path = "../const_struct_derive" }
 paste = "1.0.15"
 
 [package.metadata.release]
