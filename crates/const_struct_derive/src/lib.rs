@@ -66,13 +66,13 @@ pub fn match_underscore(input: RawTokenStream) -> RawTokenStream {
 
 /// macro expansion ignores token `,` and any following rustc
 #[proc_macro]
-pub fn expand_generics_inner(input: RawTokenStream) -> RawTokenStream {
-    let output = util_macro::expand_generics_inner(input.into());
+pub fn call_with_generics(input: RawTokenStream) -> RawTokenStream {
+    let output = util_macro::expand_call_fn_with_generics(input.into());
     match output {
         Ok(output) => {
-            let output = quote::quote!{
-                <#output>
-            };
+            // let output = quote::quote!{
+            //     <#output>
+            // };
             let output: RawTokenStream = output.into();
             println!("token_stream: {}", output.to_string());
             output

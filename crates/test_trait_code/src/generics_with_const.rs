@@ -7,7 +7,7 @@ use crate::{
     F32,
 };
 
-use const_struct_derive::{match_underscore, expand_generics_inner};
+use const_struct_derive::{call_with_generics, match_underscore};
 
 pub trait Float {}
 
@@ -51,16 +51,19 @@ impl<const A: usize, S: Float + Copy, TestGenericsS: ConstStructPrimData<Data = 
 }
 
 macro_rules! TestGenerics {
+    (TestGenericsGetConstGenerics0, $value:expr) => {
+        {
+            const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
+                A
+            }
+
+            get_const_generics_a($value)
+        }
+    };
     ($a:tt, $s:expr, $value:expr) => {
         paste::paste! {
             ConstStructPrimAny<TestGenerics<{
-                match_underscore!($a, {
-                    const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
-                        A
-                    }
-
-                    get_const_generics_a($value)
-                })
+                match_underscore!($a, TestGenerics!(TestGenericsGetConstGenerics0, $value))
             }, $s>, ConstStructPrimAny<
                 [<$s:camel>]!({
                     let value: TestGenerics<{
@@ -80,18 +83,19 @@ macro_rules! TestGenerics {
     };
 }
 
-// #[test]
+#[test]
 fn call_macro() {
-    // call_tester::<TestGenerics!(56, f32, TestGenerics { s: 0.6, t: [0; 56] })>();
-    // call_tester::<20, f32, TestGenerics!(_, f32, TestGenerics { s: 0.6, t: [0; 20] })>();
-
-    CallWithGenerics!(call_tester::<20, f32, TestGenerics { s: 0.6, t: [0; 20] }>);
-
-    // let t: TestGenerics<expand_generics_inner!({20}, {f32}, {3})>;
+    call_with_generics!(call_tester::<
+        7,
+        TestGenerics!(_, f32, TestGenerics { s: 0.6, t: [0; 56] }),
+        9
+    >());
 }
 
-fn call_tester<const A: usize, S: Debug + Copy + Float, T: TestGenericsTy<A, S>>() {
+fn call_tester<const C: usize, const A: usize, S: Debug + Copy + Float, T: TestGenericsTy<A, S>, const U: usize>() {
     println!("{:?}", T::__DATA);
     println!("{:?}", A);
     println!("{:?}", T::S);
+    println!("{:?}", C);
+    println!("{:?}", U);
 }
