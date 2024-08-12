@@ -3,12 +3,12 @@
 <!-- [![Documentation](https://docs.rs/bitflags/badge.svg)](https://docs.rs/bitflags) -->
 <!-- ![License](https://img.shields.io/crates/l/bitflags.svg) -->
 
-`const_struct` is a macro that allows you to pass structs, f32, and other types in a manner similar to const generics. This is a different feature from `generic_const_expr`, and it is unclear whether there will be a standard replacement.
-https://github.com/rust-lang/rust/issues/76560
-https://hackmd.io/OZG_XiLFRs2Xmw5s39jRzA?view
+`const_struct` is a macro that allows you to pass structs, f32, and other types in a manner similar to const generics. This is a different feature from `generic_const_expr`, and it is unclear whether there will be a standard replacement.<br>
+https://github.com/rust-lang/rust/issues/76560<br>
+https://hackmd.io/OZG_XiLFRs2Xmw5s39jRzA?view<br>
 
 Official Const-related features are proposed here:
-https://github.com/rust-lang/const-eval
+https://github.com/rust-lang/const-eval<br>
 
 It can be used in a `no_std` environment.<br>
 If additional features are needed, or if you find any bugs, please open an issue.<br>
@@ -42,6 +42,7 @@ pub fn tester<A: F32Ty>() {
 fn main() {
     tester::<F32!(0.5)>();
 }
+```
 
 ## Structs (outside declaration const)
 There are no restrictions on the values that can be defined.<br>
