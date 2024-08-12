@@ -16,6 +16,7 @@ It is currently under development, and the `main` branch may break.<br>
 It can be made public, but there might be no compatibility between major versions.<br>
 If compatibility is broken, the major version will be increased. However, at this point, there are no plans to increase the major version.
 ※This is Translated with ChatGPT [The original README.md](README-ja.md) is written in Japanese.
+So this document may be out of date.
 
 # Usage
 When receiving a struct, add `Ty` to the end of its name.<br>
