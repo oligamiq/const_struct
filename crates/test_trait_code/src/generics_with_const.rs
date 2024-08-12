@@ -7,7 +7,7 @@ use crate::{
     F32,
 };
 
-use const_struct_derive::{call_with_generics, match_underscore};
+use const_struct_derive::{call_with_generics};
 
 pub trait Float {}
 
@@ -50,6 +50,15 @@ impl<const A: usize, S: Float + Copy, TestGenericsS: ConstStructPrimData<Data = 
     };
 }
 
+macro_rules! match_underscore {
+    (_, $tt_is_underscore:expr) => {
+        $tt_is_underscore
+    };
+    ($input:expr, $tt_is_underscore:expr) => {
+        $input
+    };
+}
+
 pub mod tt {
 use crate::{
     pre::ConstStructTraits,
@@ -58,7 +67,7 @@ use crate::{
     F32,
 };
 
-use const_struct_derive::{call_with_generics, match_underscore};
+use const_struct_derive::{call_with_generics};
 
 #[macro_export]
 macro_rules! TestGenerics {

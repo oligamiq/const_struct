@@ -58,12 +58,6 @@ pub fn const_compat(attr: RawTokenStream, item: RawTokenStream) -> RawTokenStrea
     // }
 }
 
-#[proc_macro]
-pub fn match_underscore(input: RawTokenStream) -> RawTokenStream {
-    let output = util_macro::match_underscore(input);
-    output.into()
-}
-
 /// macro expansion ignores token `,` and any following rustc
 #[proc_macro]
 pub fn call_with_generics(input: RawTokenStream) -> RawTokenStream {

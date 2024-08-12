@@ -22,19 +22,6 @@ impl Parse for TtAndTt {
     }
 }
 
-pub fn match_underscore(input: RawTokenStream) -> RawTokenStream {
-    let input = parse_macro_input!(input as TtAndTt);
-
-    if input.input.to_token_stream().to_string() == "_" {
-        let is_underscore = input.tt_is_underscore;
-        quote! { #is_underscore }
-    } else {
-        let input = input.input;
-        quote! { #input }
-    }
-    .into()
-}
-
 // example
 // call_tester::<TestGenerics!(56, f32, TestGenerics { s: 0.6, t: [0; 56] })>()
 #[derive(Debug)]
