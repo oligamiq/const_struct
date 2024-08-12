@@ -5,6 +5,7 @@
         "println",
         "Punct",
         "struct",
+        "structs",
         "turbofish"
     ]
 }
