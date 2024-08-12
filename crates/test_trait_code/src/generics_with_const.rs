@@ -68,13 +68,7 @@ macro_rules! TestGenerics {
             }, $s>, ConstStructPrimAny<
                 [<$s:camel>]!({
                     let value: TestGenerics<{
-                        match_underscore!($a, {
-                            const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
-                                A
-                            }
-
-                            get_const_generics_a($value)
-                        })
+                        match_underscore!($a, TestGenerics!(TestGenericsGetConstGenerics0, $value))
                     }, $s> = $value;
                     value
                 }.s),
