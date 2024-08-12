@@ -44,6 +44,11 @@ macro_rules! PrimTraitBySizes {
                         $crate::primitive::[<$name:camel Impl>]::<{ unsafe { core::mem::transmute::<$name, $base>(($value)) } }>
                     };
                 }
+
+                /// https://github.com/rust-lang/rust/pull/52234
+                #[doc(hidden)] /** Not part of the public API */
+                #[allow(unused_imports)]
+                pub(crate) use [<$name:camel>] as [<_ $name:camel>];
             }
         )*
     };
@@ -55,65 +60,3 @@ PrimTraitBySizes!(32, f32, u32, i32, char);
 PrimTraitBySizes!(64, f64, u64, i64);
 PrimTraitBySizes!(128, u128, i128);
 PrimTraitBySizes!(usize, usize, isize);
-
-pub trait OptionTy<T> {
-    const __DATA: Option<T>;
-    const VALUE: Option<T> = Self::__DATA;
-}
-
-pub struct OptionImpl<T: PrimitiveTraits> {
-    __phantom: core::marker::PhantomData<T>,
-}
-
-impl<T: PrimitiveTraits> OptionTy<T::DATATYPE> for OptionImpl<T> {
-    const __DATA: Option<T::DATATYPE> = Some(<T as PrimitiveTraits>::__DATA);
-}
-
-impl<T: PrimitiveTraits> PrimitiveTraits for OptionImpl<T> {
-    type DATATYPE = Option<T::DATATYPE>;
-    const __DATA: Self::DATATYPE = Some(<T as PrimitiveTraits>::__DATA);
-}
-
-pub struct NoneImpl;
-
-impl<T> OptionTy<T> for NoneImpl {
-    const __DATA: Option<T> = None;
-}
-
-#[macro_export]
-macro_rules! Some {
-    ($value:ty) => {
-        $crate::primitive::OptionImpl<$value>
-    };
-}
-
-#[macro_export]
-macro_rules! None {
-    () => {
-        $crate::primitive::NoneImpl
-    };
-}
-
-pub const fn tester_inner<T: F32Ty>() -> f32 {
-    T::VALUE
-}
-
-pub const fn tester_inner_u32<T: U32Ty>() -> u32 {
-    T::VALUE
-}
-
-pub const fn tester_inner_option<T: OptionTy<f32>>() -> Option<f32> {
-    T::VALUE
-}
-
-#[test]
-pub fn call_tester() {
-    let s = F32!(-0.5);
-    debug_assert_eq!(core::mem::size_of_val(&s), 0);
-    debug_assert_eq!(tester_inner::<F32!(-0.5)>(), -0.5);
-    debug_assert_eq!(
-        tester_inner_option::<Some!(F32!(-25.333))>(),
-        Some(-25.333f32)
-    );
-    debug_assert_eq!(tester_inner_option::<None!()>(), None);
-}
