@@ -3,6 +3,12 @@ name = "const_struct_derive"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+repository.workspace = true
+description.workspace = true
 
 [lib]
 proc-macro = true

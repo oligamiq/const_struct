@@ -6,6 +6,11 @@ edition.workspace = true
 description.workspace = true
 license.workspace = true
 rust-version.workspace = true
+keywords = ["const", "derive", "macro", "no_std", "const_generics"]
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+publish = true
 
 [dependencies]
 const_struct_derive.workspace = true
