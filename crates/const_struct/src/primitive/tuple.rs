@@ -1,5 +1,4 @@
 use super::PrimitiveTraits;
-use paste::paste;
 
 pub trait TupleTy<T> {
     const __DATA: T;
