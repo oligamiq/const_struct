@@ -19,20 +19,21 @@ macro_rules! PrimTraitBySizes {
             paste! {
                 pub trait [<$name:camel Ty>] {
                     const __DATA: $name;
-                    const VALUE: $name = Self::__DATA;
+                    const VALUE: $name = <Self as [<$name:camel Ty>]>::__DATA;
                 }
 
+                #[derive(Debug, Copy, Clone)]
                 pub struct [<$name:camel Impl>]<const T: $base>;
+
+                impl<T: PrimitiveTraits<DATATYPE = $name>> [<$name:camel Ty>] for T {
+                    const __DATA: $name = <T as PrimitiveTraits>::__DATA;
+                }
 
                 #[allow(clippy::useless_transmute)]
                 #[allow(clippy::transmute_int_to_bool)]
-                impl<const T: $base> [<$name:camel Ty>] for [<$name:camel Impl>]<T> {
-                    const __DATA: $name = unsafe { transmute::<$base, $name>(T) };
-                }
-
                 impl<const T: $base> PrimitiveTraits for [<$name:camel Impl>]<T> {
                     type DATATYPE = $name;
-                    const __DATA: Self::DATATYPE = <[<$name:camel Impl>]<T> as [<$name:camel Ty>]>::__DATA;
+                    const __DATA: <Self as PrimitiveTraits>::DATATYPE = unsafe { transmute::<$base, $name>(T) };
                 }
 
                 #[macro_export]
