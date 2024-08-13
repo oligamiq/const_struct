@@ -24,6 +24,10 @@ mod test {
         T::VALUE
     }
 
+    pub const fn tester_option_option<T: OptionTy<Option<f32>>>() -> Option<Option<f32>> {
+        T::VALUE
+    }
+
     #[const_struct]
     const PI: f32 = 3.1415926;
 
@@ -32,16 +36,19 @@ mod test {
 
     #[test]
     pub fn call_tester() {
-        debug_assert_eq!(tester_inner::<F32!(-0.5)>(), -0.5);
-        debug_assert_eq!(tester_inner::<F32!(-25.333)>(), -25.333);
-        debug_assert_eq!(tester_inner_u32::<U32!(25)>(), 25);
-        debug_assert_eq!(tester_inner_option::<Some!(F32!(-25.333))>(), Some(-25.333));
-        debug_assert_eq!(tester_inner_option::<None!()>(), None);
-        debug_assert_eq!(tester_inner::<PiTy>(), 3.1415926);
-        debug_assert_eq!(tester_inner_option::<Some!(PiTy)>(), Some(3.1415926));
-        debug_assert_eq!(tester_inner_option::<None!()>(), None);
-        debug_assert_eq!(tester_inner_option::<SomePiTy>(), Some(3.1415926));
+        assert_eq!(tester_inner::<F32!(-0.5)>(), -0.5);
+        assert_eq!(tester_inner::<F32!(-25.333)>(), -25.333);
+        assert_eq!(tester_inner_u32::<U32!(25)>(), 25);
+        assert_eq!(tester_inner_option::<Some!(F32!(-25.333))>(), Some(-25.333));
+        assert_eq!(tester_inner_option::<None!()>(), None);
+        assert_eq!(tester_inner::<PiTy>(), 3.1415926);
+        assert_eq!(tester_inner_option::<Some!(PiTy)>(), Some(3.1415926));
+        assert_eq!(tester_inner_option::<None!()>(), None);
+        assert_eq!(tester_inner_option::<SomePiTy>(), Some(3.1415926));
+        assert_eq!(tester_inner_option::<None!()>(), None);
+        assert_eq!(tester_option_option::<Some!(Some!(F32!(-25.333)))>(), Some(Some(-25.333)));
+        assert_eq!(tester_option_option::<Some!(SomePiTy)>(), Some(Some(3.1415926)));
 
-        // debug_assert_eq!(tester_test_setting::<Some!(TestSetting::default())>(), Some(TestSetting::default()));
+        // assert_eq!(tester_test_setting::<Some!(TestSetting::default())>(), Some(TestSetting::default()));
     }
 }
