@@ -126,6 +126,23 @@ fn main() {
 }
 ```
 
+## Composite Type (Outside into Inside)
+You can pass values defined externally into a trait. Options, tuples, and other types can be passed as they are.
+```rust
+use const_struct::{const_struct, primitive::F64Ty};
+
+pub fn tester<A: F64Ty>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[const_struct]
+const PI: f64 = 3.14159265358979;
+
+fn main() {
+    tester::<PiTy>();
+}
+```
+
 ## ConstCompat
 This is an attribute macro that changes normal functions to receive generics based on a cfg flag.<br>
 It works by rewriting the internals, so it operates as is.<br>
