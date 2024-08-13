@@ -1,4 +1,5 @@
 use super::PrimitiveTraits;
+use paste::paste;
 
 pub trait TupleTy<T> {
     const __DATA: T;
@@ -11,34 +12,36 @@ impl TupleTy<()> for () {
 
 macro_rules! TupleTyByNum {
     ($($generics:ident),*) => {
-        impl<$($generics: PrimitiveTraits<$generics>),*, > TupleTy<($($generics),*, )> for ($($generics),*, ) {
-            const __DATA: ($($generics),*, ) = ($($generics::__DATA),*, );
-        }
+        paste! {
+            impl<$($generics, [<$generics 2>]: PrimitiveTraits<$generics>),*, > TupleTy<($($generics),*, )> for ($([<$generics 2>]),*, ) {
+                const __DATA: ($($generics),*, ) = ($([<$generics 2>]::__DATA),*, );
+            }
 
-        impl<$($generics: PrimitiveTraits<$generics>),*, > PrimitiveTraits<($($generics),*, )> for ($($generics),*, ) {
-            const __DATA: ($($generics),*, ) = ($($generics::__DATA),*, );
+            impl<$($generics, [<$generics 2>]: PrimitiveTraits<$generics>),*, > PrimitiveTraits<($($generics),*, )> for ($([<$generics 2>]),*, ) {
+                const __DATA: ($($generics),*, ) = ($([<$generics 2>]::__DATA),*, );
+            }
         }
     };
 }
 
-// TupleTyByNum!(A);
-// TupleTyByNum!(A, B);
-// TupleTyByNum!(A, B, C);
-// TupleTyByNum!(A, B, C, D);
-// TupleTyByNum!(A, B, C, D, E);
-// TupleTyByNum!(A, B, C, D, E, F);
-// TupleTyByNum!(A, B, C, D, E, F, G);
-// TupleTyByNum!(A, B, C, D, E, F, G, H);
-// TupleTyByNum!(A, B, C, D, E, F, G, H, I);
-// TupleTyByNum!(A, B, C, D, E, F, G, H, I, J);
+TupleTyByNum!(A);
+TupleTyByNum!(A, B);
+TupleTyByNum!(A, B, C);
+TupleTyByNum!(A, B, C, D);
+TupleTyByNum!(A, B, C, D, E);
+TupleTyByNum!(A, B, C, D, E, F);
+TupleTyByNum!(A, B, C, D, E, F, G);
+TupleTyByNum!(A, B, C, D, E, F, G, H);
+TupleTyByNum!(A, B, C, D, E, F, G, H, I);
+TupleTyByNum!(A, B, C, D, E, F, G, H, I, J);
 
-impl<A, A2: PrimitiveTraits<A>> TupleTy<(A, )> for (A2, ) {
-    const __DATA: (A, ) = (A2::__DATA, );
-}
+// impl<A, A2: PrimitiveTraits<A>> TupleTy<(A, )> for (A2, ) {
+//     const __DATA: (A, ) = (A2::__DATA, );
+// }
 
-impl<A, A2: PrimitiveTraits<A>> PrimitiveTraits<(A, )> for (A2, ) {
-    const __DATA: (A, ) = (A2::__DATA, );
-}
+// impl<A, A2: PrimitiveTraits<A>> PrimitiveTraits<(A, )> for (A2, ) {
+//     const __DATA: (A, ) = (A2::__DATA, );
+// }
 
 #[cfg(test)]
 mod tests {
