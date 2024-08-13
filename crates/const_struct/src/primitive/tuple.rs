@@ -11,27 +11,34 @@ impl TupleTy<()> for () {
 
 macro_rules! TupleTyByNum {
     ($($generics:ident),*) => {
-        impl<$($generics: PrimitiveTraits),*, > TupleTy<($($generics::DATATYPE),*, )> for ($($generics),*, ) {
-            const __DATA: ($($generics::DATATYPE),*, ) = ($($generics::__DATA),*, );
+        impl<$($generics: PrimitiveTraits<$generics>),*, > TupleTy<($($generics),*, )> for ($($generics),*, ) {
+            const __DATA: ($($generics),*, ) = ($($generics::__DATA),*, );
         }
 
-        impl<$($generics: PrimitiveTraits),*, > PrimitiveTraits for ($($generics),*, ) {
-            type DATATYPE = ($($generics::DATATYPE),*, );
-            const __DATA: Self::DATATYPE = ($($generics::__DATA),*, );
+        impl<$($generics: PrimitiveTraits<$generics>),*, > PrimitiveTraits<($($generics),*, )> for ($($generics),*, ) {
+            const __DATA: ($($generics),*, ) = ($($generics::__DATA),*, );
         }
     };
 }
 
-TupleTyByNum!(A);
-TupleTyByNum!(A, B);
-TupleTyByNum!(A, B, C);
-TupleTyByNum!(A, B, C, D);
-TupleTyByNum!(A, B, C, D, E);
-TupleTyByNum!(A, B, C, D, E, F);
-TupleTyByNum!(A, B, C, D, E, F, G);
-TupleTyByNum!(A, B, C, D, E, F, G, H);
-TupleTyByNum!(A, B, C, D, E, F, G, H, I);
-TupleTyByNum!(A, B, C, D, E, F, G, H, I, J);
+// TupleTyByNum!(A);
+// TupleTyByNum!(A, B);
+// TupleTyByNum!(A, B, C);
+// TupleTyByNum!(A, B, C, D);
+// TupleTyByNum!(A, B, C, D, E);
+// TupleTyByNum!(A, B, C, D, E, F);
+// TupleTyByNum!(A, B, C, D, E, F, G);
+// TupleTyByNum!(A, B, C, D, E, F, G, H);
+// TupleTyByNum!(A, B, C, D, E, F, G, H, I);
+// TupleTyByNum!(A, B, C, D, E, F, G, H, I, J);
+
+impl<A, A2: PrimitiveTraits<A>> TupleTy<(A, )> for (A2, ) {
+    const __DATA: (A, ) = (A2::__DATA, );
+}
+
+impl<A, A2: PrimitiveTraits<A>> PrimitiveTraits<(A, )> for (A2, ) {
+    const __DATA: (A, ) = (A2::__DATA, );
+}
 
 #[cfg(test)]
 mod tests {

@@ -6,25 +6,38 @@ pub trait OptionTy<T> {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct OptionImpl<T: PrimitiveTraits> {
-    __phantom: core::marker::PhantomData<T>,
+pub struct OptionImpl<U, T: PrimitiveTraits<U>> {
+    __phantom: core::marker::PhantomData<(U, T)>,
 }
 
-impl<U: PrimitiveTraits<DATATYPE = Option<T>>, T> OptionTy<T> for U
-{
-    const __DATA: Option<T> = <U as PrimitiveTraits>::__DATA;
-}
+// impl<U: PrimitiveTraits<Option<T>, DATATYPE = Option<T>>, T> OptionTy<T> for U
+// {
+//     const __DATA: Option<T> = <U as PrimitiveTraits<Option<T>>>::__DATA;
+// }
 
-impl<T: PrimitiveTraits> PrimitiveTraits for OptionImpl<T> {
-    type DATATYPE = Option<T::DATATYPE>;
-    const __DATA: Self::DATATYPE = Some(<T as PrimitiveTraits>::__DATA);
-}
+// impl<U, T> PrimitiveTraits<T> for U
+// where
+//     U: PrimitiveTraits<DATATYPE = Option<T>>,
+// {
+//     type DATATYPE = T;
+//     const __DATA: T = <U as PrimitiveTraits>::__DATA;
+// }
 
-pub struct NoneImpl;
+// // impl<T: PrimitiveTraits> PrimitiveTraits for OptionImpl<T> {
+// //     type DATATYPE = Option<T::DATATYPE>;
+// //     const __DATA: Self::DATATYPE = Some(<T as PrimitiveTraits>::__DATA);
+// // }
 
-impl<T> OptionTy<T> for NoneImpl {
-    const __DATA: Option<T> = None;
-}
+// pub struct NoneImpl;
+
+// impl<T> OptionTy<T> for NoneImpl {
+//     const __DATA: Option<T> = None;
+// }
+
+// impl<T> PrimitiveTraits<T> for NoneImpl {
+//     type DATATYPE = Option<T>;
+//     const __DATA: Self::DATATYPE = None;
+// }
 
 #[macro_export]
 macro_rules! Some {

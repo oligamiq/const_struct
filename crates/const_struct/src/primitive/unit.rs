@@ -5,9 +5,8 @@ pub trait UnitTy {
     const VALUE: () = Self::__DATA;
 }
 
-impl PrimitiveTraits for () {
-    type DATATYPE = ();
-    const __DATA: Self::DATATYPE = ();
+impl PrimitiveTraits<()> for () {
+    const __DATA: () = ();
 }
 
 impl UnitTy for () {

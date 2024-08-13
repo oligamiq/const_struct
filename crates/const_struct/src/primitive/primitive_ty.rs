@@ -1,9 +1,8 @@
 use core::mem::transmute;
 use paste::paste;
 
-pub trait PrimitiveTraits {
-    type DATATYPE;
-    const __DATA: Self::DATATYPE;
+pub trait PrimitiveTraits<T> {
+    const __DATA: T;
 }
 
 macro_rules! PrimTraitBySizes {
@@ -25,15 +24,14 @@ macro_rules! PrimTraitBySizes {
                 #[derive(Debug, Copy, Clone)]
                 pub struct [<$name:camel Impl>]<const T: $base>;
 
-                impl<T: PrimitiveTraits<DATATYPE = $name>> [<$name:camel Ty>] for T {
-                    const __DATA: $name = <T as PrimitiveTraits>::__DATA;
+                impl<T: PrimitiveTraits<$name>> [<$name:camel Ty>] for T {
+                    const __DATA: $name = <T as PrimitiveTraits<$name>>::__DATA;
                 }
 
                 #[allow(clippy::useless_transmute)]
                 #[allow(clippy::transmute_int_to_bool)]
-                impl<const T: $base> PrimitiveTraits for [<$name:camel Impl>]<T> {
-                    type DATATYPE = $name;
-                    const __DATA: <Self as PrimitiveTraits>::DATATYPE = unsafe { transmute::<$base, $name>(T) };
+                impl<const T: $base> PrimitiveTraits<$name> for [<$name:camel Impl>]<T> {
+                    const __DATA: $name = unsafe { transmute::<$base, $name>(T) };
                 }
 
                 #[macro_export]
