@@ -1,4 +1,5 @@
 use super::PrimitiveTraits;
+use paste::paste;
 
 pub trait TupleTy<T> {
     const __DATA: T;
@@ -11,11 +12,17 @@ impl TupleTy<()> for () {
 
 macro_rules! TupleTyByNum {
     ($($generics:ident),*) => {
-        impl<$($generics: PrimitiveTraits),*, > TupleTy<($($generics::DATATYPE),*, )> for ($($generics),*, ) {
+        impl<$($generics: PrimitiveTraits),*> TupleTy<($($generics::DATATYPE),*, )> for ($($generics),*, ) {
             const __DATA: ($($generics::DATATYPE),*, ) = ($($generics::__DATA),*, );
         }
 
-        impl<$($generics: PrimitiveTraits),*, > PrimitiveTraits for ($($generics),*, ) {
+        paste! {
+            impl<T: PrimitiveTraits<DATATYPE = ($($generics),*, )>, $($generics: PrimitiveTraits),*> TupleTy<($($generics),*, )> for T {
+                const __DATA: ($($generics),*, ) = <T as PrimitiveTraits>::__DATA;
+            }
+        }
+
+        impl<$($generics: PrimitiveTraits),*> PrimitiveTraits for ($($generics),*, ) {
             type DATATYPE = ($($generics::DATATYPE),*, );
             const __DATA: Self::DATATYPE = ($($generics::__DATA),*, );
         }
