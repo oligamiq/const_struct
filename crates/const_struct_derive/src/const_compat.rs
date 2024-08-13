@@ -181,7 +181,9 @@ pub fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<Toke
     Ok(output)
 }
 
+#[allow(dead_code)]
 pub fn generate_const_compat_expr(input: Expr, attr: TokenStream) -> Result<TokenStream> {
+    #[allow(unused_variables)]
     let cfg = match syn::parse::<syn::MetaList>(attr.into()) {
         Ok(cfg) => cfg,
         Err(err) => return Err(err),
