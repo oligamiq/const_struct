@@ -73,14 +73,14 @@ mod tests4 {
 
 #[cfg(test)]
 mod tests5 {
-    use const_struct::{const_struct, primitive::F32Ty};
+    use const_struct::{const_struct, primitive::F64Ty};
 
-    pub fn tester<A: F32Ty>() {
+    pub fn tester<A: F64Ty>() {
         println!("a: {:?}", A::__DATA);
     }
 
     #[const_struct]
-    const PI: f32 = 3.14159265358979;
+    const PI: f64 = 3.14159265358979;
 
     #[test]
     fn main() {

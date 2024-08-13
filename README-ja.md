@@ -130,6 +130,24 @@ fn main() {
 }
 ```
 
+## 複合型(Outside into Inside)
+外部で定義した値をトレイトで受け取ることができます。<br>
+optionやtupleなどもそのまま受け取ることができます。<br>
+```rust
+use const_struct::{const_struct, primitive::F64Ty};
+
+pub fn tester<A: F64Ty>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[const_struct]
+const PI: f64 = 3.14159265358979;
+
+fn main() {
+    tester::<PiTy>();
+}
+```
+
 ## ConstCompat
 通常の関数などをcfgフラグに基づいて、ジェネリクス受け取りに変更する属性マクロです。
 <br>
