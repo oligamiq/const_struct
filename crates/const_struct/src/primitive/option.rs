@@ -10,17 +10,6 @@ pub struct OptionImpl<T: PrimitiveTraits> {
     __phantom: core::marker::PhantomData<T>,
 }
 
-// impl<T: PrimitiveTraits> OptionTy<T::DATATYPE> for OptionImpl<T> {
-//     const __DATA: Option<T::DATATYPE> = Some(<T as PrimitiveTraits>::__DATA);
-// }
-
-// impl<T> OptionTy<T> for Option<T>
-// where
-//     T: PrimitiveTraits<DATATYPE = Option<T>>,
-// {
-//     const __DATA: Option<T> = <T as PrimitiveTraits>::__DATA;
-// }
-
 impl<U: PrimitiveTraits<DATATYPE = Option<T>>, T> OptionTy<T> for U
 {
     const __DATA: Option<T> = <U as PrimitiveTraits>::__DATA;
