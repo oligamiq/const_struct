@@ -39,12 +39,14 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .collect::<Vec<_>>();
 
     let new_trait = quote! {
+        #[automatically_derived]
         pub trait #trait_name: ::const_struct::PrimitiveTraits<DATATYPE = #name> {
             #(#const_field)*
         }
     };
 
     let trait_impl = quote! {
+        #[automatically_derived]
         impl<PrimitiveType: ::const_struct::PrimitiveTraits<DATATYPE = #name>> #trait_name for PrimitiveType {}
     };
 
