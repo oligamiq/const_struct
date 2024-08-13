@@ -4,15 +4,27 @@ version = 3
 
 [[package]]
 name = "const_struct"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
- "const_struct_derive",
+ "const_struct_derive 0.3.0",
  "paste",
 ]
 
 [[package]]
 name = "const_struct_derive"
 version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "65d003fa0027084ebbe37cc86cbfd54af80acec3c894c4d0202507209b59df70"
+dependencies = [
+ "convert_case",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "const_struct_derive"
+version = "0.3.1"
 dependencies = [
  "convert_case",
  "proc-macro2",
@@ -72,7 +84,7 @@ dependencies = [
 
 [[package]]
 name = "test_code"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "const_struct",
  "no-std-compat",
@@ -80,27 +92,27 @@ dependencies = [
 
 [[package]]
 name = "test_gen_code"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
- "const_struct_derive",
+ "const_struct_derive 0.3.1",
  "paste",
 ]
 
 [[package]]
 name = "test_trait_code"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
- "const_struct_derive",
+ "const_struct_derive 0.3.1",
  "paste",
 ]
 
 [[package]]
 name = "test_trait_code_old"
-version = "0.3.0"
+version = "0.3.1"
 
 [[package]]
 name = "tests"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "const_struct",
 ]
