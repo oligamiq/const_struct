@@ -12,14 +12,8 @@ impl TupleTy<()> for () {
 
 macro_rules! TupleTyByNum {
     ($($generics:ident),*) => {
-        impl<$($generics: PrimitiveTraits),*> TupleTy<($($generics::DATATYPE),*, )> for ($($generics),*, ) {
-            const __DATA: ($($generics::DATATYPE),*, ) = ($($generics::__DATA),*, );
-        }
-
-        paste! {
-            impl<T: PrimitiveTraits<DATATYPE = ($($generics),*, )>, $($generics: PrimitiveTraits),*> TupleTy<($($generics),*, )> for T {
-                const __DATA: ($($generics),*, ) = <T as PrimitiveTraits>::__DATA;
-            }
+        impl<T: PrimitiveTraits<DATATYPE = ($($generics),*, )>, $($generics),*> TupleTy<($($generics),*, )> for T {
+            const __DATA: ($($generics),*, ) = <T as PrimitiveTraits>::__DATA;
         }
 
         impl<$($generics: PrimitiveTraits),*> PrimitiveTraits for ($($generics),*, ) {
