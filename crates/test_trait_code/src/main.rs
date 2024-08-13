@@ -1,13 +1,12 @@
 use core::str;
 
-use pre::ConstStructTraits;
-use primitive::some::{OptionTy, PrimitiveTraits};
+use primitive::{some::{OptionTy, PrimitiveTraits}, F32Ty};
 use setting::WINDOW_SETTING_MANUAL;
 use struct_prim::{
-    reduce_from_utf8, ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd,
+    ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd,
     ConstStructPrimOption, ConstStructPrimU32, ConstStructPrimU8Vec, ConstStructPrimU8VecLimit,
-    ConstStructPrimU8VecRef,
 };
+
 use tester::{tester, tester_2};
 
 mod generics;
@@ -56,15 +55,15 @@ impl<const T: usize> TestSettingManual<T> {
     }
 }
 
-pub trait TestSettingManualTy<const T: usize>: ConstStructTraits<TestSettingManual<T>> {
-    const TEST_DATA: Option<u32> = Self::__DATA.test_data;
+pub trait TestSettingManualTy<const T: usize>: PrimitiveTraits<DATATYPE = TestSettingManual<T>> {
+    const TEST_DATA: Option<u32> = <Self as PrimitiveTraits>::__DATA.test_data;
     const TEST_DATA2: Option<Option<u32>> = Self::__DATA.test_data2;
     const TEST_DATA3: u32 = Self::__DATA.test_data3;
     const TEST_DATA4: [u8; T] = Self::__DATA.test_data4;
     const STR: &'static str = Self::__DATA.str;
 }
 
-impl<const T: usize, U: ConstStructTraits<TestSettingManual<T>>> TestSettingManualTy<T> for U {}
+impl<const T: usize, U: PrimitiveTraits<DATATYPE = TestSettingManual<T>>> TestSettingManualTy<T> for U {}
 
 type TestSettingManualTyPrimWrapper<const T: usize, A, B, C, D, S> = ConstStructPrimAny<
     TestSettingManual<T>,
@@ -87,22 +86,7 @@ impl<
     > PrimitiveTraits for TestSettingManualTyPrimWrapper<T, A, B, C, D, S>
 {
     type DATATYPE = TestSettingManual<T>;
-    const __DATA: Self::DATATYPE =
-        <TestSettingManualTyPrimWrapper<T, A, B, C, D, S> as ConstStructTraits<
-            TestSettingManual<T>,
-        >>::__DATA;
-}
-
-impl<
-        const T: usize,
-        A: ConstStructPrimData<Data = Option<u32>>,
-        B: ConstStructPrimData<Data = Option<Option<u32>>>,
-        C: ConstStructPrimData<Data = u32>,
-        D: ConstStructPrimData<Data = [u8; T]>,
-        S: ConstStructPrimData<Data = &'static str>,
-    > ConstStructTraits<TestSettingManual<T>> for TestSettingManualTyPrimWrapper<T, A, B, C, D, S>
-{
-    const __DATA: TestSettingManual<T> = {
+    const __DATA: Self::DATATYPE = {
         TestSettingManual {
             test_data: <A as ConstStructPrimData>::__DATA,
             test_data2: <B as ConstStructPrimData>::__DATA,
@@ -253,4 +237,22 @@ pub fn tester_prim() {
     };
 
     println!("size: {:?}", core::mem::size_of_val(&ty));
+}
+
+const PI: f32 = 3.14159;
+
+struct PiTy;
+
+impl PrimitiveTraits for PiTy {
+    type DATATYPE = f32;
+    const __DATA: <Self as PrimitiveTraits>::DATATYPE = PI;
+}
+
+fn tester_pi<T: F32Ty>() {
+    println!("PI: {}", T::__DATA);
+}
+
+#[test]
+fn call_tester_pi() {
+    tester_pi::<PiTy>();
 }

@@ -181,7 +181,9 @@ pub fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<Toke
     Ok(output)
 }
 
+#[allow(dead_code)]
 pub fn generate_const_compat_expr(input: Expr, attr: TokenStream) -> Result<TokenStream> {
+    #[allow(unused_variables)]
     let cfg = match syn::parse::<syn::MetaList>(attr.into()) {
         Ok(cfg) => cfg,
         Err(err) => return Err(err),
@@ -208,12 +210,15 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
     };
 
     let struct_define = quote! {
+        #[automatically_derived]
         pub struct #ty_name;
     };
 
     let struct_impl = quote! {
-        impl ::const_struct::ConstStructTraits<#ty> for #ty_name {
-            const __DATA: #ty = #name;
+        #[automatically_derived]
+        impl ::const_struct::PrimitiveTraits for #ty_name {
+            type DATATYPE = #ty;
+            const __DATA: <Self as ::const_struct::PrimitiveTraits>::DATATYPE = #name;
         }
     };
 
