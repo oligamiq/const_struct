@@ -56,7 +56,7 @@ impl<const T: usize> TestSettingManual<T> {
 }
 
 pub trait TestSettingManualTy<const T: usize>: PrimitiveTraits<DATATYPE = TestSettingManual<T>> {
-    const TEST_DATA: Option<u32> = Self::__DATA.test_data;
+    const TEST_DATA: Option<u32> = <Self as PrimitiveTraits>::__DATA.test_data;
     const TEST_DATA2: Option<Option<u32>> = Self::__DATA.test_data2;
     const TEST_DATA3: u32 = Self::__DATA.test_data3;
     const TEST_DATA4: [u8; T] = Self::__DATA.test_data4;
@@ -245,7 +245,7 @@ struct PiTy;
 
 impl PrimitiveTraits for PiTy {
     type DATATYPE = f32;
-    const __DATA: Self::DATATYPE = PI;
+    const __DATA: <Self as PrimitiveTraits>::DATATYPE = PI;
 }
 
 fn tester_pi<T: F32Ty>() {

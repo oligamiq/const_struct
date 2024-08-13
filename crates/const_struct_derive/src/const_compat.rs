@@ -212,8 +212,9 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
     };
 
     let struct_impl = quote! {
-        impl ::const_struct::ConstStructTraits<#ty> for #ty_name {
-            const __DATA: #ty = #name;
+        impl ::const_struct::PrimitiveTraits for #ty_name {
+            type DATATYPE = #ty;
+            const __DATA: <Self as ::const_struct::PrimitiveTraits>::DATATYPE = #name;
         }
     };
 

@@ -33,19 +33,19 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             let field = field.as_ref().unwrap();
             let upper_field = get_upper_filed_name(field);
             quote! {
-                const #upper_field: #ty = Self::__DATA.#field;
+                const #upper_field: #ty = <Self as ::const_struct::PrimitiveTraits>::__DATA.#field;
             }
         })
         .collect::<Vec<_>>();
 
     let new_trait = quote! {
-        pub trait #trait_name: ::const_struct::ConstStructTraits<#name> {
+        pub trait #trait_name: ::const_struct::PrimitiveTraits<DATATYPE = #name> {
             #(#const_field)*
         }
     };
 
     let trait_impl = quote! {
-        impl<T: ::const_struct::ConstStructTraits<#name>> #trait_name for T {}
+        impl<PrimitiveType: ::const_struct::PrimitiveTraits<DATATYPE = #name>> #trait_name for PrimitiveType {}
     };
 
     Ok(quote! {

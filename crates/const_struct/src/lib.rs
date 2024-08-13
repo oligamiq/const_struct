@@ -14,10 +14,7 @@
 
 pub mod prelude;
 pub mod primitive;
+pub use primitive::PrimitiveTraits;
 pub mod struct_prim;
 pub mod util_macro;
 pub use const_struct_derive::*;
-
-pub trait ConstStructTraits<T> {
-    const __DATA: T;
-}
