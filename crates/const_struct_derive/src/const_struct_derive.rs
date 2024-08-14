@@ -1,9 +1,12 @@
 use convert_case::{Case, Casing as _};
+use darling::ast::NestedMeta;
 use proc_macro2::*;
 use quote::quote;
 use syn::*;
 
 pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
+    let user_attrs = get_const_struct_derive_attr(&input)?;
+
     let name = &input.ident;
     let fields = match &input.data {
         Data::Struct(DataStruct {
@@ -54,4 +57,23 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         #new_trait
         #trait_impl
     })
+}
+
+pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<Option<Vec<NestedMeta>>> {
+    let attr = match input.attrs.iter().find(|attr| {
+        attr.path().segments.last().unwrap().ident == "const_struct"
+    }) {
+        Some(attr) => attr,
+        None => return Ok(None),
+    };
+    let attr_args = match NestedMeta::parse_meta_list(match attr.meta {
+        Meta::List(ref list) => {
+            list.tokens.clone()
+        },
+        _ => return Err(Error::new_spanned(attr, "Expected #[const_struct(...)]")),
+    }) {
+        Ok(v) => v,
+        Err(e) => return Err(e),
+    };
+    Ok(Some(attr_args))
 }
