@@ -82,7 +82,21 @@ fn main() {
 ```
 
 ## Structs (outside declaration const/generics)
-Generics are probably not yet supported (I forgot about them).
+It's possible.<br>
+```rust
+use const_struct::{const_struct, primitive::OptionTy};
+
+pub fn tester<A: OptionTy<f64>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[const_struct]
+const PI: Option<f64> = Some(3.14159265358979);
+
+fn main() {
+    tester::<PiTy>();
+}
+```
 
 ## Structs (inside declaration const)
 Here, it may be referred to as the inside macro.<br>
