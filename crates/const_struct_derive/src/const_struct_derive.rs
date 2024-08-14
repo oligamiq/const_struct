@@ -1,5 +1,5 @@
 use convert_case::{Case, Casing as _};
-use darling::ast::NestedMeta;
+use darling::{ast::NestedMeta, FromMeta};
 use proc_macro2::*;
 use quote::quote;
 use syn::*;
@@ -59,12 +59,18 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     })
 }
 
-pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<Option<Vec<NestedMeta>>> {
+#[derive(Default, FromMeta)]
+#[darling(default)]
+pub struct ConstStructAttr {
+    macro_export: bool,
+}
+
+pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<ConstStructAttr> {
     let attr = match input.attrs.iter().find(|attr| {
         attr.path().segments.last().unwrap().ident == "const_struct"
     }) {
         Some(attr) => attr,
-        None => return Ok(None),
+        None => return Ok(ConstStructAttr::default()),
     };
     let attr_args = match NestedMeta::parse_meta_list(match attr.meta {
         Meta::List(ref list) => {
@@ -75,5 +81,9 @@ pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<Option<Vec<Ne
         Ok(v) => v,
         Err(e) => return Err(e),
     };
-    Ok(Some(attr_args))
+    let args = match ConstStructAttr::from_list(&attr_args) {
+        Ok(v) => v,
+        Err(e) => return Err(Error::new_spanned(attr, e)),
+    };
+    Ok(args)
 }
