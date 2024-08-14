@@ -87,3 +87,20 @@ mod tests5 {
         tester::<PiTy>();
     }
 }
+
+#[cfg(test)]
+mod tests6 {
+    use const_struct::{const_struct, primitive::OptionTy};
+
+    pub fn tester<A: OptionTy<f64>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    #[const_struct]
+    const PI: Option<f64> = Some(3.14159265358979);
+
+    #[test]
+    fn main() {
+        tester::<PiTy>();
+    }
+}

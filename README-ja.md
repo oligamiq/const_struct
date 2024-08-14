@@ -81,8 +81,23 @@ fn main() {
 }
 
 ```
+
 ## 構造体(outside declaration const/generics)
-ジェネリクスはまだ対応していないはずです（忘れてました）。
+可能です。<br>
+```rust
+use const_struct::{const_struct, primitive::OptionTy};
+
+pub fn tester<A: OptionTy<f64>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[const_struct]
+const PI: Option<f64> = Some(3.14159265358979);
+
+fn main() {
+    tester::<PiTy>();
+}
+```
 
 ## 構造体(inside declaration const)
 ※ここではインサイドマクロと呼ぶことがあります。<br>
@@ -180,5 +195,4 @@ pub fn tester(test_setting: TestSetting) {
 
 ## マクロを使わない手動実装:未テスト
 - プリミティブ型（アウトサイドマクロ）
-- 構造体に対するアウトサイドマクロでのジェネリクス
 - Enumに対するConstStruct、アウトサイドマクロ、インサイドマクロ
