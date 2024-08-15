@@ -1,5 +1,4 @@
 use convert_case::{Case, Casing as _};
-use darling::{ast::NestedMeta, FromMeta};
 use proc_macro2::*;
 use quote::quote;
 use syn::*;
@@ -59,31 +58,53 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     })
 }
 
-#[derive(Default, FromMeta)]
-#[darling(default)]
 pub struct ConstStructAttr {
     macro_export: bool,
 }
 
+impl ConstStructAttr {
+    pub fn default() -> Self {
+        Self {
+            macro_export: false,
+        }
+    }
+}
+
 pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<ConstStructAttr> {
-    let attr = match input.attrs.iter().find(|attr| {
-        attr.path().segments.last().unwrap().ident == "const_struct"
-    }) {
-        Some(attr) => attr,
-        None => return Ok(ConstStructAttr::default()),
+    let attr = input
+        .attrs
+        .iter()
+        .filter(|attr| attr.path().segments.last().unwrap().ident == "const_struct")
+        .collect::<Vec<_>>();
+
+    let is_macro_export = attr.iter().any(|attr| check_macro_export(attr));
+    // let attr_args = match NestedMeta::parse_meta_list(match attr.meta {
+    //     Meta::List(ref list) => {
+    //         list.tokens.clone()
+    //     },
+    //     _ => return Err(Error::new_spanned(attr, "Expected #[const_struct(...)]")),
+    // }) {
+    //     Ok(v) => v,
+    //     Err(e) => return Err(e),
+    // };
+    // let args = match ConstStructAttr::from_list(&attr_args) {
+    //     Ok(v) => v,
+    //     Err(e) => return Err(Error::new_spanned(attr, e)),
+    // };
+    // Ok(args)
+
+    // TODO!()
+    Ok(ConstStructAttr::default())
+}
+
+pub fn check_macro_export(attr: &Attribute) -> bool {
+    let attr_token = match attr.meta {
+        Meta::List(ref list) => list.tokens.clone(),
+        _ => return false,
     };
-    let attr_args = match NestedMeta::parse_meta_list(match attr.meta {
-        Meta::List(ref list) => {
-            list.tokens.clone()
-        },
-        _ => return Err(Error::new_spanned(attr, "Expected #[const_struct(...)]")),
-    }) {
-        Ok(v) => v,
-        Err(e) => return Err(e),
-    };
-    let args = match ConstStructAttr::from_list(&attr_args) {
-        Ok(v) => v,
-        Err(e) => return Err(Error::new_spanned(attr, e)),
-    };
-    Ok(args)
+    let parse_macro_export = parse2::<Ident>(attr_token);
+    match parse_macro_export {
+        Ok(ident) => ident == "macro_export",
+        Err(_) => false,
+    }
 }

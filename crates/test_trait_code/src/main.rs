@@ -1,10 +1,13 @@
 use core::str;
 
-use primitive::{some::{OptionTy, PrimitiveTraits}, F32Ty};
+use primitive::{
+    some::{OptionTy, PrimitiveTraits},
+    F32Ty,
+};
 use setting::WINDOW_SETTING_MANUAL;
 use struct_prim::{
-    ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd,
-    ConstStructPrimOption, ConstStructPrimU32, ConstStructPrimU8Vec, ConstStructPrimU8VecLimit,
+    ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption,
+    ConstStructPrimU32, ConstStructPrimU8Vec, ConstStructPrimU8VecLimit,
 };
 
 use tester::{tester, tester_2};
@@ -55,7 +58,9 @@ impl<const T: usize> TestSettingManual<T> {
     }
 }
 
-pub trait TestSettingManualTy<const T: usize>: PrimitiveTraits<DATATYPE = TestSettingManual<T>> {
+pub trait TestSettingManualTy<const T: usize>:
+    PrimitiveTraits<DATATYPE = TestSettingManual<T>>
+{
     const TEST_DATA: Option<u32> = <Self as PrimitiveTraits>::__DATA.test_data;
     const TEST_DATA2: Option<Option<u32>> = Self::__DATA.test_data2;
     const TEST_DATA3: u32 = Self::__DATA.test_data3;
@@ -63,7 +68,10 @@ pub trait TestSettingManualTy<const T: usize>: PrimitiveTraits<DATATYPE = TestSe
     const STR: &'static str = Self::__DATA.str;
 }
 
-impl<const T: usize, U: PrimitiveTraits<DATATYPE = TestSettingManual<T>>> TestSettingManualTy<T> for U {}
+impl<const T: usize, U: PrimitiveTraits<DATATYPE = TestSettingManual<T>>> TestSettingManualTy<T>
+    for U
+{
+}
 
 type TestSettingManualTyPrimWrapper<const T: usize, A, B, C, D, S> = ConstStructPrimAny<
     TestSettingManual<T>,
