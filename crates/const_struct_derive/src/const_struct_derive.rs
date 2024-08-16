@@ -1,4 +1,7 @@
+use std::f32::consts::E;
+
 use convert_case::{Case, Casing as _};
+use parse::{Parse, Parser};
 use proc_macro2::*;
 use quote::quote;
 use syn::*;
@@ -58,14 +61,17 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     })
 }
 
+#[derive(Debug)]
 pub struct ConstStructAttr {
     macro_export: bool,
+    path_and_ident: Vec<PathAndIdent>,
 }
 
 impl ConstStructAttr {
     pub fn default() -> Self {
         Self {
             macro_export: false,
+            path_and_ident: Vec::new(),
         }
     }
 }
@@ -78,20 +84,14 @@ pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<ConstStructAt
         .collect::<Vec<_>>();
 
     let is_macro_export = attr.iter().any(|attr| check_macro_export(attr));
-    // let attr_args = match NestedMeta::parse_meta_list(match attr.meta {
-    //     Meta::List(ref list) => {
-    //         list.tokens.clone()
-    //     },
-    //     _ => return Err(Error::new_spanned(attr, "Expected #[const_struct(...)]")),
-    // }) {
-    //     Ok(v) => v,
-    //     Err(e) => return Err(e),
-    // };
-    // let args = match ConstStructAttr::from_list(&attr_args) {
-    //     Ok(v) => v,
-    //     Err(e) => return Err(Error::new_spanned(attr, e)),
-    // };
-    // Ok(args)
+    let path_and_ident = attr.iter().flat_map(|attr| register_ident_path(attr).unwrap_or_default()).collect::<Vec<_>>();
+
+    let attr = ConstStructAttr {
+        macro_export: is_macro_export,
+        path_and_ident,
+    };
+
+    dbg!(&attr);
 
     // TODO!()
     Ok(ConstStructAttr::default())
@@ -115,4 +115,35 @@ pub fn check_macro_export(attr: &Attribute) -> bool {
     } else {
         false
     }
+}
+
+#[derive(Debug)]
+pub struct PathAndIdent {
+    ident: Ident,
+    _token: Token![:],
+    meta_dollar: Option<Token![$]>,
+    path: Path,
+}
+
+impl Parse for PathAndIdent {
+    fn parse(input: parse::ParseStream) -> Result<Self> {
+        let ident = input.parse()?;
+        let _token = input.parse()?;
+        let meta_dollar = input.parse()?;
+        let path = input.parse()?;
+        Ok(Self { ident, _token, meta_dollar, path })
+    }
+}
+
+pub fn register_ident_path(attr: &Attribute) -> Result<Vec<PathAndIdent>> {
+    let attr_token = match get_token(attr) {
+        Some(token) => token,
+        None => return Err(Error::new_spanned(attr, "Expected #[const_struct(ident: mod::ident)]")),
+    };
+    let attr_args = syn::punctuated::Punctuated::<PathAndIdent, Token![,]>::parse_terminated
+        .parse2(attr_token)?;
+
+    dbg!(&attr_args);
+
+    Ok(attr_args.into_iter().collect())
 }
