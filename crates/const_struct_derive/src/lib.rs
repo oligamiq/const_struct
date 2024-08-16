@@ -14,6 +14,7 @@ mod const_compat;
 mod const_struct_derive;
 mod rewriter;
 mod util_macro;
+mod ident;
 
 #[proc_macro_derive(ConstStruct)]
 pub fn const_struct_derive(input: RawTokenStream) -> RawTokenStream {

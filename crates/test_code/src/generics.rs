@@ -6,6 +6,7 @@ impl Float for f32 {}
 
 #[const_struct(macro_export)]
 #[const_struct(Float: $crate::Float)]
+#[const_struct(Debug: ::std::fmt::Debug)]
 #[derive(ConstStruct)]
 pub struct TestGenerics {
     s: f32,

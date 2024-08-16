@@ -119,19 +119,31 @@ pub fn check_macro_export(attr: &Attribute) -> bool {
 
 #[derive(Debug)]
 pub struct PathAndIdent {
-    ident: Ident,
-    _token: Token![:],
-    meta_dollar: Option<Token![$]>,
-    path: Path,
+    pub ident: Ident,
+    pub _token: Token![:],
+    pub path: DollarPath,
+}
+
+#[derive(Debug)]
+pub struct DollarPath {
+    pub meta_dollar: Option<Token![$]>,
+    pub path: Path,
 }
 
 impl Parse for PathAndIdent {
     fn parse(input: parse::ParseStream) -> Result<Self> {
         let ident = input.parse()?;
         let _token = input.parse()?;
+        let path = input.parse()?;
+        Ok(Self { ident, _token, path })
+    }
+}
+
+impl Parse for DollarPath {
+    fn parse(input: parse::ParseStream) -> Result<Self> {
         let meta_dollar = input.parse()?;
         let path = input.parse()?;
-        Ok(Self { ident, _token, meta_dollar, path })
+        Ok(Self { meta_dollar, path })
     }
 }
 
