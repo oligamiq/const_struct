@@ -97,14 +97,22 @@ pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<ConstStructAt
     Ok(ConstStructAttr::default())
 }
 
-pub fn check_macro_export(attr: &Attribute) -> bool {
+pub fn get_token(attr: &Attribute) -> Option<TokenStream> {
     let attr_token = match attr.meta {
         Meta::List(ref list) => list.tokens.clone(),
-        _ => return false,
+        _ => return None,
     };
-    let parse_macro_export = parse2::<Ident>(attr_token);
-    match parse_macro_export {
-        Ok(ident) => ident == "macro_export",
-        Err(_) => false,
+    Some(attr_token)
+}
+
+pub fn check_macro_export(attr: &Attribute) -> bool {
+    if let Some(attr_token) = get_token(attr) {
+        let parse_macro_export = parse2::<Ident>(attr_token);
+        match parse_macro_export {
+            Ok(ident) => ident == "macro_export",
+            Err(_) => false,
+        }
+    } else {
+        false
     }
 }
