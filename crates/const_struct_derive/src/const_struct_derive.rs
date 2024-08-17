@@ -3,11 +3,81 @@ use std::f32::consts::E;
 use convert_case::{Case, Casing as _};
 use parse::{Parse, Parser};
 use proc_macro2::*;
-use quote::quote;
+use quote::{quote, ToTokens as _};
 use syn::*;
+use syn::punctuated::Punctuated;
+use crate::ident::get_absolute_ident_path_from_ident;
+
+/// paramsをwhere節に変換する
+pub fn generics_into_where_clause(generics: Generics) -> Generics {
+    let mut where_clause = generics.where_clause.unwrap_or_else(|| WhereClause {
+        where_token: Default::default(),
+        predicates: Default::default(),
+    });
+
+    for param in generics.params.clone() {
+        let param = param.to_token_stream();
+        where_clause.predicates.push(parse2::<WherePredicate>(param).unwrap());
+    }
+
+    let params = generics.params.iter().map(|param| {
+        match param {
+            GenericParam::Type(param) => {
+                GenericParam::Type(TypeParam {
+                    bounds: Default::default(),
+                    ..param.clone()
+                })
+            },
+            GenericParam::Lifetime(param) => {
+                GenericParam::Lifetime(LifetimeParam {
+                    bounds: Default::default(),
+                    ..param.clone()
+                })
+            },
+            _ => param.clone(),
+        }
+    }).collect::<Punctuated<GenericParam, Token![,]>>();
+
+    Generics {
+        where_clause: Some(where_clause),
+        params,
+        ..generics
+    }
+}
 
 pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     let user_attrs = get_const_struct_derive_attr(&input)?;
+
+    let generics: Generics = generics_into_where_clause(input.generics.clone());
+    let generics_where_clause = generics.where_clause.clone().unwrap().predicates.iter().map(|pred| {
+        match pred {
+            WherePredicate::Type(pred) => {
+                let ty = &pred.bounds;
+                let ty = if ty.iter().any(|ty| match ty {
+                    TypeParamBound::Trait(ty) => ty.path.is_ident("Clone"),
+                    _ => false,
+                }) {
+                    ty.clone()
+                } else {
+                    let mut ty = ty.clone();
+                    ty.push(parse_quote!(Clone));
+                    ty
+                };
+                WherePredicate::Type(PredicateType {
+                    bounds: ty,
+                    ..pred.clone()
+                })
+            }
+            _ => pred.clone(),
+        }
+    }).collect::<Punctuated<WherePredicate, Token![,]>>();
+    let generics = Generics {
+        where_clause: Some(WhereClause {
+            where_token: Default::default(),
+            predicates: generics_where_clause,
+        }),
+        ..generics
+    };
 
     let name = &input.ident;
     let fields = match &input.data {
@@ -43,12 +113,16 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         })
         .collect::<Vec<_>>();
 
-    let new_trait = quote! {
+    let mut new_trait: ItemTrait = parse_quote! {
         #[automatically_derived]
         pub trait #trait_name: ::const_struct::PrimitiveTraits<DATATYPE = #name> {
             #(#const_field)*
         }
     };
+
+    new_trait.generics = generics.clone();
+
+    println!("new_trait: {}", new_trait.to_token_stream());
 
     let trait_impl = quote! {
         #[automatically_derived]
@@ -73,6 +147,13 @@ impl ConstStructAttr {
             macro_export: false,
             path_and_ident: Vec::new(),
         }
+    }
+
+    pub fn get_absolute_ident_path(&self, ident: &Ident) -> DollarPath {
+        get_absolute_ident_path_from_ident(ident, self.path_and_ident.clone()).unwrap_or(DollarPath {
+            meta_dollar: None,
+            path: ident.clone().into(),
+        })
     }
 }
 
@@ -117,14 +198,14 @@ pub fn check_macro_export(attr: &Attribute) -> bool {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PathAndIdent {
     pub ident: Ident,
     pub _token: Token![:],
     pub path: DollarPath,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DollarPath {
     pub meta_dollar: Option<Token![$]>,
     pub path: Path,

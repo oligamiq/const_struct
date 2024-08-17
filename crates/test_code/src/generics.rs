@@ -8,8 +8,14 @@ impl Float for f32 {}
 #[const_struct(Float: $crate::Float)]
 #[const_struct(Debug: ::std::fmt::Debug)]
 #[derive(ConstStruct)]
-pub struct TestGenerics {
-    s: f32,
+pub struct TestGenerics<S: Float> {
+    s: S,
+}
+
+pub struct Y<const T: usize>
+    where
+{
+    t: f32,
 }
 
 // #[const_struct]

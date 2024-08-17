@@ -3,6 +3,7 @@ use std::str::FromStr;
 use crate::const_struct_derive::{DollarPath, PathAndIdent};
 use syn::*;
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, EnumString)]
 pub enum PrimitiveIdent {
     u8,
@@ -50,13 +51,13 @@ pub fn get_primitive_ident_path(str: &str) -> Option<DollarPath> {
 }
 
 pub fn get_absolute_ident_path_from_ident(ident: &Ident, addition: Vec<PathAndIdent>) -> Option<DollarPath> {
-    if let Some(path) = get_primitive_ident_path(&ident.to_string()) {
-        return Some(path);
-    }
     for path_and_ident in addition {
         if path_and_ident.ident == *ident {
             return Some(path_and_ident.path);
         }
+    }
+    if let Some(path) = get_primitive_ident_path(&ident.to_string()) {
+        return Some(path);
     }
     None
 }

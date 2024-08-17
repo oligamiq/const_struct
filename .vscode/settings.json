@@ -9,5 +9,6 @@
         "structs",
         "turbofish",
         "usize"
-    ]
+    ],
+    "rust-analyzer.checkOnSave": true
 }
