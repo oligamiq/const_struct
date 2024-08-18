@@ -64,16 +64,15 @@ pub fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<Toke
     // dbg!(&root_cfg);
 
     let new_input = input.clone();
-    let (new_input, ty) = match new_input.sig.inputs.iter().position(|arg| {
-        if let syn::FnArg::Typed(pat) = arg {
+    let (new_input, ty) = match new_input.sig.inputs.iter().position(|arg| match arg {
+        syn::FnArg::Typed(pat) => {
             if let syn::Pat::Ident(ident) = &*pat.pat {
                 ident.ident == root_ident
             } else {
                 false
             }
-        } else {
-            false
         }
+        _ => false,
     }) {
         Some(i) => {
             let arg = &new_input.sig.inputs[i];

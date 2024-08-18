@@ -12,14 +12,14 @@ use syn::{
 
 mod const_compat;
 mod const_struct_derive;
+mod ident;
 mod rewriter;
 mod util_macro;
-mod ident;
 
 #[proc_macro_derive(ConstStruct)]
 pub fn const_struct_derive(input: RawTokenStream) -> RawTokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-    dbg!(&input);
+    // dbg!(&input);
     let output = generate_const_struct_derive(input);
     match output {
         Ok(output) => output.into(),

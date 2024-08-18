@@ -7,7 +7,7 @@ use crate::{
     F32,
 };
 
-use const_struct_derive::call_with_generics;
+use const_struct_derive::{call_with_generics, const_struct};
 
 pub trait Float {}
 
@@ -20,12 +20,12 @@ pub struct TestGenerics<const A: usize, S: Float> {
 }
 
 pub trait TestGenericsTy<const A: usize, S: Float + Copy>:
-    ConstStructTraits<TestGenerics<A, S>>
+    PrimitiveTraits<DATATYPE = TestGenerics<A, S>>
 {
-    const S: S = Self::__DATA.s;
+    const S: S = <Self as PrimitiveTraits>::__DATA.s;
 }
 
-impl<const A: usize, S: Float + Copy, U: ConstStructTraits<TestGenerics<A, S>>> TestGenericsTy<A, S>
+impl<const A: usize, S: Float + Copy, U: PrimitiveTraits<DATATYPE = TestGenerics<A, S>>> TestGenericsTy<A, S>
     for U
 {
 }
@@ -71,43 +71,56 @@ pub mod tt {
 
     #[macro_export]
     macro_rules! TestGenerics {
-    (TestGenericsGetConstGenerics0, $value:expr) => {
-        {
-            const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
-                A
+        (TestGenericsGetConstGenerics0, $value:ident) => {
+            {
+                const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
+                    A
+                }
+
+                get_const_generics_a($value::__DATA)
             }
+        };
+        ($a:tt, $s:expr, $value:ident) => {
+            $value
+        };
 
-            get_const_generics_a($value)
-        }
-    };
-    ($a:tt, $s:expr, $value:expr) => {
-        paste::paste! {
-            ConstStructPrimAny<TestGenerics<{
-                match_underscore!($a, {
-                    const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
-                        A
-                    }
+        (TestGenericsGetConstGenerics0, $value:expr) => {
+            {
+                const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
+                    A
+                }
 
-                    get_const_generics_a($value)
-                })
-            }, $s>, ConstStructPrimAny<
-                [<$s:camel>]!({
-                    let value: TestGenerics<{
-                        match_underscore!($a, {
-                            const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
-                                A
-                            }
+                get_const_generics_a($value)
+            }
+        };
+        ($a:tt, $s:expr, $value:expr) => {
+            paste::paste! {
+                ConstStructPrimAny<TestGenerics<{
+                    match_underscore!($a, {
+                        const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
+                            A
+                        }
 
-                            get_const_generics_a($value)
-                        })
-                    }, $s> = $value;
-                    value
-                }.s),
-                ConstStructPrimEnd,
-            >>
-        }
-    };
-}
+                        get_const_generics_a($value)
+                    })
+                }, $s>, ConstStructPrimAny<
+                    [<$s:camel>]!({
+                        let value: TestGenerics<{
+                            match_underscore!($a, {
+                                const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
+                                    A
+                                }
+
+                                get_const_generics_a($value)
+                            })
+                        }, $s> = $value;
+                        value
+                    }.s),
+                    ConstStructPrimEnd,
+                >>
+            }
+        };
+    }
 }
 
 #[test]
@@ -131,4 +144,42 @@ fn call_tester<
     println!("{:?}", T::S);
     println!("{:?}", C);
     println!("{:?}", U);
+}
+
+const B: TestGenerics<7, f32> = TestGenerics { s: 0.0, t: [0; 7] };
+
+#[automatically_derived]
+pub struct BTy;
+
+pub trait KeepType {
+    type Type;
+}
+
+pub struct KeepTypeStruct<T, const N: usize> {
+    __phantom: core::marker::PhantomData<T>,
+}
+
+pub struct KeepTypeConst<const N: usize>;
+
+impl<const N: usize> KeepTypeConst<N> {
+    pub const __DATA: usize = N;
+}
+
+impl KeepType for KeepTypeStruct<BTy, 0> {
+    type Type = KeepTypeConst<7>;
+}
+
+impl KeepType for KeepTypeStruct<BTy, 1> {
+    type Type = f32;
+}
+
+#[automatically_derived]
+impl PrimitiveTraits for BTy {
+    type DATATYPE = TestGenerics<7, f32>;
+    const __DATA: <Self as PrimitiveTraits>::DATATYPE = B;
+}
+
+#[test]
+fn test_test_generics() {
+    call_with_generics!(call_tester::<{ <KeepTypeStruct<BTy, 0> as KeepType>::Type::__DATA }, crate::TestGenerics!(_, f32, BTy), 9>());
 }

@@ -1,6 +1,6 @@
-use strum::EnumString;
+use crate::const_struct_derive::{AbsolutePath, PathAndIdent};
 use std::str::FromStr;
-use crate::const_struct_derive::{DollarPath, PathAndIdent};
+use strum::EnumString;
 use syn::*;
 
 #[allow(non_camel_case_types)]
@@ -40,17 +40,17 @@ pub enum PrimitiveIdent {
     Isize,
 }
 
-pub fn get_primitive_ident_path(str: &str) -> Option<DollarPath> {
+pub fn get_primitive_ident_path(str: &str) -> Option<AbsolutePath> {
     PrimitiveIdent::from_str(str).ok().map(|_| {
         let new_path = format!("::const_struct::primitive::{}", str);
-        DollarPath {
-            meta_dollar: None,
-            path: parse_str(&new_path).unwrap(),
-        }
+        AbsolutePath::new(parse_str(&new_path).unwrap())
     })
 }
 
-pub fn get_absolute_ident_path_from_ident(ident: &Ident, addition: Vec<PathAndIdent>) -> Option<DollarPath> {
+pub fn get_absolute_ident_path_from_ident(
+    ident: &Ident,
+    addition: Vec<PathAndIdent>,
+) -> Option<AbsolutePath> {
     for path_and_ident in addition {
         if path_and_ident.ident == *ident {
             return Some(path_and_ident.path);
