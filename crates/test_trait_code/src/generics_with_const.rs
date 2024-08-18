@@ -67,20 +67,10 @@ pub mod tt {
         F32,
     };
 
-    use const_struct_derive::call_with_generics;
-
     #[macro_export]
     macro_rules! TestGenerics {
         (TestGenericsGetGenericsData, $macro_path: path, $($arg:tt)*) => {
             $macro_path!(TestGenericsGetGenericsData(const, type), $($arg)*)
-        };
-        (TestGenericsGetOuterGenerics0, $value:path) => {
-            {
-                <KeepTypeStruct<$value, 0> as KeepType>::Type::__DATA
-            }
-        };
-        (TestGenericsGetOuterGenerics1, $value:path) => {
-            <KeepTypeStruct<$value, 1> as KeepType>::Type
         };
         (TestGenericsGetInnerGenerics0, $value:expr) => {
             {
