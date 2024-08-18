@@ -51,7 +51,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
     let generics: Generics = generics_into_where_clause(input.generics.clone());
 
-    let generics_where_clause = generics
+    let generics_where_clause_fn = |with_copy: bool| generics
         .where_clause
         .clone()
         .unwrap()
@@ -67,7 +67,9 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                     ty.clone()
                 } else {
                     let mut ty = ty.clone();
-                    ty.push(parse_quote!(Copy));
+                    if with_copy {
+                        ty.push(parse_quote!(Copy));
+                    }
                     ty
                 };
                 let ty = ty
@@ -88,6 +90,10 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             _ => pred.clone(),
         })
         .collect::<Punctuated<WherePredicate, Token![,]>>();
+
+    let generics_where_clause = generics_where_clause_fn(false);
+    let generics_where_clause_with_copy = generics_where_clause_fn(true);
+
     let generics = Generics {
         where_clause: Some(WhereClause {
             where_token: Default::default(),
@@ -95,10 +101,59 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         }),
         ..generics
     };
+    let generics_with_copy = Generics {
+        where_clause: Some(WhereClause {
+            where_token: Default::default(),
+            predicates: generics_where_clause_with_copy,
+        }),
+        ..generics.clone()
+    };
+
+    let name = &input.ident;
+    let datatype = {
+        let mut datatype: Path = parse_quote! { #name };
+        let path_segments = datatype.segments.last_mut().unwrap();
+        path_segments.arguments = PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+            colon2_token: None,
+            args: generics
+                .params
+                .iter()
+                .map::<GenericArgument, _>(|param| match param {
+                    GenericParam::Const(ConstParam { ident, .. }) => {
+                        GenericArgument::Const(parse_quote! { #ident })
+                    }
+                    _ => GenericArgument::Type(parse_quote! { #param }),
+                })
+                .collect::<Punctuated<_, Token![,]>>(),
+            lt_token: Default::default(),
+            gt_token: Default::default(),
+        });
+        datatype
+    };
+
+    let keep_type_impls = generics
+        .params
+        .iter()
+        .enumerate()
+        .filter_map(|(num, param)| match param {
+            GenericParam::Const(param) => {
+                let ty = &param.ty;
+                let mut keep_type_impl: ItemImpl = parse_quote! {
+                    #[automatically_derived]
+                    impl ::const_struct::keeptype::KeepType<#num> for #datatype {
+                        type Type = #ty;
+                    }
+                };
+                keep_type_impl.generics = generics.clone();
+
+                Some(keep_type_impl)
+            },
+            _ => None,
+        })
+        .collect::<Vec<_>>();
 
     // println!("generics: {}", generics.to_token_stream());
 
-    let name = &input.ident;
     let fields = match &input.data {
         Data::Struct(DataStruct {
             fields: Fields::Named(FieldsNamed { named, .. }),
@@ -132,36 +187,18 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         })
         .collect::<Vec<_>>();
 
-    let mut datatype: Path = parse_quote! { #name };
-    let path_segments = datatype.segments.last_mut().unwrap();
-    path_segments.arguments = PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-        colon2_token: None,
-        args: generics
-            .params
-            .iter()
-            .map::<GenericArgument, _>(|param| match param {
-                GenericParam::Const(ConstParam { ident, .. }) => {
-                    GenericArgument::Const(parse_quote! { #ident })
-                }
-                _ => GenericArgument::Type(parse_quote! { #param }),
-            })
-            .collect::<Punctuated<_, Token![,]>>(),
-        lt_token: Default::default(),
-        gt_token: Default::default(),
-    });
-
-    let mut new_trait: ItemTrait = parse_quote! {
+    let mut new_trait_impl: ItemTrait = parse_quote! {
         #[automatically_derived]
         pub trait #trait_name: ::const_struct::PrimitiveTraits<DATATYPE = #datatype> {
             #(#const_field)*
         }
     };
 
-    // dbg!(&new_trait);
+    // dbg!(&new_trait_impl);
 
-    new_trait.generics = generics.clone();
+    new_trait_impl.generics = generics_with_copy.clone();
 
-    // println!("new_trait: {}", new_trait.to_token_stream());
+    // println!("new_trait_impl: {}", new_trait_impl.to_token_stream());
 
     let trait_name_with_generics = {
         let mut trait_name_with_generics = datatype.clone();
@@ -172,13 +209,14 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         #[automatically_derived]
         impl<PrimitiveType: ::const_struct::PrimitiveTraits<DATATYPE = #datatype>> #trait_name_with_generics for PrimitiveType {}
     };
-    trait_impl.generics.params.extend(generics.params);
-    trait_impl.generics.where_clause = generics.where_clause.clone();
+    trait_impl.generics.params.extend(generics_with_copy.params);
+    trait_impl.generics.where_clause = generics_with_copy.where_clause.clone();
 
     // println!("trait_impl: {}", trait_impl);
 
     Ok(quote! {
-        #new_trait
+        #(#keep_type_impls)*
+        #new_trait_impl
         #trait_impl
     })
 }
