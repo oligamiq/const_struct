@@ -175,4 +175,5 @@ impl PrimitiveTraits for BTy {
 #[test]
 fn test_test_generics() {
     call_with_generics!(call_tester::<4, crate::TestGenerics!(_, _, BTy), 9>());
+    call_with_generics!(call_tester::<4, crate::TestGenerics!(BTy), 9>());
 }

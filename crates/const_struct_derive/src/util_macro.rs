@@ -203,6 +203,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         quote! { #self_macro!(#get_generics_data, ::const_struct_derive::call_with_generics, #input) }.into(),
                     );
                 }
+                let define_data = define_data.as_ref().unwrap();
 
                 let get_generics = |num: usize, middle: &str, value: Expr| {
                     let mut mac = mac.clone();
@@ -238,11 +239,10 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                 };
                 let infer_process = |num| {
                     if is_outer_declaration {
-                        let const_or_type =
-                            match define_data.as_ref().unwrap().const_or_type.get(num) {
-                                Some(const_or_type) => const_or_type,
-                                None => panic!("failed to get const_or_type"),
-                            };
+                        let const_or_type = match define_data.const_or_type.get(num) {
+                            Some(const_or_type) => const_or_type,
+                            None => panic!("failed to get const_or_type"),
+                        };
                         let ty_path = ty_path.clone().unwrap();
                         match const_or_type {
                             ConstOrType::Const => {
@@ -267,23 +267,33 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                 };
 
                 let args_len = args.len();
-                let mut new_generic = args
-                    .into_iter()
-                    .enumerate()
-                    .filter(|(i, _)| *i < args_len - 1)
-                    .map(|(num, arg)| match arg {
-                        Expr::Infer(_) => infer_process(num),
-                        _ => {
-                            let str = arg.to_token_stream().to_string();
-                            // println!("str: {}", str);
-                            let generics = match parse_str::<GenericArgument>(&str) {
-                                Ok(generics) => generics,
-                                Err(_) => panic!("failed to parse Argument"),
-                            };
-                            generics
-                        }
-                    })
-                    .collect::<Vec<GenericArgument>>();
+                let mut new_generic = if args_len == define_data.const_or_type.len() + 1 {
+                    args.into_iter()
+                        .enumerate()
+                        .filter(|(i, _)| *i < args_len - 1)
+                        .map(|(num, arg)| match arg {
+                            Expr::Infer(_) => infer_process(num),
+                            _ => {
+                                let str = arg.to_token_stream().to_string();
+                                // println!("str: {}", str);
+                                let generics = match parse_str::<GenericArgument>(&str) {
+                                    Ok(generics) => generics,
+                                    Err(_) => panic!("failed to parse Argument"),
+                                };
+                                generics
+                            }
+                        })
+                        .collect::<Vec<GenericArgument>>()
+                } else if args.len() == 1 {
+                    define_data
+                        .const_or_type
+                        .iter()
+                        .enumerate()
+                        .map(|(num, _)| infer_process(num))
+                        .collect::<Vec<GenericArgument>>()
+                } else {
+                    panic!("failed to parse Argument");
+                };
 
                 new_generic.push(if is_outer_declaration {
                     GenericArgument::Type(Type::Path(TypePath {
