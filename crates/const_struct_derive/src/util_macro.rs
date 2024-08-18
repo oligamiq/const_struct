@@ -1,5 +1,3 @@
-use std::path;
-
 use parse::{discouraged::Speculative as _, Parse, ParseStream, Parser as _};
 use proc_macro2::TokenStream;
 use punctuated::Punctuated;
