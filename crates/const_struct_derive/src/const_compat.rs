@@ -195,7 +195,7 @@ pub fn generate_const_compat_expr(input: Expr, attr: TokenStream) -> Result<Toke
 }
 
 pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
-    println!("##################");
+    // println!("##################");
 
     let name = &input.ident;
     let ty = &input.ty;
@@ -223,23 +223,55 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
         }
     };
 
-    let keep_type = input.generics.params.iter().map(|param| {
-        let param = match param {
-            GenericParam::Type(param) => param,
-            _ => return None,
-        };
-        let ident = &param.ident;
-        let bounds = &param.bounds;
-        Some(quote! {
-            impl ::const_struct::KeepType for #ident #bounds {
-                type Type = #ty;
-            }
-        })
-    });
+    dbg!(&input);
+
+    let keep_type = match input.ty.as_ref() {
+        Type::Path(path) => {
+            let path = path.path.clone();
+            let segments = path.segments;
+            let last = segments.last().unwrap();
+            let generics = last.arguments.clone();
+            let generics = match generics {
+                PathArguments::AngleBracketed(generics) => {
+                    let args = generics.args;
+                    let args = args.into_iter().enumerate().filter_map(|(num, arg)| match arg {
+                        GenericArgument::Type(ty) => {
+                            // println!("###ty {}", ty.to_token_stream());
+                            let item: ItemImpl = parse_quote! {
+                                impl ::const_struct::keeptype::KeepType<#num> for #ty_name {
+                                    type Type = #ty;
+                                }
+                            };
+                            Some(item)
+                        },
+                        GenericArgument::Const(con) => {
+                            // println!("###const {}", ty.to_token_stream());
+                            // println!("###const {}", con.to_token_stream());
+                            let input_ty = &input.ty;
+                            let item: ItemImpl = parse_quote! {
+                                impl ::const_struct::keeptype::KeepTypeConst<#num> for #ty_name {
+                                    type DATATYPE = <#input_ty as ::const_struct::keeptype::KeepType<#num>>::Type;
+                                    const N: Self::DATATYPE = { #con };
+                                }
+                            };
+                            Some(item)
+                        }
+                        _ => None,
+                    }).collect::<Vec<_>>();
+                    Some(args)
+                }
+                _ => None,
+            };
+            generics
+        },
+        // Tupleの実装を考えなければならない
+        _ => None,
+    }.unwrap_or_default();
 
     Ok(quote! {
         #input
         #struct_define
         #struct_impl
+        #(#keep_type)*
     })
 }
