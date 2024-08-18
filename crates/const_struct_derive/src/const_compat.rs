@@ -195,6 +195,8 @@ pub fn generate_const_compat_expr(input: Expr, attr: TokenStream) -> Result<Toke
 }
 
 pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
+    println!("##################");
+
     let name = &input.ident;
     let ty = &input.ty;
 
@@ -220,6 +222,20 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
             const __DATA: <Self as ::const_struct::PrimitiveTraits>::DATATYPE = #name;
         }
     };
+
+    let keep_type = input.generics.params.iter().map(|param| {
+        let param = match param {
+            GenericParam::Type(param) => param,
+            _ => return None,
+        };
+        let ident = &param.ident;
+        let bounds = &param.bounds;
+        Some(quote! {
+            impl ::const_struct::KeepType for #ident #bounds {
+                type Type = #ty;
+            }
+        })
+    });
 
     Ok(quote! {
         #input

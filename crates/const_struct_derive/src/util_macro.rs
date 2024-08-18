@@ -198,7 +198,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     let get_generics_data = format_ident!("{macro_name}GetGenericsData");
                     let self_macro = mac.path.clone();
                     let q = quote! { #self_macro!(#get_generics_data, ::const_struct_derive::call_with_generics, #input) };
-                    println!("q: {}", q);
+                    // println!("q: {}", q);
                     return Ok(
                         quote! { #self_macro!(#get_generics_data, ::const_struct_derive::call_with_generics, #input) }.into(),
                     );
@@ -247,7 +247,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         match const_or_type {
                             ConstOrType::Const => {
                                 let ty: GenericArgument = parse_quote!({
-                                    <KeepTypeStruct<#ty_path, #num> as KeepType>::Type::__DATA
+                                    <KeepTypeStruct<#ty_path, #num> as KeepTypeConst>::N
                                 });
                                 ty
                             }

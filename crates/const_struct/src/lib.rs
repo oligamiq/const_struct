@@ -18,3 +18,4 @@ pub use primitive::PrimitiveTraits;
 pub mod struct_prim;
 pub mod util_macro;
 pub use const_struct_derive::*;
+pub mod keeptype;

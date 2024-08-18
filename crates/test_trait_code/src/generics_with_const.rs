@@ -19,6 +19,10 @@ pub struct TestGenerics<const A: usize, S: Float> {
     t: [u8; A],
 }
 
+impl<const A: usize, S: Float> KeepTypeConstType<0> for TestGenerics<A, S> {
+    type Type = usize;
+}
+
 pub trait TestGenericsTy<const A: usize, S: Float + Copy>:
     PrimitiveTraits<DATATYPE = TestGenerics<A, S>>
 {
@@ -144,6 +148,12 @@ const B: TestGenerics<7, f32> = TestGenerics { s: 0.0, t: [0; 7] };
 #[automatically_derived]
 pub struct BTy;
 
+#[automatically_derived]
+impl PrimitiveTraits for BTy {
+    type DATATYPE = TestGenerics<7, f32>;
+    const __DATA: <Self as PrimitiveTraits>::DATATYPE = B;
+}
+
 pub trait KeepType {
     type Type;
 }
@@ -152,24 +162,22 @@ pub struct KeepTypeStruct<T, const N: usize> {
     __phantom: core::marker::PhantomData<T>,
 }
 
-pub struct KeepTypeConst<const N: usize>;
-
-impl<const N: usize> KeepTypeConst<N> {
-    pub const __DATA: usize = N;
+pub trait KeepTypeConst {
+    type DATATYPE;
+    const N: Self::DATATYPE;
 }
 
-impl KeepType for KeepTypeStruct<BTy, 0> {
-    type Type = KeepTypeConst<7>;
+pub trait KeepTypeConstType<const N: usize> {
+    type Type;
+}
+
+impl KeepTypeConst for KeepTypeStruct<BTy, 0> {
+    type DATATYPE = <TestGenerics<7, f32> as KeepTypeConstType<0>>::Type;
+    const N: Self::DATATYPE = 7;
 }
 
 impl KeepType for KeepTypeStruct<BTy, 1> {
     type Type = f32;
-}
-
-#[automatically_derived]
-impl PrimitiveTraits for BTy {
-    type DATATYPE = TestGenerics<7, f32>;
-    const __DATA: <Self as PrimitiveTraits>::DATATYPE = B;
 }
 
 #[test]
