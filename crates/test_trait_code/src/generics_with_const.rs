@@ -71,8 +71,8 @@ pub mod tt {
 
     #[macro_export]
     macro_rules! TestGenerics {
-        (TestGenericsGetOuterGenericsData, $macro_path: path, $($arg:tt)*) => {
-            $macro_path!(TestGenericsGetOuterGenericsData(const, ty), $($arg)*)
+        (TestGenericsGetGenericsData, $macro_path: path, $($arg:tt)*) => {
+            $macro_path!(TestGenericsGetGenericsData(const, type), $($arg)*)
         };
         (TestGenericsGetOuterGenerics0, $value:path) => {
             {

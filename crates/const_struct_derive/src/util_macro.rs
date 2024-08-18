@@ -6,9 +6,68 @@ use punctuated::Punctuated;
 use quote::{quote, ToTokens};
 use syn::*;
 
+#[derive(Debug, Clone)]
+pub enum ConstOrType {
+    Const,
+    Type,
+}
+
+impl Parse for ConstOrType {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let ident = input.parse::<Ident>()?;
+        match ident.to_string().as_str() {
+            "const" => Ok(Self::Const),
+            "type" => Ok(Self::Type),
+            _ => Err(syn::Error::new(
+                proc_macro2::Span::call_site(),
+                "expected `const` or `type`",
+            )),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct GenericsData {
+    pub ident: Ident,
+    pub _paren_token: token::Paren,
+    pub const_or_type: Punctuated<ConstOrType, Token![,]>,
+}
+
+impl Parse for GenericsData {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let ident = input.parse::<Ident>()?;
+        let content;
+        let _paren_token = parenthesized!(content in input);
+        let const_or_type = Punctuated::<ConstOrType, Token![,]>::parse_terminated(&content)?;
+        Ok(Self {
+            ident,
+            _paren_token,
+            const_or_type,
+        })
+    }
+}
+
+#[derive(Debug, Clone)]
+enum ExpandCallFnWithGenericsArgs {
+    Item(GenericsData),
+    Call(MyExprCalls),
+}
+
+impl Parse for ExpandCallFnWithGenericsArgs {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        match input.parse::<GenericsData>() {
+            Ok(item) => Ok(Self::Item(item)),
+            Err(_) => {
+                let call = input.parse::<MyExprCalls>()?;
+                Ok(Self::Call(call))
+            }
+        }
+    }
+}
+
 // example
 // call_tester::<TestGenerics!(56, f32, TestGenerics { s: 0.6, t: [0; 56] })>()
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum MyExprCalls {
     Call(ExprCall),
     MethodCall(ExprMethodCall),
@@ -65,7 +124,40 @@ impl MyExprCalls {
 }
 
 pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
-    let mut input = parse2::<MyExprCalls>(input)?;
+    let input_with_data = Punctuated::<ExpandCallFnWithGenericsArgs, Token![,]>::parse_terminated
+        .parse2(input)?;
+
+    let (mut input, define_data) = match input_with_data.first() {
+        Some(ExpandCallFnWithGenericsArgs::Item(data)) => {
+            if data.ident.to_string().ends_with("GetGenericsData") {
+                (match input_with_data.get(1) {
+                    Some(ExpandCallFnWithGenericsArgs::Call(call)) => call.clone(),
+                    _ => {
+                        return Err(syn::Error::new(
+                            proc_macro2::Span::call_site(),
+                            "expected a function call with generics",
+                        ))
+                    }
+                }, Some(data.clone()))
+            } else {
+                (match input_with_data.first() {
+                    Some(ExpandCallFnWithGenericsArgs::Call(call)) => call.clone(),
+                    _ => {
+                        return Err(syn::Error::new(
+                            proc_macro2::Span::call_site(),
+                            "expected a function call with generics",
+                        ))
+                    }
+                }, None)
+            }
+        }
+        _ => {
+            return Err(syn::Error::new(
+                proc_macro2::Span::call_site(),
+                "expected a function call with generics",
+            ))
+        }
+    };
 
     let generics = input.generics_mut_ref().ok_or_else(|| {
         syn::Error::new(
@@ -87,12 +179,13 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     .parse2(tokens)
                     .unwrap();
 
+                let macro_name = mac.path.segments.last().unwrap().ident.to_string();
+
                 let get_generics = |num: usize, middle: &str, value: Expr| {
                     let mut mac = mac.clone();
-                    let macro_name = mac.path.segments.last().unwrap().ident.to_string();
-                    let macro_name = format!("{}{middle}{num}", macro_name);
-                    let macro_name = Ident::new(&macro_name, proc_macro2::Span::call_site());
-                    mac.tokens = quote! { #macro_name, #value };
+                    let macro_first_arg = format!("{macro_name}{middle}{num}");
+                    let macro_first_arg = Ident::new(&macro_first_arg, proc_macro2::Span::call_site());
+                    mac.tokens = quote! { #macro_first_arg, #value };
                     mac
                 };
 
