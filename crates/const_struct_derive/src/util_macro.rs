@@ -99,36 +99,39 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                 let args_last = args.last().unwrap().clone();
 
                 // outer declarationの場合
-                let infer_process: fn(usize) -> GenericArgument = if {
+                let (is_outer_declaration, ty_path) = {
                     let last = args.last().unwrap();
                     let last_token = last.to_token_stream().to_string();
                     if let Ok(path) = parse_str::<Path>(&last_token) {
-                        path.segments
+                        if path
+                            .segments
                             .last()
                             .unwrap()
                             .ident
                             .to_string()
                             .ends_with("Ty")
+                        {
+                            (true, Some(path))
+                        } else {
+                            (false, None)
+                        }
                     } else {
-                        false
+                        (false, None)
                     }
-                } {
-                    move |num: usize| {
+                };
+                let infer_process = |num| {
+                    if is_outer_declaration {
                         let mac = get_generics(num, "GetOuterGenerics", args_last.clone());
+                        let mac = GenericArgument::Type(Type::Macro(TypeMacro { mac }));
+                        println!("mac: {}", mac.to_token_stream());
+                        mac
+                    } else {
+                        let mac = get_generics(num, "GetInnerGenerics", args_last.clone());
                         let mac = GenericArgument::Const(Expr::Macro(ExprMacro {
                             mac,
                             attrs: Vec::new(),
                         }));
                         mac
-                    }
-                } else {
-                    move |num: usize| {
-                        let str = args[num].to_token_stream().to_string();
-                        let generics = match parse_str::<GenericArgument>(&str) {
-                            Ok(generics) => generics,
-                            Err(_) => panic!("failed to parse Argument"),
-                        };
-                        generics
                     }
                 };
 
@@ -151,7 +154,16 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     })
                     .collect::<Vec<GenericArgument>>();
 
-                new_generic.push(arg.clone());
+                new_generic.push(if is_outer_declaration {
+                    GenericArgument::Type(Type::Path(TypePath {
+                        qself: None,
+                        path: ty_path.unwrap(),
+                    }))
+                } else {
+                    arg.clone()
+                });
+
+                println!("new_generic: {}", quote! { #(#new_generic),* });
 
                 new_generic
             }

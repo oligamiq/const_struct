@@ -71,6 +71,9 @@ pub mod tt {
 
     #[macro_export]
     macro_rules! TestGenerics {
+        (TestGenericsGetOuterGenericsData, $macro_path: path, $($arg:tt)*) => {
+            $macro_path!(TestGenericsGetOuterGenericsData(const, ty), $($arg)*)
+        };
         (TestGenericsGetOuterGenerics0, $value:path) => {
             {
                 <KeepTypeStruct<$value, 0> as KeepType>::Type::__DATA
@@ -181,9 +184,6 @@ impl PrimitiveTraits for BTy {
 
 #[test]
 fn test_test_generics() {
-    call_with_generics!(call_tester::<
-        { <KeepTypeStruct<BTy, 0> as KeepType>::Type::__DATA },
-        crate::TestGenerics!(_, f32, B),
-        9,
-    >());
+    call_with_generics!(call_tester::<4, crate::TestGenerics!(_, _, BTy), 9>());
+    // call_tester::<4, 7, <KeepTypeStruct<BTy, 1> as KeepType>::Type, BTy, 9>();
 }
