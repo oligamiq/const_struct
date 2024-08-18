@@ -240,10 +240,11 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                 };
                 let infer_process = |num| {
                     if is_outer_declaration {
-                        let const_or_type = match define_data.as_ref().unwrap().const_or_type.get(num) {
-                            Some(const_or_type) => const_or_type,
-                            None => panic!("failed to get const_or_type"),
-                        };
+                        let const_or_type =
+                            match define_data.as_ref().unwrap().const_or_type.get(num) {
+                                Some(const_or_type) => const_or_type,
+                                None => panic!("failed to get const_or_type"),
+                            };
                         let ty_path = ty_path.clone().unwrap();
                         match const_or_type {
                             ConstOrType::Const => {
@@ -251,11 +252,11 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                                     <KeepTypeStruct<#ty_path, #num> as KeepType>::Type::__DATA
                                 });
                                 ty
-                            },
+                            }
                             ConstOrType::Type => {
                                 let ty: GenericArgument = parse_quote!(<KeepTypeStruct<#ty_path, #num> as KeepType>::Type);
                                 ty
-                            },
+                            }
                         }
                     } else {
                         let mac = get_generics(num, "GetInnerGenerics", args_last.clone());
