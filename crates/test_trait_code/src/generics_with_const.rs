@@ -25,8 +25,8 @@ pub trait TestGenericsTy<const A: usize, S: Float + Copy>:
     const S: S = <Self as PrimitiveTraits>::__DATA.s;
 }
 
-impl<const A: usize, S: Float + Copy, U: PrimitiveTraits<DATATYPE = TestGenerics<A, S>>> TestGenericsTy<A, S>
-    for U
+impl<const A: usize, S: Float + Copy, U: PrimitiveTraits<DATATYPE = TestGenerics<A, S>>>
+    TestGenericsTy<A, S> for U
 {
 }
 
@@ -71,26 +71,26 @@ pub mod tt {
 
     #[macro_export]
     macro_rules! TestGenerics {
-        (TestGenericsGetConstGenerics0, $value:ident) => {
+        (TestGenericsGetOuterGenerics0, $value:path) => {
             {
-                const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
-                    A
-                }
-
-                get_const_generics_a($value::__DATA)
+                <KeepTypeStruct<$value, 0> as KeepType>::Type::__DATA
             }
         };
-        ($a:tt, $s:expr, $value:ident) => {
-            $value
+        (TestGenericsGetOuterGenerics1, $value:path) => {
+            <KeepTypeStruct<$value, 1> as KeepType>::Type
         };
-
-        (TestGenericsGetConstGenerics0, $value:expr) => {
+        (TestGenericsGetInnerGenerics0, $value:expr) => {
             {
                 const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
                     A
                 }
 
                 get_const_generics_a($value)
+            }
+        };
+        (TestGenericsGetInnerGenerics1, $value:expr) => {
+            {
+                panic!("cannot use _ in this context")
             }
         };
         ($a:tt, $s:expr, $value:expr) => {
@@ -181,5 +181,9 @@ impl PrimitiveTraits for BTy {
 
 #[test]
 fn test_test_generics() {
-    call_with_generics!(call_tester::<{ <KeepTypeStruct<BTy, 0> as KeepType>::Type::__DATA }, crate::TestGenerics!(_, f32, BTy), 9>());
+    call_with_generics!(call_tester::<
+        { <KeepTypeStruct<BTy, 0> as KeepType>::Type::__DATA },
+        crate::TestGenerics!(_, f32, B),
+        9,
+    >());
 }

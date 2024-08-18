@@ -1,3 +1,5 @@
+use std::path;
+
 use parse::{Parse, ParseStream, Parser as _};
 use proc_macro2::TokenStream;
 use punctuated::Punctuated;
@@ -81,44 +83,70 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
             GenericArgument::Type(Type::Macro(mac)) => {
                 let mac = mac.mac.clone();
                 let tokens = mac.tokens.clone();
-                let get_const_generics = |num: String, value: Expr| {
-                    let mut mac = mac.clone();
-                    let macro_name = mac.path.segments.last().unwrap().ident.to_string();
-                    let macro_name = format!("{}GetConstGenerics{num}", macro_name);
-                    let macro_name = Ident::new(&macro_name, proc_macro2::Span::call_site());
-                    mac.tokens = quote! { #macro_name, #value };
-                    mac
-                };
                 let args = Punctuated::<Expr, Token![,]>::parse_terminated
                     .parse2(tokens)
                     .unwrap();
 
+                let get_generics = |num: usize, middle: &str, value: Expr| {
+                    let mut mac = mac.clone();
+                    let macro_name = mac.path.segments.last().unwrap().ident.to_string();
+                    let macro_name = format!("{}{middle}{num}", macro_name);
+                    let macro_name = Ident::new(&macro_name, proc_macro2::Span::call_site());
+                    mac.tokens = quote! { #macro_name, #value };
+                    mac
+                };
+
                 let args_last = args.last().unwrap().clone();
+
+                // outer declarationの場合
+                let infer_process: fn(usize) -> GenericArgument = if {
+                    let last = args.last().unwrap();
+                    let last_token = last.to_token_stream().to_string();
+                    if let Ok(path) = parse_str::<Path>(&last_token) {
+                        path.segments
+                            .last()
+                            .unwrap()
+                            .ident
+                            .to_string()
+                            .ends_with("Ty")
+                    } else {
+                        false
+                    }
+                } {
+                    move |num: usize| {
+                        let mac = get_generics(num, "GetOuterGenerics", args_last.clone());
+                        let mac = GenericArgument::Const(Expr::Macro(ExprMacro {
+                            mac,
+                            attrs: Vec::new(),
+                        }));
+                        mac
+                    }
+                } else {
+                    move |num: usize| {
+                        let str = args[num].to_token_stream().to_string();
+                        let generics = match parse_str::<GenericArgument>(&str) {
+                            Ok(generics) => generics,
+                            Err(_) => panic!("failed to parse Argument"),
+                        };
+                        generics
+                    }
+                };
 
                 let args_len = args.len();
                 let mut new_generic = args
                     .into_iter()
                     .enumerate()
                     .filter(|(i, _)| *i < args_len - 1)
-                    .filter_map(|(num, arg)| match arg {
-                        Expr::Infer(_) => {
-                            let num = num.to_string();
-                            let mac = get_const_generics(num, args_last.clone());
-                            let mac = GenericArgument::Const(Expr::Macro(ExprMacro {
-                                mac,
-                                attrs: Vec::new(),
-                            }));
-                            println!("mac: {}", mac.to_token_stream());
-                            Some(mac)
-                        }
+                    .map(|(num, arg)| match arg {
+                        Expr::Infer(_) => infer_process(num),
                         _ => {
                             let str = arg.to_token_stream().to_string();
-                            println!("str: {}", str);
+                            // println!("str: {}", str);
                             let generics = match parse_str::<GenericArgument>(&str) {
                                 Ok(generics) => generics,
-                                Err(_) => return None,
+                                Err(_) => panic!("failed to parse Argument"),
                             };
-                            Some(generics)
+                            generics
                         }
                     })
                     .collect::<Vec<GenericArgument>>();

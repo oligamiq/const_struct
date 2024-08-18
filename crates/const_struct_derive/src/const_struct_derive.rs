@@ -157,7 +157,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         }
     };
 
-    dbg!(&new_trait);
+    // dbg!(&new_trait);
 
     new_trait.generics = generics.clone();
 
