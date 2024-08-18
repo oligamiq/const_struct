@@ -190,24 +190,21 @@ pub struct ConstStructAttr {
 }
 
 impl ConstStructAttr {
-    pub fn default() -> Self {
-        Self {
-            macro_export: false,
-            path_and_ident: Vec::new(),
-        }
-    }
-
-    pub fn get_absolute_ident_path(&self, ident: &Ident) -> AbsolutePath {
-        get_absolute_ident_path_from_ident(ident, self.path_and_ident.clone())
-            .unwrap_or(AbsolutePath::new(ident.clone().into()))
-    }
-
     pub fn get_absolute_path(&self, path: &Path) -> AbsolutePath {
         get_absolute_ident_path_from_ident(
             &path.segments.last().unwrap().ident,
             self.path_and_ident.clone(),
         )
         .unwrap_or(AbsolutePath::new(path.clone()))
+    }
+}
+
+impl Default for ConstStructAttr {
+    fn default() -> Self {
+        Self {
+            macro_export: false,
+            path_and_ident: vec![],
+        }
     }
 }
 
