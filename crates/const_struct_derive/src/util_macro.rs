@@ -285,12 +285,12 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                             Expr::Infer(_) => infer_process(num),
                             _ => {
                                 let str = arg.to_token_stream().to_string();
-                                println!("str: {}", str);
+                                // println!("str: {}", str);
                                 let generics = match parse_str::<GenericArgument>(&str) {
                                     Ok(generics) => generics,
                                     Err(_) => panic!("failed to parse Argument"),
                                 };
-                                println!("success: str");
+                                // println!("success: str");
                                 generics
                             }
                         })

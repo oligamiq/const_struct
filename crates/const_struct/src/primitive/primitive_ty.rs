@@ -39,6 +39,10 @@ macro_rules! PrimTraitBySizes {
                 #[macro_export]
                 #[allow(clippy::useless_transmute)]
                 macro_rules! [<$name:camel>] {
+                    ([<$name:camel> GetGenericsData], $macro_path: path, $($arg:tt)*) => {
+                        $macro_path!([<$name:camel> GetGenericsData], $($arg)*);
+                    }
+
                     ($value:expr) => {
                         $crate::primitive::[<$name:camel Impl>]::<{ unsafe { core::mem::transmute::<$name, $base>(($value)) } }>
                     };
