@@ -65,7 +65,7 @@ PrimTraitBySizes!(8, u8, i8, bool);
 PrimTraitBySizes!(16, u16, i16);
 PrimTraitBySizes!(32, u32, i32, f32, char);
 PrimTraitBySizes!(64, u64, i64, f64);
-// PrimTraitBySizes!(128, u128, i128);
+PrimTraitBySizes!(128, u128, i128);
 PrimTraitBySizes!(usize, usize, isize);
 
 #[cfg(test)]
