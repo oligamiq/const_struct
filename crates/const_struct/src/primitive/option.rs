@@ -85,3 +85,24 @@ mod tests {
         assert_eq!(tester_inner_u32::<U32!(0)>(), 0);
     }
 }
+
+// type B = const_struct::parse_value!(Option<f32>, None);
+// EnumQueuePlaneHead<Option<T>, EnumQueuePlaneDataType<U, EnumQueuePlaneEnd>, 0>
+// type B = EnumQueuePlaneHead<
+//     Option<f32>,
+//     EnumQueuePlaneDataType<
+//         F32!({
+//             match S {
+//                 None => core::mem::zeroed(),
+//                 Some(v0) => v0,
+//             }
+//         }),
+//         EnumQueuePlaneEnd,
+//     >,
+//     {
+//         match S {
+//             None => 0,
+//             Some(_) => 1,
+//         }
+//     },
+// >;
