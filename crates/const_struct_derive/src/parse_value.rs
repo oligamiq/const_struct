@@ -102,11 +102,15 @@ pub fn parse_value_tuple(
     expr: Expr,
     additional_data: &AdditionData,
 ) -> Result<Type> {
-    let TypeTuple { elems, .. } = tuple;
+    let TypeTuple { elems, .. } = tuple.clone();
     let elems = elems
         .into_iter()
         .enumerate()
         .map(|(num, ty)| {
+            let expr: Expr = parse_quote!({
+                let v0: #tuple = #expr;
+                v0
+            });
             let expr = Expr::Field(ExprField {
                 attrs: vec![],
                 base: Box::new(expr.clone()),
