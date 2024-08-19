@@ -40,7 +40,7 @@ macro_rules! PrimTraitBySizes {
                 #[allow(clippy::useless_transmute)]
                 macro_rules! [<$name:camel>] {
                     ([<$name:camel> GetGenericsData], $macro_path: path, $($arg:tt)*) => {
-                        $macro_path!([<$name:camel> GetGenericsData], $($arg)*);
+                        $macro_path!([<$name:camel> GetGenericsData](), $($arg)*);
                     }
 
                     ($value:expr) => {
