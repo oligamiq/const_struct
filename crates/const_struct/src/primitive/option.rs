@@ -1,4 +1,4 @@
-use super::PrimitiveTraits;
+use super::{EnumQueuePlaneDataType, EnumQueuePlaneEnd, EnumQueuePlaneHead, PrimitiveTraits};
 
 pub trait OptionTy<T> {
     const __DATA: Option<T>;
@@ -25,19 +25,18 @@ impl<T> OptionTy<T> for NoneImpl {
     const __DATA: Option<T> = None;
 }
 
-#[derive(Debug, Copy, Clone)]
-pub struct OptionImpl<T: PrimitiveTraits, const N: usize> {
-    __phantom: core::marker::PhantomData<T>,
-}
-
-impl<T: PrimitiveTraits> PrimitiveTraits for OptionImpl<T, 0> {
-    type DATATYPE = Option<T::DATATYPE>;
+impl<T, U: PrimitiveTraits<DATATYPE = T>> PrimitiveTraits
+    for EnumQueuePlaneHead<Option<T>, EnumQueuePlaneDataType<U, EnumQueuePlaneEnd>, 0>
+{
+    type DATATYPE = Option<T>;
     const __DATA: Self::DATATYPE = None;
 }
 
-impl<T: PrimitiveTraits> PrimitiveTraits for OptionImpl<T, 1> {
-    type DATATYPE = Option<T::DATATYPE>;
-    const __DATA: Self::DATATYPE = Some(<T as PrimitiveTraits>::__DATA);
+impl<T, U: PrimitiveTraits<DATATYPE = T>> PrimitiveTraits
+    for EnumQueuePlaneHead<Option<T>, EnumQueuePlaneDataType<U, EnumQueuePlaneEnd>, 1>
+{
+    type DATATYPE = Option<T>;
+    const __DATA: Self::DATATYPE = Some(<U as PrimitiveTraits>::__DATA);
 }
 
 #[macro_export]

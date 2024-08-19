@@ -84,7 +84,7 @@ pub fn parse_value_wrapper(input: TokenStream) -> Result<Type> {
     let additional_data = AdditionData {
         data: additional_data.data.into_iter().collect(),
     };
-    dbg!(&ty);
+    // dbg!(&ty);
     parse_value(ty, expr, &additional_data)
 }
 
@@ -142,6 +142,56 @@ pub fn parse_value_path(
     additional_data: &AdditionData,
 ) -> Result<Type> {
     let path = path.path;
+
+    // Option
+    if path.leading_colon.is_none()
+        && path.segments.len() == 1
+        && path.segments.first().unwrap().ident.to_string() == "Option"
+    {
+        let args = &path.segments.first().unwrap().arguments;
+        let args = match args {
+            PathArguments::AngleBracketed(args) => args,
+            _ => {
+                return Err(Error::new_spanned(
+                    path,
+                    "expected angle bracketed arguments",
+                ))
+            }
+        };
+        let t = args.args.first().unwrap();
+        let t = match t {
+            GenericArgument::Type(t) => t,
+            _ => return Err(Error::new_spanned(t, "expected type")),
+        };
+        let generic_expr_t: Expr = parse_quote!({
+            let v0: #path = #expr;
+            match v0 {
+                Option::None => unsafe { core::mem::zeroed() },
+                Option::Some(v0) => v0,
+            }
+        });
+        let parsed_t = parse_value(t.clone(), generic_expr_t, additional_data)?;
+
+        let ty: Type = parse_quote!(
+            ::const_struct::primitive::EnumQueuePlaneHead<
+                #path,
+                ::const_struct::primitive::EnumQueuePlaneDataType<
+                    #parsed_t,
+                    ::const_struct::primitive::EnumQueuePlaneEnd,
+                >,
+                {
+                    let v0: #path = #expr;
+                    match v0 {
+                        Option::None => 0,
+                        Option::Some(_) => 1,
+                    }
+                },
+            >
+        );
+
+        return Ok(ty);
+    }
+
     let path = {
         // Convert the last segment to camel case
         let mut path = path;
@@ -160,9 +210,7 @@ pub fn parse_value_path(
     let path = get_absolute_path(&path, additional_data);
     let path = path.path();
 
-    // Option
-    if path.is_ident("Option") {
-    }
+    // dbg!(&path);
 
     let mac: Macro = parse_quote! {
         #path!(#expr)
