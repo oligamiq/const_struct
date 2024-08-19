@@ -65,9 +65,9 @@ mod test {
 
         // no_std_compat::println!("{:?}", <B as ::const_struct::PrimitiveTraits>::__DATA);
 
-        type C = const_struct::parse_value!((TestGenerics<7>,), (TestGenerics { a: 7 },));
+        type C = const_struct::parse_value!((TestGenerics<_>,), (TestGenerics { a: 7 },));
         // type C = const_struct::parse_value!(TestGenerics<7>, TestGenerics { a: 7 });
-        let t: C;
+        // let t: C;
 
         // type C = (
         //     TestGenerics!({
@@ -78,5 +78,15 @@ mod test {
         //         .0
         //     }),
         // );
+
+        type D = (
+            TestGenerics!(_, {
+                {
+                    let v0: (TestGenerics<_>,) = (TestGenerics { a: 7 },);
+                    v0
+                }
+                .0
+            }),
+        );
     }
 }
