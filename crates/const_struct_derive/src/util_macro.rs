@@ -4,6 +4,8 @@ use punctuated::Punctuated;
 use quote::{format_ident, quote, ToTokens};
 use syn::*;
 
+use crate::util::add_at_mark;
+
 #[derive(Debug, Clone)]
 pub enum ConstOrType {
     Const,
@@ -25,6 +27,7 @@ impl Parse for ConstOrType {
 
 #[derive(Debug, Clone)]
 pub struct GenericsData {
+    pub _at: Token![@],
     pub ident: Ident,
     pub _paren_token: token::Paren,
     pub const_or_type: Punctuated<ConstOrType, Token![,]>,
@@ -34,6 +37,8 @@ impl Parse for GenericsData {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let input_try = input.fork();
         // println!("input_try: {}", input_try);
+        let _at = input_try.parse::<Token![@]>()?;
+        // println!("at: {}", _at);
         let ident = input_try.parse::<Ident>()?;
         // println!("ident: {}", ident);
         let content;
@@ -43,6 +48,7 @@ impl Parse for GenericsData {
         // println!("const_or_type: {:?}", const_or_type);
         input.advance_to(&input_try);
         Ok(Self {
+            _at,
             ident,
             _paren_token,
             const_or_type,
@@ -165,7 +171,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
         ..
     } = input_with_data;
 
-    // println!("define_data: {:#?}", define_data);
+    println!("define_data: {:#?}", define_data);
 
     let generics = input.generics_mut_ref().ok_or_else(|| {
         syn::Error::new(
@@ -202,21 +208,23 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     }
                 }
                 if !exist_define_data {
-                    let get_generics_data = format_ident!("{macro_name}GetGenericsData");
+                    // println!("q0:");
+                    let get_generics_data =
+                        add_at_mark(format_ident!("{macro_name}GetGenericsData"));
+                    // println!("q1: {:#?}", get_generics_data);
                     let self_macro = mac.path.clone();
-                    // let q = quote! { #self_macro!(#get_generics_data, ::const_struct_derive::call_with_generics, #input) };
-                    // println!("q: {}", q);
+                    let q = quote! { #self_macro!(#get_generics_data, ::const_struct_derive::call_with_generics, #input) };
+                    println!("q: {}", q);
                     return Ok(
                         quote! { #self_macro!(#get_generics_data, ::const_struct_derive::call_with_generics, #input) }.into(),
                     );
                 }
                 let define_data = define_data.as_ref().unwrap();
 
-                let get_generics = |num: usize, middle: &str, value: Expr| {
+                let get_generics = |num: usize, value: Expr| {
                     let mut mac = mac.clone();
-                    let macro_first_arg = format!("{macro_name}{middle}{num}");
                     let macro_first_arg =
-                        Ident::new(&macro_first_arg, proc_macro2::Span::call_site());
+                        add_at_mark(format_ident!("{macro_name}GetInnerGenerics{num}"));
                     mac.tokens = quote! { #macro_first_arg, #value };
                     mac
                 };
@@ -267,7 +275,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                             }
                         }
                     } else {
-                        let mac = get_generics(num, "GetInnerGenerics", args_last.clone());
+                        let mac = get_generics(num, args_last.clone());
                         let mac = GenericArgument::Const(Expr::Macro(ExprMacro {
                             mac,
                             attrs: Vec::new(),

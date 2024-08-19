@@ -14,6 +14,7 @@ mod const_compat;
 mod const_struct_derive;
 mod ident;
 mod rewriter;
+mod util;
 mod util_macro;
 
 #[proc_macro_derive(ConstStruct)]

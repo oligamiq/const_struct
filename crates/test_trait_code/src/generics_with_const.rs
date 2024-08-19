@@ -75,10 +75,10 @@ pub mod tt {
 
     #[macro_export]
     macro_rules! TestGenerics {
-        (TestGenericsGetGenericsData, $macro_path: path, $($arg:tt)*) => {
-            $macro_path!(TestGenericsGetGenericsData(const, type), $($arg)*)
+        (@TestGenericsGetGenericsData, $macro_path: path, $($arg:tt)*) => {
+            $macro_path!(@TestGenericsGetGenericsData(const, type), $($arg)*)
         };
-        (TestGenericsGetInnerGenerics0, $value:expr) => {
+        (@TestGenericsGetInnerGenerics0, $value:expr) => {
             {
                 const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
                     A
@@ -87,7 +87,7 @@ pub mod tt {
                 get_const_generics_a($value)
             }
         };
-        (TestGenericsGetInnerGenerics1, $value:expr) => {
+        (@TestGenericsGetInnerGenerics1, $value:expr) => {
             {
                 panic!("cannot use _ in this context")
             }
