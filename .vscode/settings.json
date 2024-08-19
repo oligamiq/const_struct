@@ -3,6 +3,7 @@
         "Compat",
         "elems",
         "isize",
+        "keeptype",
         "println",
         "Punct",
         "struct",

@@ -201,7 +201,7 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
     let ty = &input.ty;
 
     // dbg!(&input);
-
+    
     let ty_name = {
         let name_upper_snake = name.to_string();
         let name_pascal = name_upper_snake
@@ -223,7 +223,7 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
         }
     };
 
-    dbg!(&input);
+    // dbg!(&input);
 
     let keep_type = match input.ty.as_ref() {
         Type::Path(path) => {

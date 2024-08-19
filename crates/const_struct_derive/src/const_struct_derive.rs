@@ -231,11 +231,15 @@ pub struct ConstStructAttr {
 
 impl ConstStructAttr {
     pub fn get_absolute_path(&self, path: &Path) -> AbsolutePath {
-        get_absolute_ident_path_from_ident(
-            &path.segments.last().unwrap().ident,
-            self.path_and_ident.clone(),
-        )
-        .unwrap_or(AbsolutePath::new(path.clone()))
+        Self::get_absolute_path_inner(path, &self.path_and_ident)
+    }
+
+    pub fn get_absolute_path_inner(
+        path: &Path,
+        path_and_ident: &Vec<PathAndIdent>,
+    ) -> AbsolutePath {
+        get_absolute_ident_path_from_ident(path, path_and_ident)
+            .unwrap_or(AbsolutePath::new(path.clone()))
     }
 }
 
@@ -291,7 +295,7 @@ pub fn check_macro_export(attr: &Attribute) -> bool {
 
 #[derive(Debug, Clone)]
 pub struct PathAndIdent {
-    pub ident: Ident,
+    pub ident: Path,
     pub _token: Token![:],
     pub path: AbsolutePath,
 }
