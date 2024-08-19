@@ -10,8 +10,7 @@ pub struct OptionImpl<T: PrimitiveTraits> {
     __phantom: core::marker::PhantomData<T>,
 }
 
-impl<U: PrimitiveTraits<DATATYPE = Option<T>>, T> OptionTy<T> for U
-{
+impl<U: PrimitiveTraits<DATATYPE = Option<T>>, T> OptionTy<T> for U {
     const __DATA: Option<T> = <U as PrimitiveTraits>::__DATA;
 }
 

@@ -65,9 +65,15 @@ mod tests {
         let s: (F32!(0.4), F64!(0.3)) = unsafe { mem::zeroed() };
         assert_eq!(core::mem::size_of_val(&s), 0);
         assert_eq!(tester_inner0::<()>(), ());
-        assert_eq!(tester_inner1::<(F32!(0.4), )>(), (0.4, ));
+        assert_eq!(tester_inner1::<(F32!(0.4),)>(), (0.4,));
         assert_eq!(tester_inner2::<(F32!(0.4), F64!(0.3))>(), (0.4, 0.3));
-        assert_eq!(tester_inner3::<(F32!(0.4), (F64!(0.3), U32!(5)))>(), (0.4, (0.3, 5)));
-        assert_eq!(tester_inner4::<(F32!(0.4), F32!(0.3), F32!(0.2), F32!(0.1))>(), (0.4, 0.3, 0.2, 0.1));
+        assert_eq!(
+            tester_inner3::<(F32!(0.4), (F64!(0.3), U32!(5)))>(),
+            (0.4, (0.3, 5))
+        );
+        assert_eq!(
+            tester_inner4::<(F32!(0.4), F32!(0.3), F32!(0.2), F32!(0.1))>(),
+            (0.4, 0.3, 0.2, 0.1)
+        );
     }
 }

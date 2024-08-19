@@ -18,7 +18,7 @@ proc-macro2 = "1.0.86"
 quote = "1.0.36"
 syn = {version = "2.0.74", features = ["full", "extra-traits"]}
 convert_case = "0.6.0"
-darling = "0.20.10"
+strum = { version = "0.26.3", features = ["derive"] }
 
 [package.metadata.release]
 tag = false

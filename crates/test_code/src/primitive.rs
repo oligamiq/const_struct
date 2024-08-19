@@ -3,7 +3,7 @@ mod test {
     use const_struct::{
         const_struct,
         primitive::{F32Ty, OptionTy, TupleTy, U32Ty},
-        None, Some, F32, U32,
+        None, PrimitiveTraits, Some, F32, U32,
     };
 
     use crate::setting::TestSetting;
@@ -28,7 +28,8 @@ mod test {
         T::VALUE
     }
 
-    pub const fn tester_option_option_test_setting<T: OptionTy<Option<TestSetting>>>() -> Option<Option<TestSetting>> {
+    pub const fn tester_option_option_test_setting<T: OptionTy<Option<TestSetting>>>(
+    ) -> Option<Option<TestSetting>> {
         T::VALUE
     }
 
@@ -60,7 +61,7 @@ mod test {
     const SOME_TEST_SETTING_A: Option<TestSetting> = Some(TestSetting::default());
 
     #[const_struct]
-    const TUPLE_F32: (f32,) = (PI, );
+    const TUPLE_F32: (f32,) = (PI,);
 
     #[test]
     pub fn call_tester() {
@@ -74,21 +75,48 @@ mod test {
         assert_eq!(tester_inner_option::<None!()>(), None);
         assert_eq!(tester_inner_option::<SomePiTy>(), Some(3.1415926));
         assert_eq!(tester_inner_option::<None!()>(), None);
-        assert_eq!(tester_test_setting::<Some!(TestSettingATy)>(), Some(TestSetting::default()));
+        assert_eq!(
+            tester_test_setting::<Some!(TestSettingATy)>(),
+            Some(TestSetting::default())
+        );
         assert_eq!(tester_test_setting::<None!()>(), None);
-        assert_eq!(tester_test_setting::<SomeTestSettingATy>(), Some(TestSetting::default()));
-        assert_eq!(tester_option_option::<Some!(Some!(F32!(-25.333)))>(), Some(Some(-25.333)));
-        assert_eq!(tester_option_option::<Some!(SomePiTy)>(), Some(Some(3.1415926)));
+        assert_eq!(
+            tester_test_setting::<SomeTestSettingATy>(),
+            Some(TestSetting::default())
+        );
+        assert_eq!(
+            tester_option_option::<Some!(Some!(F32!(-25.333)))>(),
+            Some(Some(-25.333))
+        );
+        assert_eq!(
+            tester_option_option::<Some!(SomePiTy)>(),
+            Some(Some(3.1415926))
+        );
         assert_eq!(tester_option_option::<None!()>(), None);
-        assert_eq!(tester_option_option_test_setting::<Some!(Some!(TestSettingATy))>(), Some(Some(TestSetting::default())));
-        assert_eq!(tester_option_option_test_setting::<Some!(SomeTestSettingATy)>(), Some(Some(TestSetting::default())));
-        assert_eq!(tester_tuple::<(F32!(-0.5), )>(), (-0.5, ));
-        assert_eq!(tester_tuple::<(PiTy, )>(), (3.1415926, ));
-        assert_eq!(tester_tuple::<TupleF32Ty>(), (3.1415926, ));
-        assert_eq!(tester_tuple2::<(F32!(-0.5), F32!(-25.333))>(), (-0.5, -25.333));
+        assert_eq!(
+            tester_option_option_test_setting::<Some!(Some!(TestSettingATy))>(),
+            Some(Some(TestSetting::default()))
+        );
+        assert_eq!(
+            tester_option_option_test_setting::<Some!(SomeTestSettingATy)>(),
+            Some(Some(TestSetting::default()))
+        );
+        assert_eq!(tester_tuple::<(F32!(-0.5),)>(), (-0.5,));
+        assert_eq!(tester_tuple::<(PiTy,)>(), (3.1415926,));
+        assert_eq!(tester_tuple::<TupleF32Ty>(), (3.1415926,));
+        assert_eq!(
+            tester_tuple2::<(F32!(-0.5), F32!(-25.333))>(),
+            (-0.5, -25.333)
+        );
         assert_eq!(tester_tuple2::<(PiTy, PiTy)>(), (3.1415926, 3.1415926));
         assert_eq!(tester_tuple2::<(F32!(-0.5), PiTy)>(), (-0.5, 3.1415926));
-        assert_eq!(tester_tuple_tuple::<(F32!(-0.5), (F32!(-25.333), F32!(0.0)))>(), (-0.5, (-25.333, 0.0)));
+        assert_eq!(
+            tester_tuple_tuple::<(F32!(-0.5), (F32!(-25.333), F32!(0.0)))>(),
+            (-0.5, (-25.333, 0.0))
+        );
+
+        let s = <(F32!(-0.5), (F32!(-25.333), F32!(0.0))) as PrimitiveTraits>::__DATA;
+        no_std_compat::println!("s: {:?}", s);
 
         // assert_eq!(tester_test_setting::<Some!(TestSetting::default())>(), Some(TestSetting::default()));
     }
