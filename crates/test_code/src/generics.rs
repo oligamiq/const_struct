@@ -20,14 +20,7 @@ pub fn tester_test_generics<S: Float + Copy + Debug, const T: usize, U: TestGene
     no_std_compat::println!("tester_test_generics: {:?}", U::__DATA);
 }
 
-// #[test]
-// pub fn test_test_generics() {
-//     // tester_test_generics::<f32, 7, BTy>();
-//     tester_test_generics::<_, {
-//         const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
-//             A
-//         }
-
-//         get_const_generics_a(B)
-//     }, BTy>();
-// }
+#[test]
+pub fn test_test_generics() {
+    
+}

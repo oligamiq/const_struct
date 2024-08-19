@@ -3,7 +3,7 @@ mod test {
     use const_struct::{
         const_struct,
         primitive::{F32Ty, OptionTy, TupleTy, U32Ty},
-        None, Some, F32, U32,
+        None, PrimitiveTraits, Some, F32, U32,
     };
 
     use crate::setting::TestSetting;
@@ -114,6 +114,9 @@ mod test {
             tester_tuple_tuple::<(F32!(-0.5), (F32!(-25.333), F32!(0.0)))>(),
             (-0.5, (-25.333, 0.0))
         );
+
+        let s = <(F32!(-0.5), (F32!(-25.333), F32!(0.0))) as PrimitiveTraits>::__DATA;
+        no_std_compat::println!("s: {:?}", s);
 
         // assert_eq!(tester_test_setting::<Some!(TestSetting::default())>(), Some(TestSetting::default()));
     }

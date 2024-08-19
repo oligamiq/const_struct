@@ -13,6 +13,8 @@ pub trait Float {}
 
 impl Float for f32 {}
 
+impl Float for (f32, u32) {}
+
 #[derive(Debug)]
 pub struct TestGenerics<const A: usize, S: Float> {
     s: S,
@@ -90,7 +92,7 @@ pub mod tt {
                 panic!("cannot use _ in this context")
             }
         };
-        ($a:tt, $s:expr, $value:expr) => {
+        ($a:tt, $s:tt, $value:expr) => {
             paste::paste! {
                 ConstStructPrimAny<TestGenerics<{
                     match_underscore!($a, {
@@ -122,6 +124,18 @@ pub mod tt {
 
 #[test]
 fn call_macro() {
+    // call_with_generics!(call_tester::<
+    //     7,
+    //     crate::TestGenerics!(
+    //         _,
+    //         (f32, u32),
+    //         TestGenerics {
+    //             s: (0.6, 4),
+    //             t: [0; 56]
+    //         }
+    //     ),
+    //     9,
+    // >());
     call_with_generics!(call_tester::<
         7,
         crate::TestGenerics!(_, f32, TestGenerics { s: 0.6, t: [0; 56] }),
