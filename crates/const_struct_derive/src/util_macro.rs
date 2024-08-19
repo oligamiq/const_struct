@@ -157,11 +157,11 @@ impl MyExprCalls {
 }
 
 pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
-    println!("input_with_data: {}", input.to_token_stream());
+    // println!("input_with_data: {}", input.to_token_stream());
 
     let input_with_data = parse2::<ExpandCallFnWithGenericsArgs>(input)?;
 
-    println!("input_with_data success");
+    // println!("input_with_data success");
 
     // println!("input_with_data2: {:#?}", input_with_data);
 
@@ -171,7 +171,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
         ..
     } = input_with_data;
 
-    println!("define_data: {:#?}", define_data);
+    // println!("define_data: {:#?}", define_data);
 
     let generics = input.generics_mut_ref().ok_or_else(|| {
         syn::Error::new(
@@ -190,14 +190,14 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
             GenericArgument::Type(Type::Macro(mac)) => {
                 let mac = mac.mac.clone();
                 let tokens = mac.tokens.clone();
-                println!("failed?");
+                // println!("failed?");
                 let args = Punctuated::<Expr, Token![,]>::parse_terminated
                     .parse2(tokens)
                     .unwrap_or_else(|e| {
                         println!("failed!!! {}", e);
                         panic!();
                     });
-                println!("not failed: {}", args.to_token_stream());
+                // println!("not failed: {}", args.to_token_stream());
 
                 let macro_name = mac.path.segments.last().unwrap().ident.to_string();
 
@@ -213,8 +213,8 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         add_at_mark(format_ident!("{macro_name}GetGenericsData"));
                     // println!("q1: {:#?}", get_generics_data);
                     let self_macro = mac.path.clone();
-                    let q = quote! { #self_macro!(#get_generics_data, ::const_struct_derive::call_with_generics, #input) };
-                    println!("q: {}", q);
+                    // let q = quote! { #self_macro!(#get_generics_data, ::const_struct_derive::call_with_generics, #input) };
+                    // println!("q: {}", q);
                     return Ok(
                         quote! { #self_macro!(#get_generics_data, ::const_struct_derive::call_with_generics, #input) }.into(),
                     );
@@ -229,9 +229,9 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     mac
                 };
 
-                println!("try get args_last");
+                // println!("try get args_last");
                 let args_last = args.last().unwrap().clone();
-                println!("get args_last: {}", args_last.to_token_stream());
+                // println!("get args_last: {}", args_last.to_token_stream());
 
                 // outer declarationの場合
                 let (is_outer_declaration, ty_path) = {
@@ -333,7 +333,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
         new_generics.extend(extend);
     }
 
-    println!("new_generics: {}", new_generics.to_token_stream());
+    // println!("new_generics: {}", new_generics.to_token_stream());
 
     *generics = new_generics;
 
