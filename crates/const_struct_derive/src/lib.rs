@@ -115,7 +115,10 @@ pub fn call_with_generics(input: RawTokenStream) -> RawTokenStream {
 pub fn parse_value(input: RawTokenStream) -> RawTokenStream {
     let output = parse_value::parse_value_wrapper(input.into());
     match output {
-        Ok(output) => output.to_token_stream().into(),
+        Ok(output) => {
+            println!("output: {}", output.to_token_stream());
+            output.to_token_stream().into()
+        }
 
         Err(err) => err.to_compile_error().into(),
     }

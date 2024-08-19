@@ -31,4 +31,6 @@ pub struct ConstStructPrimOption<const B: bool, T> {
     pub __phantom: core::marker::PhantomData<T>,
 }
 
-pub struct ConstStructPrimNone;
+// pub struct ConstStructPrimNone;
+
+pub struct ConstStructPrimEnd;

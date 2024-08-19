@@ -4,11 +4,12 @@ use parse::{discouraged::Speculative as _, Parse, ParseStream};
 use proc_macro::Punct;
 use proc_macro2::{Span, TokenStream};
 use punctuated::Punctuated;
+use quote::ToTokens as _;
 use syn::*;
 
 pub struct AdditionDataArgs {
     pub _at: Token![@],
-    pub ident: Ident,
+    pub _ident: Ident,
     pub _paren: token::Paren,
     pub data: Punctuated<PathAndIdent, Token![,]>,
 }
@@ -21,7 +22,7 @@ impl Default for AdditionDataArgs {
     fn default() -> Self {
         Self {
             _at: Default::default(),
-            ident: Ident::new("AdditionData", Span::call_site()),
+            _ident: Ident::new("AdditionData", Span::call_site()),
             _paren: Default::default(),
             data: Default::default(),
         }
@@ -32,9 +33,9 @@ impl Parse for AdditionDataArgs {
     fn parse(input: ParseStream) -> Result<Self> {
         let fork = input.fork();
         let _at: Token![@] = fork.parse()?;
-        let ident: Ident = fork.parse()?;
-        if ident != "AdditionData" {
-            return Err(Error::new_spanned(ident, "expected `AdditionData`"));
+        let _ident: Ident = fork.parse()?;
+        if _ident != "AdditionData" {
+            return Err(Error::new_spanned(_ident, "expected `AdditionData`"));
         }
         let content;
         let _paren = parenthesized!(content in input);
@@ -42,7 +43,7 @@ impl Parse for AdditionDataArgs {
         input.advance_to(&fork);
         Ok(Self {
             _at,
-            ident,
+            _ident,
             _paren,
             data,
         })
@@ -84,7 +85,7 @@ pub fn parse_value_wrapper(input: TokenStream) -> Result<Type> {
     let additional_data = AdditionData {
         data: additional_data.data.into_iter().collect(),
     };
-    // dbg!(&ty);
+    dbg!(&ty);
     parse_value(ty, expr, &additional_data)
 }
 
@@ -146,6 +147,8 @@ pub fn parse_value_path(
     additional_data: &AdditionData,
 ) -> Result<Type> {
     let path = path.path;
+
+    dbg!(&path);
 
     // Option
     if path.leading_colon.is_none()
@@ -214,11 +217,37 @@ pub fn parse_value_path(
     let path = get_absolute_path(&path, additional_data);
     let path = path.path();
 
-    // dbg!(&path);
+    dbg!(&path);
 
-    let mac: Macro = parse_quote! {
-        #path!(#expr)
+    let (path_ident, path_arg) = {
+        let mut path_ident = path.clone();
+        let path_arg = &mut path_ident.segments.last_mut().unwrap().arguments;
+        let path_arg_kept = path_arg.clone();
+        *path_arg = PathArguments::None;
+        (path_ident, path_arg_kept)
     };
 
-    Ok(Type::Macro(TypeMacro { mac }))
+    // println!("mac? {}", quote::quote!(#path_ident!(#expr)));
+
+    match path_arg {
+        PathArguments::None => {
+            let mac: Macro = parse_quote! {
+                #path_ident!(#expr)
+            };
+
+            Ok(Type::Macro(TypeMacro { mac }))
+        }
+        PathArguments::AngleBracketed(args) => {
+            let args = args.args;
+            let mac: Macro = parse_quote! {
+                #path_ident!(#args, #expr)
+            };
+
+            Ok(Type::Macro(TypeMacro { mac }))
+        }
+        PathArguments::Parenthesized(_) => Err(Error::new_spanned(
+            path,
+            "expected angle bracketed arguments",
+        )),
+    }
 }
