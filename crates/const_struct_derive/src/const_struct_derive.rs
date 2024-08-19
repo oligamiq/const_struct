@@ -51,45 +51,47 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
     let generics: Generics = generics_into_where_clause(input.generics.clone());
 
-    let generics_where_clause_fn = |with_copy: bool| generics
-        .where_clause
-        .clone()
-        .unwrap()
-        .predicates
-        .iter()
-        .map(|pred| match pred {
-            WherePredicate::Type(pred) => {
-                let ty = &pred.bounds;
-                let ty = if ty.iter().any(|ty| match ty {
-                    TypeParamBound::Trait(ty) => ty.path.is_ident("Copy"),
-                    _ => false,
-                }) {
-                    ty.clone()
-                } else {
-                    let mut ty = ty.clone();
-                    if with_copy {
-                        ty.push(parse_quote!(Copy));
-                    }
-                    ty
-                };
-                let ty = ty
-                    .into_iter()
-                    .map(|ty| match ty {
-                        TypeParamBound::Trait(ty) => TypeParamBound::Trait(TraitBound {
-                            path: user_attrs.get_absolute_path(&ty.path).path(),
-                            ..ty
-                        }),
-                        _ => ty,
+    let generics_where_clause_fn = |with_copy: bool| {
+        generics
+            .where_clause
+            .clone()
+            .unwrap()
+            .predicates
+            .iter()
+            .map(|pred| match pred {
+                WherePredicate::Type(pred) => {
+                    let ty = &pred.bounds;
+                    let ty = if ty.iter().any(|ty| match ty {
+                        TypeParamBound::Trait(ty) => ty.path.is_ident("Copy"),
+                        _ => false,
+                    }) {
+                        ty.clone()
+                    } else {
+                        let mut ty = ty.clone();
+                        if with_copy {
+                            ty.push(parse_quote!(Copy));
+                        }
+                        ty
+                    };
+                    let ty = ty
+                        .into_iter()
+                        .map(|ty| match ty {
+                            TypeParamBound::Trait(ty) => TypeParamBound::Trait(TraitBound {
+                                path: user_attrs.get_absolute_path(&ty.path).path(),
+                                ..ty
+                            }),
+                            _ => ty,
+                        })
+                        .collect::<Punctuated<TypeParamBound, Token![+]>>();
+                    WherePredicate::Type(PredicateType {
+                        bounds: ty,
+                        ..pred.clone()
                     })
-                    .collect::<Punctuated<TypeParamBound, Token![+]>>();
-                WherePredicate::Type(PredicateType {
-                    bounds: ty,
-                    ..pred.clone()
-                })
-            }
-            _ => pred.clone(),
-        })
-        .collect::<Punctuated<WherePredicate, Token![,]>>();
+                }
+                _ => pred.clone(),
+            })
+            .collect::<Punctuated<WherePredicate, Token![,]>>()
+    };
 
     let generics_where_clause = generics_where_clause_fn(false);
     let generics_where_clause_with_copy = generics_where_clause_fn(true);
@@ -147,7 +149,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                 keep_type_impl.generics = generics.clone();
 
                 Some(keep_type_impl)
-            },
+            }
             _ => None,
         })
         .collect::<Vec<_>>();

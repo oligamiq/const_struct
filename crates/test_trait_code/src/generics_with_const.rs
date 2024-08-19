@@ -124,6 +124,7 @@ pub mod tt {
 
 #[test]
 fn call_macro() {
+    let t: const_struct::parse_value!((f32, u32), (0.6, 4));
     // call_with_generics!(call_tester::<
     //     7,
     //     crate::TestGenerics!(
