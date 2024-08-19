@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use const_struct::{
-        const_struct,
+        call_with_generics, const_struct,
         primitive::{F32Ty, OptionTy, TupleTy, U32Ty},
         None, PrimitiveTraits, Some, F32, U32,
     };
@@ -112,6 +112,10 @@ mod test {
         assert_eq!(tester_tuple2::<(F32!(-0.5), PiTy)>(), (-0.5, 3.1415926));
         assert_eq!(
             tester_tuple_tuple::<(F32!(-0.5), (F32!(-25.333), F32!(0.0)))>(),
+            (-0.5, (-25.333, 0.0))
+        );
+        assert_eq!(
+            call_with_generics!(tester_tuple_tuple::<(F32!(-0.5), (F32!(-25.333), F32!(0.0)))>()),
             (-0.5, (-25.333, 0.0))
         );
 
