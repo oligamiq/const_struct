@@ -1,5 +1,6 @@
 use crate::ident::get_absolute_ident_path_from_ident;
 use convert_case::{Case, Casing as _};
+use parse::discouraged::Speculative as _;
 use parse::{Parse, Parser};
 use proc_macro2::*;
 use quote::{quote, ToTokens as _};
@@ -325,9 +326,11 @@ impl AbsolutePath {
 
 impl Parse for PathAndIdent {
     fn parse(input: parse::ParseStream) -> Result<Self> {
-        let ident = input.parse()?;
-        let _token = input.parse()?;
-        let path = input.parse()?;
+        let fork = input.fork();
+        let ident = fork.parse()?;
+        let _token = fork.parse()?;
+        let path = fork.parse()?;
+        input.advance_to(&fork);
         Ok(Self {
             ident,
             _token,
