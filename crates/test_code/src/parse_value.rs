@@ -65,7 +65,7 @@ mod test {
 
         // no_std_compat::println!("{:?}", <B as ::const_struct::PrimitiveTraits>::__DATA);
 
-        type C = const_struct::parse_value!((TestGenerics<_>,), (TestGenerics { a: 7 },));
+        // type C = const_struct::parse_value!((TestGenerics<_>,), (TestGenerics { a: 7 },));
         // type C = const_struct::parse_value!(TestGenerics<7>, TestGenerics { a: 7 });
         // let t: C;
 
@@ -79,14 +79,33 @@ mod test {
         //     }),
         // );
 
-        type D = (
-            TestGenerics!(_, {
-                {
-                    let v0: (TestGenerics<_>,) = (TestGenerics { a: 7 },);
-                    v0
-                }
-                .0
-            }),
-        );
+        // const_struct::parse_value!(
+        //     ConstStructPrimAny<
+        //         TestGenerics<
+        //             {
+        //                 match_underscore!($a, {
+        //                     const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
+        //                         A
+        //                     }
+
+        //                     get_const_generics_a($value)
+        //                 })
+        //             },
+        //             seal!($s),
+        //         >,
+        //         f32,
+        //     >,
+        //     { unsafe { core::mem::zeroed() } }
+        // )
+
+        // type D = (
+        //     TestGenerics!(_, {
+        //         {
+        //             let v0: (TestGenerics<_>,) = (TestGenerics { a: 7 },);
+        //             v0
+        //         }
+        //         .0
+        //     }),
+        // );
     }
 }
