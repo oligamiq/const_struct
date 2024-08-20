@@ -53,15 +53,16 @@ mod test {
 
         // type B = const_struct::parse_value!(Option<Option<f32>>, Some(Some(0.6)));
 
-        // type B = const_struct::parse_value!(
-        //     (Option<Option<f32>>, f32, Option<bool>),
-        //     (None, 0.6, Some(true))
-        // );
+        type B = const_struct::parse_value!(
+            @AdditionData(),
+            (Option<Option<f32>>, f32, Option<bool>),
+            (None, 0.6, Some(true))
+        );
 
-        // assert_eq!(
-        //     <B as ::const_struct::PrimitiveTraits>::__DATA,
-        //     (None, 0.6, Some(true))
-        // );
+        assert_eq!(
+            <B as ::const_struct::PrimitiveTraits>::__DATA,
+            (None, 0.6, Some(true))
+        );
 
         // no_std_compat::println!("{:?}", <B as ::const_struct::PrimitiveTraits>::__DATA);
 

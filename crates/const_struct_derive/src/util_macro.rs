@@ -59,7 +59,12 @@ impl GenericsData {
             .collect()
     }
 
-    pub fn get_parsed_value(&self, num: usize, expr_arg: Expr, generic_info: &GenericInfo) -> Result<Type> {
+    pub fn get_parsed_value(
+        &self,
+        num: usize,
+        expr_arg: Expr,
+        generic_info: &GenericInfo,
+    ) -> Result<Type> {
         let macro_num = self.macros.iter().nth(num).unwrap();
         if macro_num.path.is_ident("parse_value") {
             let tokens = macro_num.tokens.clone();
@@ -67,6 +72,7 @@ impl GenericsData {
                 ty,
                 expr,
                 additional_data,
+                ..
             } = parse2::<TyAndExpr>(tokens)?;
             let additional_data = additional_data.unwrap_or_default();
             let change_expr = |mac: Macro| {
@@ -84,7 +90,8 @@ impl GenericsData {
                         .correspondence
                         .iter()
                         .find(|(ident2, _)| ident == *ident2)
-                        .unwrap().1;
+                        .unwrap()
+                        .1;
                     ty_or_expr.to_token_stream()
                 } else {
                     mac.to_token_stream()

@@ -43,12 +43,16 @@ impl Parse for AdditionDataArgs {
     fn parse(input: ParseStream) -> Result<Self> {
         let fork = input.fork();
         let _at: Token![@] = fork.parse()?;
+        // println!("at: {:?}", _at);
+        // println!("fork: {}", fork);
         let _ident: Ident = fork.parse()?;
+        // println!("ident: {:?}", _ident);
+        // println!("fork: {}", fork);
         if _ident != "AdditionData" {
             return Err(Error::new_spanned(_ident, "expected `AdditionData`"));
         }
         let content;
-        let _paren = parenthesized!(content in input);
+        let _paren = parenthesized!(content in fork);
         let data = Punctuated::parse_terminated(&content)?;
         input.advance_to(&fork);
         Ok(Self {
@@ -62,6 +66,7 @@ impl Parse for AdditionDataArgs {
 
 pub struct TyAndExpr {
     pub additional_data: Option<AdditionDataArgs>,
+    pub _comma: Option<Token![,]>,
     pub ty: Type,
     pub expr: Expr,
 }
@@ -69,6 +74,11 @@ pub struct TyAndExpr {
 impl Parse for TyAndExpr {
     fn parse(input: ParseStream) -> Result<Self> {
         let additional_data = if input.peek(Token![@]) {
+            Some(input.parse()?)
+        } else {
+            None
+        };
+        let _comma = if input.peek(Token![,]) {
             Some(input.parse()?)
         } else {
             None
@@ -82,6 +92,7 @@ impl Parse for TyAndExpr {
             ty,
             expr,
             additional_data,
+            _comma,
         })
     }
 }
@@ -92,6 +103,7 @@ pub fn parse_value_wrapper(input: TokenStream) -> Result<Type> {
         ty,
         expr,
         additional_data,
+        ..
     } = syn::parse2(input)?;
     let additional_data = additional_data.unwrap_or_default();
     let additional_data = AdditionData {

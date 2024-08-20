@@ -39,7 +39,7 @@ impl<const A: usize, S: Float + Copy, U: PrimitiveTraits<DATATYPE = TestGenerics
 type TestGenericsPrimWrapper<const A: usize, S, TestGenericsS> =
     ConstStructPrimAny<TestGenerics<A, S>, ConstStructPrimAny<TestGenericsS, ConstStructPrimEnd>>;
 
-impl<const A: usize, S: Float + Copy, TestGenericsS: ConstStructPrimData<Data = S>> PrimitiveTraits
+impl<const A: usize, S: Float + Copy, TestGenericsS: PrimitiveTraits<DATATYPE = S>> PrimitiveTraits
     for TestGenericsPrimWrapper<A, S, TestGenericsS>
 {
     type DATATYPE = TestGenerics<A, S>;
@@ -47,7 +47,7 @@ impl<const A: usize, S: Float + Copy, TestGenericsS: ConstStructPrimData<Data = 
         <TestGenericsPrimWrapper<A, S, TestGenericsS> as ConstStructTraits<TestGenerics<A, S>>>::__DATA;
 }
 
-impl<const A: usize, S: Float + Copy, TestGenericsS: ConstStructPrimData<Data = S>>
+impl<const A: usize, S: Float + Copy, TestGenericsS: PrimitiveTraits<DATATYPE = S>>
     ConstStructTraits<TestGenerics<A, S>> for TestGenericsPrimWrapper<A, S, TestGenericsS>
 {
     const __DATA: TestGenerics<A, S> = TestGenerics {
@@ -113,7 +113,7 @@ pub mod tt {
                         get_const_generics_a($value)
                     })
                 }, $s>, ConstStructPrimAny<
-                    [<$s:camel>]!({
+                    const_struct::parse_value!(@AdditionData(::const_struct::PrimitiveTraits, some::PrimitiveTraits), $s, {
                         let value: TestGenerics<{
                             match_underscore!($a, {
                                 const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {

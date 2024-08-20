@@ -17,7 +17,7 @@ impl<U: Fn(Macro) -> TokenStream, T: Switcher<U>, P: Default> Switcher<U> for Pu
 }
 
 /// Vec
-impl <U: Fn(Macro) -> TokenStream, T: Switcher<U>> Switcher<U> for Vec<T> {
+impl<U: Fn(Macro) -> TokenStream, T: Switcher<U>> Switcher<U> for Vec<T> {
     fn switcher(self, u: &U) -> Self {
         self.into_iter()
             .map(|item| item.switcher(u))
@@ -93,10 +93,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Type {
             }
             Type::Group(TypeGroup { elem, group_token }) => {
                 let elem = elem.switcher(u);
-                return Type::Group(TypeGroup {
-                    elem,
-                    group_token,
-                });
+                return Type::Group(TypeGroup { elem, group_token });
             }
             Type::ImplTrait(TypeImplTrait { bounds, impl_token }) => {
                 let bounds = bounds.switcher(u);
@@ -108,15 +105,9 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Type {
             }
             Type::Paren(TypeParen { elem, paren_token }) => {
                 let elem = elem.switcher(u);
-                return Type::Paren(TypeParen {
-                    elem,
-                    paren_token,
-                });
+                return Type::Paren(TypeParen { elem, paren_token });
             }
-            Type::Path(TypePath {
-                qself,
-                path,
-            }) => {
+            Type::Path(TypePath { qself, path }) => {
                 let path = path.switcher(u);
                 return Type::Path(TypePath { qself, path });
             }
@@ -158,15 +149,9 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Type {
                     bracket_token,
                 });
             }
-            Type::TraitObject(TypeTraitObject {
-                bounds,
-                dyn_token,
-            }) => {
+            Type::TraitObject(TypeTraitObject { bounds, dyn_token }) => {
                 let bounds = bounds.switcher(u);
-                return Type::TraitObject(TypeTraitObject {
-                    bounds,
-                    dyn_token,
-                });
+                return Type::TraitObject(TypeTraitObject { bounds, dyn_token });
             }
             Type::Tuple(TypeTuple { elems, paren_token }) => {
                 let elems = elems.switcher(u);
@@ -671,18 +656,10 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                     elems,
                 });
             }
-            Expr::Unary(ExprUnary {
-                attrs,
-                op,
-                expr,
-            }) => {
+            Expr::Unary(ExprUnary { attrs, op, expr }) => {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
-                return Expr::Unary(ExprUnary {
-                    attrs,
-                    op,
-                    expr,
-                });
+                return Expr::Unary(ExprUnary { attrs, op, expr });
             }
             Expr::Unsafe(ExprUnsafe {
                 attrs,
@@ -697,8 +674,8 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                     block,
                 });
             }
-            Expr::Verbatim( tts ) => {
-                return Expr::Verbatim( tts );
+            Expr::Verbatim(tts) => {
+                return Expr::Verbatim(tts);
             }
             Expr::While(ExprWhile {
                 attrs,
@@ -746,7 +723,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
                 let mac = u(mac);
                 return parse_quote! { #mac };
             }
-            Pat::Const(PatConst { attrs, const_token, block }) => {
+            Pat::Const(PatConst {
+                attrs,
+                const_token,
+                block,
+            }) => {
                 let attrs = attrs.switcher(u);
                 let block = block.switcher(u);
                 return Pat::Const(PatConst {
@@ -845,7 +826,10 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
                     ty,
                 });
             }
-            Pat::Wild(PatWild { attrs, underscore_token }) => {
+            Pat::Wild(PatWild {
+                attrs,
+                underscore_token,
+            }) => {
                 let attrs = attrs.switcher(u);
                 return Pat::Wild(PatWild {
                     attrs,
@@ -885,7 +869,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
                     elems,
                 });
             }
-            Pat::Or(PatOr { attrs, cases, leading_vert }) => {
+            Pat::Or(PatOr {
+                attrs,
+                cases,
+                leading_vert,
+            }) => {
                 let attrs = attrs.switcher(u);
                 let cases = cases.switcher(u);
                 return Pat::Or(PatOr {
@@ -926,8 +914,8 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
                 let attrs = attrs.switcher(u);
                 return Pat::Rest(PatRest { attrs, dot2_token });
             }
-            Pat::Verbatim( tts ) => {
-                return Pat::Verbatim( tts );
+            Pat::Verbatim(tts) => {
+                return Pat::Verbatim(tts);
             }
             _ => unreachable!(),
         }
@@ -1284,7 +1272,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
 /// Variant
 impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Variant {
     fn switcher(self, u: &U) -> Self {
-       let Variant {
+        let Variant {
             attrs,
             ident,
             fields,
@@ -1389,22 +1377,24 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for UseTree {
             UseTree::Glob(UseGlob { star_token }) => {
                 return UseTree::Glob(UseGlob { star_token });
             }
-            UseTree::Group(UseGroup {
-                brace_token,
-                items,
-            }) => {
+            UseTree::Group(UseGroup { brace_token, items }) => {
                 let items = items.switcher(u);
-                return UseTree::Group(UseGroup {
-                    brace_token,
-                    items,
-                });
+                return UseTree::Group(UseGroup { brace_token, items });
             }
             UseTree::Name(UseName { ident }) => {
                 return UseTree::Name(UseName { ident });
             }
-            UseTree::Path(UsePath { ident, tree, colon2_token }) => {
+            UseTree::Path(UsePath {
+                ident,
+                tree,
+                colon2_token,
+            }) => {
                 let tree = tree.switcher(u);
-                return UseTree::Path(UsePath { ident, tree, colon2_token });
+                return UseTree::Path(UsePath {
+                    ident,
+                    tree,
+                    colon2_token,
+                });
             }
             UseTree::Rename(UseRename {
                 ident,
@@ -1551,8 +1541,8 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ImplItem {
                     semi_token,
                 });
             }
-            ImplItem::Verbatim( tts ) => {
-                return ImplItem::Verbatim( tts );
+            ImplItem::Verbatim(tts) => {
+                return ImplItem::Verbatim(tts);
             }
             ImplItem::Fn(ImplItemFn {
                 attrs,
@@ -1635,7 +1625,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for FnArg {
                     ty,
                 });
             }
-            FnArg::Typed(PatType { attrs, pat, colon_token, ty }) => {
+            FnArg::Typed(PatType {
+                attrs,
+                pat,
+                colon_token,
+                ty,
+            }) => {
                 let attrs = attrs.switcher(u);
                 let pat = pat.switcher(u);
                 let ty = ty.switcher(u);
@@ -1699,7 +1694,14 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Generics {
 impl<U: Fn(Macro) -> TokenStream> Switcher<U> for GenericParam {
     fn switcher(self, u: &U) -> Self {
         match self {
-            GenericParam::Type(TypeParam { attrs, ident, colon_token, bounds, eq_token, default }) => {
+            GenericParam::Type(TypeParam {
+                attrs,
+                ident,
+                colon_token,
+                bounds,
+                eq_token,
+                default,
+            }) => {
                 let attrs = attrs.switcher(u);
                 let bounds = bounds.switcher(u);
                 let default = default.switcher(u);
@@ -1854,15 +1856,9 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Path {
 /// PathSegment
 impl<U: Fn(Macro) -> TokenStream> Switcher<U> for PathSegment {
     fn switcher(self, u: &U) -> Self {
-        let PathSegment {
-            ident,
-            arguments,
-        } = self;
+        let PathSegment { ident, arguments } = self;
         let arguments = arguments.switcher(u);
-        return PathSegment {
-            ident,
-            arguments,
-        };
+        return PathSegment { ident, arguments };
     }
 }
 
@@ -1919,18 +1915,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for GenericArgument {
 impl<U: Fn(Macro) -> TokenStream> Switcher<U> for BareFnArg {
     fn switcher(self, u: &U) -> Self {
         let BareFnArg {
-            name,
-            ty,
-            attrs,
-            ..
+            name, ty, attrs, ..
         } = self;
         let ty = ty.switcher(u);
         let attrs = attrs.switcher(u);
-        return BareFnArg {
-            name,
-            ty,
-            attrs,
-        };
+        return BareFnArg { name, ty, attrs };
     }
 }
 
@@ -2046,8 +2035,8 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for TraitItem {
                     semi_token,
                 });
             }
-            TraitItem::Verbatim( tts ) => {
-                return TraitItem::Verbatim( tts );
+            TraitItem::Verbatim(tts) => {
+                return TraitItem::Verbatim(tts);
             }
             TraitItem::Fn(TraitItemFn {
                 attrs,
@@ -2073,15 +2062,9 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for TraitItem {
 /// Block
 impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Block {
     fn switcher(self, u: &U) -> Self {
-        let Block {
-            brace_token,
-            stmts,
-        } = self;
+        let Block { brace_token, stmts } = self;
         let stmts = stmts.switcher(u);
-        return Block {
-            brace_token,
-            stmts,
-        };
+        return Block { brace_token, stmts };
     }
 }
 
