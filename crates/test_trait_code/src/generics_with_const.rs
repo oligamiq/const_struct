@@ -113,6 +113,7 @@ pub mod tt {
                         get_const_generics_a($value)
                     })
                 }, $s>, ConstStructPrimAny<
+                    // @AdditionData(F32: F32)を用いて、const_structのF32マクロではなく、このライブラリのF32マクロを使う
                     const_struct::parse_value!(@AdditionData(F32: F32), $s, {
                         let value: TestGenerics<{
                             match_underscore!($a, {
