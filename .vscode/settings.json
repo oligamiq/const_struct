@@ -2,10 +2,12 @@
     "cSpell.words": [
         "Compat",
         "elems",
+        "impls",
         "isize",
         "keeptype",
         "println",
         "Punct",
+        "qself",
         "struct",
         "structs",
         "turbofish",
