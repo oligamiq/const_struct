@@ -20,6 +20,14 @@ pub struct AdditionData {
     pub data: Vec<PathAndIdent>,
 }
 
+impl Into<AdditionData> for AdditionDataArgs {
+    fn into(self) -> AdditionData {
+        AdditionData {
+            data: self.data.into_iter().collect(),
+        }
+    }
+}
+
 impl Default for AdditionDataArgs {
     fn default() -> Self {
         Self {
@@ -53,9 +61,9 @@ impl Parse for AdditionDataArgs {
 }
 
 pub struct TyAndExpr {
-    additional_data: Option<AdditionDataArgs>,
-    ty: Type,
-    expr: Expr,
+    pub additional_data: Option<AdditionDataArgs>,
+    pub ty: Type,
+    pub expr: Expr,
 }
 
 impl Parse for TyAndExpr {

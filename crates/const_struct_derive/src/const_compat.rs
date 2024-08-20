@@ -4,7 +4,7 @@ use proc_macro2::*;
 use quote::{quote, ToTokens as _};
 use syn::*;
 
-use crate::rewriter::Rewriter as _;
+use crate::rewriter::const_compat::Rewriter as _;
 
 #[derive(Debug)]
 enum ConstCompatAttr {

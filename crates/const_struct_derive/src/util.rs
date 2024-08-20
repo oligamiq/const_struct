@@ -2,8 +2,8 @@ use core::num;
 
 use proc_macro2::{Spacing, TokenStream};
 use quote::{quote, TokenStreamExt as _};
-use syn::*;
 use syn::Token;
+use syn::*;
 
 pub fn add_at_mark(ident: Ident) -> TokenStream {
     let mut tokens = TokenStream::new();
@@ -28,7 +28,7 @@ pub fn add_at_mark(ident: Ident) -> TokenStream {
 /// from
 ///
 /// const fn get_const_generics<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) {
-/// }
+/// }, $value, 0
 ///
 /// to
 ///
@@ -50,11 +50,13 @@ pub fn gen_get_const_generics(
         GenericParam::Const(con) => con,
         _ => return None,
     };
-    let ConstParam { ident: num_arg_ident, ty: num_arg_ty,.. } = num_arg;
-    get_const_generics_fn_seed.sig.output = ReturnType::Type(
-        Default::default(),
-        Box::new(num_arg_ty.clone()),
-    );
+    let ConstParam {
+        ident: num_arg_ident,
+        ty: num_arg_ty,
+        ..
+    } = num_arg;
+    get_const_generics_fn_seed.sig.output =
+        ReturnType::Type(Default::default(), Box::new(num_arg_ty.clone()));
 
     let stmts = &mut get_const_generics_fn_seed.block.stmts;
     *stmts = vec![Stmt::Expr(

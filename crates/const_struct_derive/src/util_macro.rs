@@ -4,7 +4,35 @@ use punctuated::Punctuated;
 use quote::{format_ident, quote, ToTokens};
 use syn::*;
 
-use crate::util::add_at_mark;
+use crate::{ident, parse_value::TyAndExpr, rewriter::change_macro::Switcher, util::add_at_mark};
+
+#[derive(Debug, Clone)]
+pub struct GenericsData {
+    pub _at: Token![@],
+    pub ident: Ident,
+    pub _paren_token: token::Paren,
+    pub const_fn: ItemFn,
+    pub _comma: Token![,],
+    pub macros: Punctuated<Macro, Token![,]>,
+}
+
+pub enum TypeOrExpr {
+    Type(Type),
+    Expr(Expr),
+}
+
+impl ToTokens for TypeOrExpr {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self {
+            Self::Type(ty) => ty.to_tokens(tokens),
+            Self::Expr(expr) => expr.to_tokens(tokens),
+        }
+    }
+}
+
+pub struct GenericInfo {
+    pub correspondence: Vec<(Ident, TypeOrExpr)>,
+}
 
 #[derive(Debug, Clone)]
 pub enum ConstOrType {
@@ -12,25 +40,64 @@ pub enum ConstOrType {
     Type,
 }
 
-impl Parse for ConstOrType {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        // println!("ConstOrType input: {}", input);
-        match input.parse::<Token![const]>() {
-            Ok(_) => Ok(Self::Const),
-            Err(_) => {
-                let _type = input.parse::<Token![type]>()?;
-                Ok(Self::Type)
-            }
+impl GenericsData {
+    pub fn get_generics_types(&self) -> Vec<GenericParam> {
+        let const_fn = &self.const_fn;
+        let gen = &const_fn.sig.generics;
+        gen.params.iter().map(|f| f.clone()).collect()
+    }
+
+    pub fn const_or_type(&self) -> Vec<ConstOrType> {
+        let generics_types = self.get_generics_types();
+        generics_types
+            .iter()
+            .map(|f| match f {
+                GenericParam::Type(_) => ConstOrType::Type,
+                GenericParam::Const(_) => ConstOrType::Const,
+                _ => panic!("failed to get const_or_type"),
+            })
+            .collect()
+    }
+
+    pub fn get_parsed_value(&self, num: usize, expr_arg: Expr, generic_info: &GenericInfo) -> Result<Type> {
+        let macro_num = self.macros.iter().nth(num).unwrap();
+        if macro_num.path.is_ident("parse_value") {
+            let tokens = macro_num.tokens.clone();
+            let TyAndExpr {
+                ty,
+                expr,
+                additional_data,
+            } = parse2::<TyAndExpr>(tokens)?;
+            let additional_data = additional_data.unwrap_or_default();
+            let change_expr = |mac: Macro| {
+                if mac.path.is_ident("expr") {
+                    expr_arg.to_token_stream()
+                } else {
+                    mac.to_token_stream()
+                }
+            };
+            let expr = expr.switcher(&change_expr);
+            let change_ty = |mac: Macro| {
+                if mac.path.is_ident("gen") {
+                    let ident = parse::<Ident>(mac.tokens.clone().into()).unwrap();
+                    let ty_or_expr = &generic_info
+                        .correspondence
+                        .iter()
+                        .find(|(ident2, _)| ident == *ident2)
+                        .unwrap().1;
+                    ty_or_expr.to_token_stream()
+                } else {
+                    mac.to_token_stream()
+                }
+            };
+            let ty = ty.switcher(&change_ty);
+            let ret_ty = crate::parse_value::parse_value(ty, expr, &additional_data.into())?;
+
+            Ok(ret_ty)
+        } else {
+            panic!("failed to get_parsed_value");
         }
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct GenericsData {
-    pub _at: Token![@],
-    pub ident: Ident,
-    pub _paren_token: token::Paren,
-    pub const_or_type: Punctuated<ConstOrType, Token![,]>,
 }
 
 impl Parse for GenericsData {
@@ -38,20 +105,26 @@ impl Parse for GenericsData {
         let input_try = input.fork();
         // println!("input_try: {}", input_try);
         let _at = input_try.parse::<Token![@]>()?;
-        // println!("at: {}", _at);
+        // println!("at: {:?}", _at);
         let ident = input_try.parse::<Ident>()?;
         // println!("ident: {}", ident);
         let content;
         let _paren_token = parenthesized!(content in input_try);
         // println!("content: {}", content);
-        let const_or_type = Punctuated::<ConstOrType, Token![,]>::parse_terminated(&content)?;
-        // println!("const_or_type: {:?}", const_or_type);
+        let const_fn = content.parse::<ItemFn>()?;
+        // println!("const_fn: {:#?}", const_fn);
+        let _comma = content.parse::<Token![,]>()?;
+        // println!("comma: {:?}", _comma);
+        let macros = Punctuated::<Macro, Token![,]>::parse_terminated(&content)?;
+        // println!("macros: {:#?}", macros);
         input.advance_to(&input_try);
         Ok(Self {
             _at,
             ident,
             _paren_token,
-            const_or_type,
+            const_fn,
+            _comma,
+            macros,
         })
     }
 }
@@ -67,7 +140,7 @@ impl Parse for ExpandCallFnWithGenericsArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         match input.parse::<GenericsData>() {
             Ok(item) => {
-                // println!("success to parse GenericsData");
+                println!("success to parse GenericsData");
                 let _comma = input.parse::<Token![,]>().ok();
                 // println!("success to parse Token![,]");
                 let call = input.parse::<MyExprCalls>()?;
@@ -78,7 +151,8 @@ impl Parse for ExpandCallFnWithGenericsArgs {
                     call,
                 })
             }
-            Err(_) => {
+            Err(e) => {
+                println!("failed to parse GenericsData: {}", e);
                 // println!("failed to parse GenericsData");
                 let call = input.parse::<MyExprCalls>()?;
                 // println!("success to parse MyExprCalls");
@@ -162,6 +236,8 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
     let input_with_data = parse2::<ExpandCallFnWithGenericsArgs>(input)?;
 
     // println!("input_with_data success");
+
+    // dbg!(&input_with_data);
 
     // println!("input_with_data2: {:#?}", input_with_data);
 
@@ -254,9 +330,12 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         (false, None)
                     }
                 };
+
+                let const_or_type = define_data.const_or_type();
+
                 let infer_process = |num| {
                     if is_outer_declaration {
-                        let const_or_type = match define_data.const_or_type.get(num) {
+                        let const_or_type = match const_or_type.get(num) {
                             Some(const_or_type) => const_or_type,
                             None => panic!("failed to get const_or_type"),
                         };
@@ -285,7 +364,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                 };
 
                 let args_len = args.len();
-                let mut new_generic = if args_len == define_data.const_or_type.len() + 1 {
+                let mut new_generic = if args_len == const_or_type.len() + 1 {
                     args.into_iter()
                         .enumerate()
                         .filter(|(i, _)| *i < args_len - 1)
@@ -304,8 +383,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         })
                         .collect::<Vec<GenericArgument>>()
                 } else if args.len() == 1 {
-                    define_data
-                        .const_or_type
+                    const_or_type
                         .iter()
                         .enumerate()
                         .map(|(num, _)| infer_process(num))
@@ -336,6 +414,8 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
     // println!("new_generics: {}", new_generics.to_token_stream());
 
     *generics = new_generics;
+
+    println!("input: {}", input.to_token_stream());
 
     Ok(input.into_token_stream())
 }
