@@ -113,7 +113,7 @@ pub mod tt {
                         get_const_generics_a($value)
                     })
                 }, $s>, ConstStructPrimAny<
-                    const_struct::parse_value!(@AdditionData(::const_struct::PrimitiveTraits, some::PrimitiveTraits), $s, {
+                    const_struct::parse_value!(@AdditionData(F32: F32), $s, {
                         let value: TestGenerics<{
                             match_underscore!($a, {
                                 const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {

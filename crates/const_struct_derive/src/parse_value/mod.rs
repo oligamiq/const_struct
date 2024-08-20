@@ -16,6 +16,7 @@ pub struct AdditionDataArgs {
     pub data: Punctuated<PathAndIdent, Token![,]>,
 }
 
+#[derive(Debug)]
 pub struct AdditionData {
     pub data: Vec<PathAndIdent>,
 }
@@ -106,10 +107,8 @@ pub fn parse_value_wrapper(input: TokenStream) -> Result<Type> {
         ..
     } = syn::parse2(input)?;
     let additional_data = additional_data.unwrap_or_default();
-    let additional_data = AdditionData {
-        data: additional_data.data.into_iter().collect(),
-    };
-    dbg!(&ty);
+    let additional_data: AdditionData = additional_data.into();
+    dbg!(&additional_data);
     parse_value(ty, expr, &additional_data)
 }
 
