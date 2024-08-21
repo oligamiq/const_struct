@@ -79,10 +79,12 @@ pub mod tt {
             $macro_path!(@TestGenericsGetGenericsData(
                 const fn get_const_generics<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) {},
                 parse_value!(
+                    @AdditionData(F32: F32),
                     gen!(S),
                     { expr!() }.s
                 ),
                 parse_value!(
+                    @AdditionData(F32: F32),
                     [u8; gen!(A)],
                     { expr!($value) }.t
                 )
