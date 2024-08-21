@@ -1902,12 +1902,81 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for PathArguments {
 impl<U: Fn(Macro) -> TokenStream> Switcher<U> for GenericArgument {
     fn switcher(self, u: &U) -> Self {
         match self {
+            GenericArgument::Lifetime(lt) => todo!(),
             GenericArgument::Type(ty) => {
                 let ty = ty.switcher(u);
                 return GenericArgument::Type(ty);
             }
-            _ => self,
+            GenericArgument::Const(expr) => {
+                let expr = expr.switcher(u);
+                return GenericArgument::Const(expr);
+            }
+            GenericArgument::AssocType(AssocType {
+                ident,
+                eq_token,
+                ty,
+                generics,
+            }) => {
+                let ty = ty.switcher(u);
+                let generics = generics.switcher(u);
+                return GenericArgument::AssocType(AssocType {
+                    ident,
+                    eq_token,
+                    ty,
+                    generics,
+                });
+            }
+            GenericArgument::AssocConst(AssocConst {
+                ident,
+                eq_token,
+                generics,
+                value,
+            }) => {
+                let generics = generics.switcher(u);
+                let value = value.switcher(u);
+                return GenericArgument::AssocConst(AssocConst {
+                    ident,
+                    eq_token,
+                    generics,
+                    value,
+                });
+            }
+            GenericArgument::Constraint(Constraint {
+                colon_token,
+                bounds,
+                ident,
+                generics,
+            }) => {
+                let bounds = bounds.switcher(u);
+                let generics = generics.switcher(u);
+                return GenericArgument::Constraint(Constraint {
+                    colon_token,
+                    bounds,
+                    ident,
+                    generics,
+                });
+            }
+            _ => unreachable!(),
         }
+    }
+}
+
+/// AngleBracketedGenericArguments
+impl<U: Fn(Macro) -> TokenStream> Switcher<U> for AngleBracketedGenericArguments {
+    fn switcher(self, u: &U) -> Self {
+        let AngleBracketedGenericArguments {
+            colon2_token,
+            lt_token,
+            args,
+            gt_token,
+        } = self;
+        let args = args.switcher(u);
+        return AngleBracketedGenericArguments {
+            colon2_token,
+            lt_token,
+            args,
+            gt_token,
+        };
     }
 }
 

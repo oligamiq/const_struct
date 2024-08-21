@@ -408,7 +408,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     arg.clone()
                 });
 
-                // println!("new_generic: {}", quote! { #(#new_generic),* });
+                println!("new_generic: {}", quote! { #(#new_generic),* });
 
                 new_generic
             }

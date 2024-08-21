@@ -73,7 +73,7 @@ pub fn gen_primitive_ty(ident: &Ident) -> impl Fn(Expr) -> Type {
         let ty: Type = parse_quote! {
             ::const_struct::primitive::#camel_name::<{ unsafe { core::mem::transmute::<#name, #base>(#expr) } }>
         };
-        println!("ty: {:?}", ty);
+        // println!("ty: {:?}", ty);
         ty
     };
     expr_fn
