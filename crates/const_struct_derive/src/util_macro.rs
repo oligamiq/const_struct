@@ -87,8 +87,20 @@ impl GenericsData {
             .collect()
     }
 
-    pub fn get_struct_ident(&self) -> Ident {
-        self.ident.clone()
+    pub fn get_ty_ident(&self) -> Ident {
+        match self.label {
+            Label::Struct => {
+                let ident = self.ident.clone();
+                if ident.to_string().ends_with("GetGenericsData") {
+                    let ident = ident.to_string();
+                    let ident = ident.split_at(ident.len() - "GetGenericsData".len()).0;
+                    format_ident!("{}", ident)
+                } else {
+                    panic!("failed to get_ty_ident");
+                }
+            }
+            _ => unimplemented!(),
+        }
     }
 
     pub fn get_parsed_value(
@@ -136,6 +148,20 @@ impl GenericsData {
         } else {
             panic!("failed to get_parsed_value");
         }
+    }
+
+    pub fn get_parsed_values(
+        &self,
+        expr_arg: Expr,
+        generic_info: &GenericInfo,
+    ) -> Result<Vec<Type>> {
+        let ret = self
+            .macros
+            .iter()
+            .enumerate()
+            .map(|(num, _)| self.get_parsed_value(num, expr_arg.clone(), generic_info))
+            .collect::<Result<Vec<_>>>()?;
+        Ok(ret)
     }
 }
 
@@ -434,6 +460,8 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         path: ty_path.unwrap(),
                     }))
                 } else {
+                    println!("arg: {}", args_last.to_token_stream());
+
                     arg.clone()
                 });
 
