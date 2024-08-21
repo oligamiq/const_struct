@@ -1,13 +1,12 @@
+use crate::ident::AbsolutePathOrType;
+
 use super::{parse_value, AdditionData};
 use convert_case::{Case, Casing};
 use proc_macro2::Span;
 use syn::*;
 
 #[inline]
-pub fn get_absolute_path(
-    path: &Path,
-    additional_data: &AdditionData,
-) -> crate::const_struct_derive::AbsolutePath {
+pub fn get_absolute_path(path: &Path, additional_data: &AdditionData) -> AbsolutePathOrType {
     crate::const_struct_derive::ConstStructAttr::get_absolute_path_inner(
         path,
         &additional_data.data,
@@ -21,7 +20,7 @@ pub fn parse_value_path(
 ) -> Result<Type> {
     let path = path.path;
 
-    dbg!(&path);
+    // dbg!(&path);
 
     // Option
     if path.leading_colon.is_none()
@@ -88,9 +87,17 @@ pub fn parse_value_path(
         path
     };
     let path = get_absolute_path(&path, additional_data);
+
+    let path = match path {
+        AbsolutePathOrType::Path(path) => path,
+        AbsolutePathOrType::Type(ty) => {
+            return Ok(ty(expr));
+        }
+    };
+
     let path = path.path();
 
-    dbg!(&path);
+    // dbg!(&path);
 
     let (path_ident, path_arg) = {
         let mut path_ident = path.clone();

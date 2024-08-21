@@ -38,7 +38,7 @@ macro_rules! PrimTraitBySizes {
                     };
 
                     ($value:expr) => {
-                        $crate::primitive::[<$name:camel Impl>]::<{ unsafe { core::mem::transmute::<$name, $base>(($value)) } }>
+                        $crate::primitive::[<$name:camel Impl>]::<{ unsafe { core::mem::transmute::<$name, $base>($value) } }>
                     };
                 }
 

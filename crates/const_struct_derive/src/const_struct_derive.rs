@@ -1,4 +1,5 @@
 use crate::ident::get_absolute_ident_path_from_ident;
+use crate::ident::AbsolutePathOrType;
 use convert_case::{Case, Casing as _};
 use parse::discouraged::Speculative as _;
 use parse::{Parse, Parser};
@@ -78,7 +79,10 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                         .into_iter()
                         .map(|ty| match ty {
                             TypeParamBound::Trait(ty) => TypeParamBound::Trait(TraitBound {
-                                path: user_attrs.get_absolute_path(&ty.path).path(),
+                                path: match user_attrs.get_absolute_path(&ty.path) {
+                                    AbsolutePathOrType::Path(path) => path.path(),
+                                    AbsolutePathOrType::Type(_) => panic!("Type is not allowed"),
+                                },
                                 ..ty
                             }),
                             _ => ty,
@@ -231,16 +235,16 @@ pub struct ConstStructAttr {
 }
 
 impl ConstStructAttr {
-    pub fn get_absolute_path(&self, path: &Path) -> AbsolutePath {
+    pub fn get_absolute_path(&self, path: &Path) -> AbsolutePathOrType {
         Self::get_absolute_path_inner(path, &self.path_and_ident)
     }
 
     pub fn get_absolute_path_inner(
         path: &Path,
         path_and_ident: &Vec<PathAndIdent>,
-    ) -> AbsolutePath {
+    ) -> AbsolutePathOrType {
         get_absolute_ident_path_from_ident(path, path_and_ident)
-            .unwrap_or(AbsolutePath::new(path.clone()))
+            .unwrap_or(AbsolutePathOrType::Path(AbsolutePath::new(path.clone())))
     }
 }
 
