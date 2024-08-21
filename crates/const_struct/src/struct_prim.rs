@@ -1,6 +1,6 @@
 use paste::paste;
 
-pub struct ConstStructPrimAny<U, T> {
+pub struct ConstStructPrimQueue<U, T> {
     pub __phantom: core::marker::PhantomData<(U, T)>,
 }
 

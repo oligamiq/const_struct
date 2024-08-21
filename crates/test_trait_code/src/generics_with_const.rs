@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use crate::{
     pre::ConstStructTraits,
     primitive::{some::PrimitiveTraits, F32Ty},
-    struct_prim::{ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd},
+    struct_prim::{ConstStructPrimQueue, ConstStructPrimData, ConstStructPrimEnd},
     F32,
 };
 
@@ -37,7 +37,7 @@ impl<const A: usize, S: Float + Copy, U: PrimitiveTraits<DATATYPE = TestGenerics
 }
 
 type TestGenericsPrimWrapper<const A: usize, S, TestGenericsS> =
-    ConstStructPrimAny<TestGenerics<A, S>, ConstStructPrimAny<TestGenericsS, ConstStructPrimEnd>>;
+    ConstStructPrimQueue<TestGenerics<A, S>, ConstStructPrimQueue<TestGenericsS, ConstStructPrimEnd>>;
 
 impl<const A: usize, S: Float + Copy, TestGenericsS: PrimitiveTraits<DATATYPE = S>> PrimitiveTraits
     for TestGenericsPrimWrapper<A, S, TestGenericsS>
@@ -69,7 +69,7 @@ pub mod tt {
     use crate::{
         pre::ConstStructTraits,
         primitive::{some::PrimitiveTraits, F32Ty},
-        struct_prim::{ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd},
+        struct_prim::{ConstStructPrimQueue, ConstStructPrimData, ConstStructPrimEnd},
         F32,
     };
 
@@ -105,7 +105,7 @@ pub mod tt {
             }
         };
         ($a:tt, $s:tt, $value:expr) => {
-            ConstStructPrimAny<TestGenerics<{
+            ConstStructPrimQueue<TestGenerics<{
                 match_underscore!($a, {
                     const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
                         A
@@ -113,7 +113,7 @@ pub mod tt {
 
                     get_const_generics_a($value)
                 })
-            }, $s>, ConstStructPrimAny<
+            }, $s>, ConstStructPrimQueue<
                 // @AdditionData(F32: F32)を用いて、const_structのF32マクロではなく、このライブラリのF32マクロを使う
                 const_struct::parse_value!(@AdditionData(F32: F32), $s, {
                     let value: TestGenerics<{
