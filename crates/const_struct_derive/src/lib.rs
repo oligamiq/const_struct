@@ -13,11 +13,11 @@ use syn::{
 mod const_compat;
 mod const_struct_derive;
 mod ident;
+mod macro_alt;
 mod parse_value;
 mod rewriter;
 mod util;
 mod util_macro;
-mod macro_alt;
 
 #[proc_macro_derive(ConstStruct)]
 pub fn const_struct_derive(input: RawTokenStream) -> RawTokenStream {

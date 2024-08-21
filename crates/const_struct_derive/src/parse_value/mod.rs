@@ -1,4 +1,7 @@
-use crate::{const_struct_derive::PathAndIdent, macro_alt::match_underscore_alt, rewriter::change_macro::Switcher};
+use crate::{
+    const_struct_derive::PathAndIdent, macro_alt::match_underscore_alt,
+    rewriter::change_macro::Switcher,
+};
 use parse::{discouraged::Speculative as _, Parse, ParseStream};
 use path::parse_value_path;
 use proc_macro2::{Span, TokenStream};

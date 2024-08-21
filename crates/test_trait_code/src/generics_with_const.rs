@@ -109,7 +109,7 @@ pub mod tt {
         };
         ($a:tt, $s:tt, $value:expr) => {
             ConstStructPrimQueue<TestGenerics<{
-                match_underscore!($a, {
+                ::const_struct::match_underscore!($a, {
                     const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
                         A
                     }
@@ -120,7 +120,7 @@ pub mod tt {
                 // @AdditionData(F32: F32)を用いて、const_structのF32マクロではなく、このライブラリのF32マクロを使う
                 const_struct::parse_value!(@AdditionData(F32: F32), $s, {
                     let value: TestGenerics<{
-                        match_underscore!($a, {
+                        ::const_struct::match_underscore!($a, {
                             const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
                                 A
                             }

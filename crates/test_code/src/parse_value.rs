@@ -22,7 +22,7 @@ mod test {
         };
         ($a:tt, $value:expr) => {
             ConstStructPrimQueue<TestGenerics<{
-                match_underscore!($a, {
+                ::const_struct::match_underscore!($a, {
                     const fn get_const_generics_a<const A: usize>(_: TestGenerics<A>) -> usize {
                         A
                     }
@@ -32,7 +32,7 @@ mod test {
             }>, ConstStructPrimQueue<
                 Usize!({
                     let value: TestGenerics<{
-                        match_underscore!($a, {
+                        ::const_struct::match_underscore!($a, {
                             const fn get_const_generics_a<const A: usize>(value: TestGenerics<A>) -> usize {
                                 A
                             }

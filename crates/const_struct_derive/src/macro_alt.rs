@@ -25,7 +25,7 @@ impl Parse for ExprAndExpr {
 }
 
 pub fn match_underscore_alt(mac: Macro) -> TokenStream {
-    if mac.path.segments.last().unwrap().ident.to_string() == "match_underscore" {
+    if mac.path == parse_str::<Path>("::const_struct::match_underscore").unwrap() {
         let ExprAndExpr {
             expr_default,
             is_under_score_expr,
