@@ -6,7 +6,7 @@ use syn::*;
 
 use crate::{parse_value::TyAndExpr, rewriter::change_macro::Switcher, util::add_at_mark};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Label {
     TupleStruct,
     VanillaStruct,
@@ -16,12 +16,17 @@ pub enum Label {
 
 impl Parse for Label {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        if let Ok(_) = input.parse::<Token![enum]>() {
+            return Ok(Self::Enum);
+        }
+        if let Ok(_) = input.parse::<Token![struct]>() {
+            return Ok(Self::Struct);
+        }
         let ident = input.parse::<Ident>()?;
+
         match ident.to_string().as_str() {
-            "TupleStruct" => Ok(Self::TupleStruct),
-            "VanillaStruct" => Ok(Self::VanillaStruct),
-            "Struct" => Ok(Self::Struct),
-            "Enum" => Ok(Self::Enum),
+            "tuple_struct" => Ok(Self::TupleStruct),
+            "vanilla_struct" => Ok(Self::VanillaStruct),
             _ => Err(syn::Error::new(ident.span(), "expected a label")),
         }
     }
