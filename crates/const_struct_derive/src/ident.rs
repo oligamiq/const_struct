@@ -1,5 +1,7 @@
 use crate::const_struct_derive::{AbsolutePath, PathAndIdent};
 use std::str::FromStr;
+use convert_case::{Case, Casing};
+use quote::format_ident;
 use strum::EnumString;
 use syn::*;
 
@@ -46,4 +48,16 @@ pub fn get_absolute_ident_path_from_ident(
         }
     }
     None
+}
+
+pub fn gen_primitive_ty(ident: &Ident) -> Type {
+    let base = if ident.to_string().ends_with("size") {
+        String::from("usize")
+    } else {
+        let size = core::mem::size_of::<usize>() * 8;
+        format!("u{}", size)
+    };
+    let name = ident.to_string().from_case(Case::UpperCamel).to_case(Case::Snake);
+    let camel_name = format_ident!("{}Impl", name);
+    parse_quote! { ::const_struct::primitive::#camel_name::<{ unsafe { core::mem::transmute::<#name, #base>(($value)) } }> }
 }
