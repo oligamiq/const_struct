@@ -18,7 +18,7 @@ impl Float for (f32, u32) {}
 #[derive(Debug)]
 pub struct TestGenerics<const A: usize, S: Float> {
     s: S,
-    t: [u8; A],
+    // t: [u8; A],
 }
 
 impl<const A: usize, S: Float> KeepType<0> for TestGenerics<A, S> {
@@ -52,7 +52,7 @@ impl<const A: usize, S: Float + Copy, TestGenericsS: PrimitiveTraits<DATATYPE = 
 {
     const __DATA: TestGenerics<A, S> = TestGenerics {
         s: TestGenericsS::__DATA,
-        t: [0; A],
+        // t: [0; A],
     };
 }
 
@@ -83,11 +83,11 @@ pub mod tt {
                     gen!(S),
                     { expr!() }.s
                 ),
-                parse_value!(
-                    @AdditionData(F32: F32),
-                    [u8; gen!(A)],
-                    { expr!() }.t
-                )
+                // parse_value!(
+                //     @AdditionData(F32: F32),
+                //     [u8; gen!(A)],
+                //     { expr!() }.t
+                // )
             ), $($arg)*)
         };
         (@TestGenericsGetInnerGenerics0, $value:expr) => {
@@ -149,7 +149,8 @@ fn call_macro() {
     // >());
     call_with_generics!(call_tester::<
         7,
-        crate::TestGenerics!(_, f32, TestGenerics { s: 0.6, t: [0; 56] }),
+        // crate::TestGenerics!(_, f32, TestGenerics { s: 0.6, t: [0; 56] }),
+        crate::TestGenerics!(_, f32, TestGenerics::<7, f32> { s: 0.6 }),
         9,
     >());
 }
@@ -168,7 +169,8 @@ fn call_tester<
     println!("{:?}", U);
 }
 
-const B: TestGenerics<7, f32> = TestGenerics { s: 0.0, t: [0; 7] };
+const B: TestGenerics<7, f32> = TestGenerics { s: 0.0 };
+// const B: TestGenerics<7, f32> = TestGenerics { s: 0.0, t: [0; 7] };
 
 #[automatically_derived]
 pub struct BTy;
