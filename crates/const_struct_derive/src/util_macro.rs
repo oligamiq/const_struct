@@ -479,7 +479,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
     *generics = new_generics;
 
-    println!("input: {}", input.to_token_stream());
+    println!("call_with_generics output: {}", input.to_token_stream());
 
     // let switcher
     // let input = inp

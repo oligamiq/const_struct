@@ -117,7 +117,7 @@ pub fn parse_value(input: RawTokenStream) -> RawTokenStream {
     let output = parse_value::parse_value_wrapper(input.into());
     match output {
         Ok(output) => {
-            println!("output: {}", output.to_token_stream());
+            println!("parse_value output: {}", output.to_token_stream());
             output.to_token_stream().into()
         }
 
