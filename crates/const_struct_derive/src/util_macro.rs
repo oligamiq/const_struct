@@ -4,7 +4,7 @@ use punctuated::Punctuated;
 use quote::{format_ident, quote, ToTokens};
 use syn::*;
 
-use crate::{parse_value::TyAndExpr, rewriter::change_macro::Switcher, util::add_at_mark};
+use crate::{macro_alt::struct_macro_alt, parse_value::TyAndExpr, rewriter::change_macro::Switcher, util::{add_at_mark, gen_get_const_generics}};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Label {
@@ -44,9 +44,28 @@ pub struct GenericsData {
     pub macros: Punctuated<Macro, Token![,]>,
 }
 
+#[derive(Debug, Clone)]
 pub enum TypeOrExpr {
     Type(Type),
     Expr(Expr),
+}
+
+impl Parse for TypeOrExpr {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let input_try = input.fork();
+        let expr = input.parse::<Expr>();
+        if expr.is_ok() {
+            return Ok(Self::Expr(expr?));
+        }
+        let ty = input_try.parse::<Type>();
+        if ty.is_ok() {
+            return Ok(Self::Type(input.parse()?));
+        }
+        Err(syn::Error::new(
+            input.span(),
+            "expected a type or an expression",
+        ))
+    }
 }
 
 impl ToTokens for TypeOrExpr {
@@ -360,11 +379,12 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                 let define_data = define_data.as_ref().unwrap();
 
                 let get_generics = |num: usize, value: Expr| {
-                    let mut mac = mac.clone();
-                    let macro_first_arg =
-                        add_at_mark(format_ident!("{macro_name}GetInnerGenerics{num}"));
-                    mac.tokens = quote! { #macro_first_arg, #value };
-                    mac
+                //     let mut mac = mac.clone();
+                //     let macro_first_arg =
+                //         add_at_mark(format_ident!("{macro_name}GetInnerGenerics{num}"));
+                //     mac.tokens = quote! { #macro_first_arg, #value };
+                //     mac
+                    gen_get_const_generics(define_data.const_fn.clone(), value, num)
                 };
 
                 // println!("try get args_last");
@@ -416,11 +436,8 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                             }
                         }
                     } else {
-                        let mac = get_generics(num, args_last.clone());
-                        let mac = GenericArgument::Const(Expr::Macro(ExprMacro {
-                            mac,
-                            attrs: Vec::new(),
-                        }));
+                        let expr = get_generics(num, args_last.clone());
+                        let mac = GenericArgument::Const(expr.expect("failed to get_generics"));
                         mac
                     }
                 };
@@ -465,7 +482,21 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     arg.clone()
                 });
 
-                // println!("new_generic: {}", quote! { #(#new_generic),* });
+                println!("new_generic: {}", quote! { #(#new_generic),* });
+
+                let switcher = |inner_mac: Macro| -> TokenStream {
+                    if inner_mac.path == mac.path {
+                        let ty = struct_macro_alt(define_data.clone());
+                        let ty = ty(inner_mac.tokens.clone()).unwrap();
+                        ty.to_token_stream()
+                    } else {
+                        inner_mac.to_token_stream()
+                    }
+                };
+
+                let new_generic = new_generic.switcher(&switcher);
+
+                println!("new_generic_switcher: {}", quote! { #(#new_generic),* });
 
                 new_generic
             }
@@ -479,7 +510,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
     *generics = new_generics;
 
-    println!("call_with_generics output: {}", input.to_token_stream());
+    // println!("call_with_generics output: {}", input.to_token_stream());
 
     // let switcher
     // let input = inp

@@ -10,7 +10,7 @@ use syn::*;
 use tuple::parse_value_tuple;
 
 mod path;
-mod struct_ty;
+pub mod struct_ty;
 mod tuple;
 
 pub struct AdditionDataArgs {

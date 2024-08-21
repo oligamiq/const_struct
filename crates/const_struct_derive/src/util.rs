@@ -1,8 +1,5 @@
-use core::num;
-
 use proc_macro2::{Spacing, TokenStream};
 use quote::{quote, TokenStreamExt as _};
-use syn::Token;
 use syn::*;
 
 pub fn add_at_mark(ident: Ident) -> TokenStream {
