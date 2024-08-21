@@ -112,7 +112,7 @@ pub fn struct_macro_alt(data: GenericsData) -> impl Fn(TokenStream) -> Result<Ty
                 }
                 (TypeOrExpr::Expr(expr), ConstOrType::Type) => {
                     println!("expr: {:?}", quote::quote! { #expr });
-                    match parse2::<Type>(quote::quote!(expr.clone())) {
+                    match parse::<Type>(quote::quote!(expr.clone()).into()) {
                         Ok(_) => {}
                         Err(e) => {
                             println!("error: {:?}", e);
