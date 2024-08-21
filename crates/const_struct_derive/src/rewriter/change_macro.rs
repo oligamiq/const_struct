@@ -1902,7 +1902,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for PathArguments {
 impl<U: Fn(Macro) -> TokenStream> Switcher<U> for GenericArgument {
     fn switcher(self, u: &U) -> Self {
         match self {
-            GenericArgument::Lifetime(lt) => todo!(),
+            GenericArgument::Lifetime(_) => todo!(),
             GenericArgument::Type(ty) => {
                 let ty = ty.switcher(u);
                 return GenericArgument::Type(ty);
