@@ -6,7 +6,7 @@ use primitive::{
 };
 use setting::WINDOW_SETTING_MANUAL;
 use struct_prim::{
-    ConstStructPrimQueue, ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption,
+    ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption, ConstStructPrimQueue,
     ConstStructPrimU32, ConstStructPrimU8Vec, ConstStructPrimU8VecLimit,
 };
 
@@ -79,7 +79,10 @@ type TestSettingManualTyPrimWrapper<const T: usize, A, B, C, D, S> = ConstStruct
         A,
         ConstStructPrimQueue<
             B,
-            ConstStructPrimQueue<C, ConstStructPrimQueue<D, ConstStructPrimQueue<S, ConstStructPrimEnd>>>,
+            ConstStructPrimQueue<
+                C,
+                ConstStructPrimQueue<D, ConstStructPrimQueue<S, ConstStructPrimEnd>>,
+            >,
         >,
     >,
 >;

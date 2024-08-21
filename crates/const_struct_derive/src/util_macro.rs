@@ -4,15 +4,38 @@ use punctuated::Punctuated;
 use quote::{format_ident, quote, ToTokens};
 use syn::*;
 
-use crate::{ident, parse_value::TyAndExpr, rewriter::change_macro::Switcher, util::add_at_mark};
+use crate::{parse_value::TyAndExpr, rewriter::change_macro::Switcher, util::add_at_mark};
+
+#[derive(Debug, Clone)]
+pub enum Label {
+    TupleStruct,
+    VanillaStruct,
+    Struct,
+    Enum,
+}
+
+impl Parse for Label {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let ident = input.parse::<Ident>()?;
+        match ident.to_string().as_str() {
+            "TupleStruct" => Ok(Self::TupleStruct),
+            "VanillaStruct" => Ok(Self::VanillaStruct),
+            "Struct" => Ok(Self::Struct),
+            "Enum" => Ok(Self::Enum),
+            _ => Err(syn::Error::new(ident.span(), "expected a label")),
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct GenericsData {
     pub _at: Token![@],
     pub ident: Ident,
     pub _paren_token: token::Paren,
-    pub const_fn: ItemFn,
+    pub label: Label,
     pub _comma: Token![,],
+    pub const_fn: ItemFn,
+    pub _comma2: Token![,],
     pub macros: Punctuated<Macro, Token![,]>,
 }
 
@@ -57,6 +80,10 @@ impl GenericsData {
                 _ => panic!("failed to get const_or_type"),
             })
             .collect()
+    }
+
+    pub fn get_struct_ident(&self) -> Ident {
+        self.ident.clone()
     }
 
     pub fn get_parsed_value(
@@ -110,27 +137,24 @@ impl GenericsData {
 impl Parse for GenericsData {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let input_try = input.fork();
-        // println!("input_try: {}", input_try);
         let _at = input_try.parse::<Token![@]>()?;
-        // println!("at: {:?}", _at);
         let ident = input_try.parse::<Ident>()?;
-        // println!("ident: {}", ident);
         let content;
         let _paren_token = parenthesized!(content in input_try);
-        // println!("content: {}", content);
-        let const_fn = content.parse::<ItemFn>()?;
-        // println!("const_fn: {:#?}", const_fn);
+        let label = content.parse::<Label>()?;
         let _comma = content.parse::<Token![,]>()?;
-        // println!("comma: {:?}", _comma);
+        let const_fn = content.parse::<ItemFn>()?;
+        let _comma2 = content.parse::<Token![,]>()?;
         let macros = Punctuated::<Macro, Token![,]>::parse_terminated(&content)?;
-        // println!("macros: {:#?}", macros);
         input.advance_to(&input_try);
         Ok(Self {
             _at,
             ident,
             _paren_token,
-            const_fn,
+            label,
             _comma,
+            const_fn,
+            _comma2,
             macros,
         })
     }

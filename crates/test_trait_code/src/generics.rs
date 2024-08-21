@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use crate::{
     pre::ConstStructTraits,
     primitive::some::PrimitiveTraits,
-    struct_prim::{ConstStructPrimQueue, ConstStructPrimData, ConstStructPrimEnd},
+    struct_prim::{ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimQueue},
     F32,
 };
 

@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use crate::{
     pre::ConstStructTraits,
     primitive::{some::PrimitiveTraits, F32Ty},
-    struct_prim::{ConstStructPrimQueue, ConstStructPrimData, ConstStructPrimEnd},
+    struct_prim::{ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimQueue},
     F32,
 };
 
@@ -36,8 +36,10 @@ impl<const A: usize, S: Float + Copy, U: PrimitiveTraits<DATATYPE = TestGenerics
 {
 }
 
-type TestGenericsPrimWrapper<const A: usize, S, TestGenericsS> =
-    ConstStructPrimQueue<TestGenerics<A, S>, ConstStructPrimQueue<TestGenericsS, ConstStructPrimEnd>>;
+type TestGenericsPrimWrapper<const A: usize, S, TestGenericsS> = ConstStructPrimQueue<
+    TestGenerics<A, S>,
+    ConstStructPrimQueue<TestGenericsS, ConstStructPrimEnd>,
+>;
 
 impl<const A: usize, S: Float + Copy, TestGenericsS: PrimitiveTraits<DATATYPE = S>> PrimitiveTraits
     for TestGenericsPrimWrapper<A, S, TestGenericsS>
@@ -69,7 +71,7 @@ pub mod tt {
     use crate::{
         pre::ConstStructTraits,
         primitive::{some::PrimitiveTraits, F32Ty},
-        struct_prim::{ConstStructPrimQueue, ConstStructPrimData, ConstStructPrimEnd},
+        struct_prim::{ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimQueue},
         F32,
     };
 

@@ -4,7 +4,7 @@ mod test {
         pub a: usize,
     }
     use const_struct::match_underscore;
-    use const_struct::struct_prim::{ConstStructPrimQueue, ConstStructPrimEnd};
+    use const_struct::struct_prim::{ConstStructPrimEnd, ConstStructPrimQueue};
     use const_struct::Usize;
 
     macro_rules! TestGenerics {

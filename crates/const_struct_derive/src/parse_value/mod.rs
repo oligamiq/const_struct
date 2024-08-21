@@ -8,6 +8,7 @@ use syn::*;
 use tuple::parse_value_tuple;
 
 mod path;
+mod struct_ty;
 mod tuple;
 
 pub struct AdditionDataArgs {
@@ -133,11 +134,16 @@ pub fn parse_value_wrapper(input: TokenStream) -> Result<Type> {
     let additional_data: AdditionData = additional_data.into();
     let expr_change = |mac: Macro| {
         if mac.path.segments.last().unwrap().ident.to_string() == "match_underscore" {
-            let ExprAndExpr { expr_default, is_under_score_expr, ..} = parse2::<ExprAndExpr>(mac.tokens).unwrap();
+            let ExprAndExpr {
+                expr_default,
+                is_under_score_expr,
+                ..
+            } = parse2::<ExprAndExpr>(mac.tokens).unwrap();
             match expr_default {
                 Expr::Infer(_) => is_under_score_expr,
                 _ => expr_default,
-            }.to_token_stream()
+            }
+            .to_token_stream()
         } else {
             mac.to_token_stream()
         }
