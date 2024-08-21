@@ -1,6 +1,7 @@
 use crate::util_macro::{GenericInfo, GenericsData, Label, TypeOrExpr};
 use syn::*;
 
+/// _ は、GenericInfoを作成するときに考慮する
 pub fn parse_value_struct_ty(
     struct_data: GenericsData,
     info: GenericInfo,

@@ -1,9 +1,8 @@
-use crate::{const_struct_derive::PathAndIdent, rewriter::change_macro::Switcher};
+use crate::{const_struct_derive::PathAndIdent, macro_alt::match_underscore_alt, rewriter::change_macro::Switcher};
 use parse::{discouraged::Speculative as _, Parse, ParseStream};
 use path::parse_value_path;
 use proc_macro2::{Span, TokenStream};
 use punctuated::Punctuated;
-use quote::ToTokens as _;
 use syn::*;
 use tuple::parse_value_tuple;
 
@@ -100,27 +99,6 @@ impl Parse for TyAndExpr {
     }
 }
 
-struct ExprAndExpr {
-    expr_default: Expr,
-    _comma: Token![,],
-    is_under_score_expr: Expr,
-}
-
-impl Parse for ExprAndExpr {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let fork = input.fork();
-        let expr_default: Expr = fork.parse()?;
-        let _comma: Token![,] = fork.parse()?;
-        let is_under_score_expr: Expr = fork.parse()?;
-        input.advance_to(&fork);
-        Ok(Self {
-            expr_default,
-            _comma,
-            is_under_score_expr,
-        })
-    }
-}
-
 pub fn parse_value_wrapper(input: TokenStream) -> Result<Type> {
     // println!("input: {}", input);
     // parse_value!((f32, u32), expr)
@@ -132,26 +110,9 @@ pub fn parse_value_wrapper(input: TokenStream) -> Result<Type> {
     } = syn::parse2(input)?;
     let additional_data = additional_data.unwrap_or_default();
     let additional_data: AdditionData = additional_data.into();
-    let expr_change = |mac: Macro| {
-        if mac.path.segments.last().unwrap().ident.to_string() == "match_underscore" {
-            let ExprAndExpr {
-                expr_default,
-                is_under_score_expr,
-                ..
-            } = parse2::<ExprAndExpr>(mac.tokens).unwrap();
-            match expr_default {
-                Expr::Infer(_) => is_under_score_expr,
-                _ => expr_default,
-            }
-            .to_token_stream()
-        } else {
-            mac.to_token_stream()
-        }
-    };
-
     // dbg!(&expr);
 
-    let expr = expr.switcher(&expr_change);
+    let expr = expr.switcher(&match_underscore_alt);
 
     // dbg!(&additional_data);
     parse_value(ty, expr, &additional_data)

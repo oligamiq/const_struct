@@ -460,12 +460,12 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         path: ty_path.unwrap(),
                     }))
                 } else {
-                    println!("arg: {}", args_last.to_token_stream());
+                    // println!("arg: {}", args_last.to_token_stream());
 
                     arg.clone()
                 });
 
-                println!("new_generic: {}", quote! { #(#new_generic),* });
+                // println!("new_generic: {}", quote! { #(#new_generic),* });
 
                 new_generic
             }
@@ -480,6 +480,9 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
     *generics = new_generics;
 
     println!("input: {}", input.to_token_stream());
+
+    // let switcher
+    // let input = inp
 
     Ok(input.into_token_stream())
 }
