@@ -6,7 +6,7 @@ use primitive::{
 };
 use setting::WINDOW_SETTING_MANUAL;
 use struct_prim::{
-    ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption,
+    ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimOption, ConstStructPrimQueue,
     ConstStructPrimU32, ConstStructPrimU8Vec, ConstStructPrimU8VecLimit,
 };
 
@@ -73,13 +73,16 @@ impl<const T: usize, U: PrimitiveTraits<DATATYPE = TestSettingManual<T>>> TestSe
 {
 }
 
-type TestSettingManualTyPrimWrapper<const T: usize, A, B, C, D, S> = ConstStructPrimAny<
+type TestSettingManualTyPrimWrapper<const T: usize, A, B, C, D, S> = ConstStructPrimQueue<
     TestSettingManual<T>,
-    ConstStructPrimAny<
+    ConstStructPrimQueue<
         A,
-        ConstStructPrimAny<
+        ConstStructPrimQueue<
             B,
-            ConstStructPrimAny<C, ConstStructPrimAny<D, ConstStructPrimAny<S, ConstStructPrimEnd>>>,
+            ConstStructPrimQueue<
+                C,
+                ConstStructPrimQueue<D, ConstStructPrimQueue<S, ConstStructPrimEnd>>,
+            >,
         >,
     >,
 >;
@@ -107,10 +110,10 @@ impl<
 
 macro_rules! TestSettingManual {
     ($value:expr) => {
-        ConstStructPrimAny<TestSettingManual<{
+        ConstStructPrimQueue<TestSettingManual<{
             TestSettingManual::<0>::get_const_generics_t($value)
         }>,
-            ConstStructPrimAny<ConstStructPrimOption<{
+            ConstStructPrimQueue<ConstStructPrimOption<{
                 let v: TestSettingManual<{TestSettingManual::<0>::get_const_generics_t($value)}> = $value;
                 v.test_data.is_some()
             }, ConstStructPrimU32<{
@@ -120,7 +123,7 @@ macro_rules! TestSettingManual {
                     None => 0,
                 }
             }>>,
-                ConstStructPrimAny<
+                ConstStructPrimQueue<
                 ConstStructPrimOption<
                     {
                         let v: TestSettingManual<{TestSettingManual::<0>::get_const_generics_t($value)}> = $value;
@@ -140,12 +143,12 @@ macro_rules! TestSettingManual {
                             None => 0,
                         }
                     }>>>,
-                    ConstStructPrimAny<ConstStructPrimU32<{
+                    ConstStructPrimQueue<ConstStructPrimU32<{
                         let v: TestSettingManual<{TestSettingManual::<0>::get_const_generics_t($value)}> = $value;
 
                         v.test_data3
                     }>,
-                        ConstStructPrimAny<
+                        ConstStructPrimQueue<
                         ConstStructPrimU8VecLimit<
                             {
                                 let v: TestSettingManual<{TestSettingManual::<0>::get_const_generics_t($value)}> = $value;
@@ -163,7 +166,7 @@ macro_rules! TestSettingManual {
                             }, 16, ConstStructPrimEnd>
                             >
                         >
-                        , ConstStructPrimAny<crate::struct_prim::StrWrapper5<{
+                        , ConstStructPrimQueue<crate::struct_prim::StrWrapper5<{
                             let v: TestSettingManual<{TestSettingManual::<0>::get_const_generics_t($value)}> = $value;
                             crate::struct_prim::str_to_u128::<0>(v.str)
                         }, {
@@ -240,7 +243,7 @@ pub fn tester_prim() {
             ],
             str: "abc_def",
         }
-    }) = ConstStructPrimAny {
+    }) = ConstStructPrimQueue {
         __phantom: core::marker::PhantomData,
     };
 

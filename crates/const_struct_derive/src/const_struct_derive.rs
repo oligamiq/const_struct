@@ -1,5 +1,7 @@
 use crate::ident::get_absolute_ident_path_from_ident;
+use crate::ident::AbsolutePathOrType;
 use convert_case::{Case, Casing as _};
+use parse::discouraged::Speculative as _;
 use parse::{Parse, Parser};
 use proc_macro2::*;
 use quote::{quote, ToTokens as _};
@@ -51,45 +53,50 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
     let generics: Generics = generics_into_where_clause(input.generics.clone());
 
-    let generics_where_clause_fn = |with_copy: bool| generics
-        .where_clause
-        .clone()
-        .unwrap()
-        .predicates
-        .iter()
-        .map(|pred| match pred {
-            WherePredicate::Type(pred) => {
-                let ty = &pred.bounds;
-                let ty = if ty.iter().any(|ty| match ty {
-                    TypeParamBound::Trait(ty) => ty.path.is_ident("Copy"),
-                    _ => false,
-                }) {
-                    ty.clone()
-                } else {
-                    let mut ty = ty.clone();
-                    if with_copy {
-                        ty.push(parse_quote!(Copy));
-                    }
-                    ty
-                };
-                let ty = ty
-                    .into_iter()
-                    .map(|ty| match ty {
-                        TypeParamBound::Trait(ty) => TypeParamBound::Trait(TraitBound {
-                            path: user_attrs.get_absolute_path(&ty.path).path(),
-                            ..ty
-                        }),
-                        _ => ty,
+    let generics_where_clause_fn = |with_copy: bool| {
+        generics
+            .where_clause
+            .clone()
+            .unwrap()
+            .predicates
+            .iter()
+            .map(|pred| match pred {
+                WherePredicate::Type(pred) => {
+                    let ty = &pred.bounds;
+                    let ty = if ty.iter().any(|ty| match ty {
+                        TypeParamBound::Trait(ty) => ty.path.is_ident("Copy"),
+                        _ => false,
+                    }) {
+                        ty.clone()
+                    } else {
+                        let mut ty = ty.clone();
+                        if with_copy {
+                            ty.push(parse_quote!(Copy));
+                        }
+                        ty
+                    };
+                    let ty = ty
+                        .into_iter()
+                        .map(|ty| match ty {
+                            TypeParamBound::Trait(ty) => TypeParamBound::Trait(TraitBound {
+                                path: match user_attrs.get_absolute_path(&ty.path) {
+                                    AbsolutePathOrType::Path(path) => path.path(),
+                                    AbsolutePathOrType::Type(_) => panic!("Type is not allowed"),
+                                },
+                                ..ty
+                            }),
+                            _ => ty,
+                        })
+                        .collect::<Punctuated<TypeParamBound, Token![+]>>();
+                    WherePredicate::Type(PredicateType {
+                        bounds: ty,
+                        ..pred.clone()
                     })
-                    .collect::<Punctuated<TypeParamBound, Token![+]>>();
-                WherePredicate::Type(PredicateType {
-                    bounds: ty,
-                    ..pred.clone()
-                })
-            }
-            _ => pred.clone(),
-        })
-        .collect::<Punctuated<WherePredicate, Token![,]>>();
+                }
+                _ => pred.clone(),
+            })
+            .collect::<Punctuated<WherePredicate, Token![,]>>()
+    };
 
     let generics_where_clause = generics_where_clause_fn(false);
     let generics_where_clause_with_copy = generics_where_clause_fn(true);
@@ -147,7 +154,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                 keep_type_impl.generics = generics.clone();
 
                 Some(keep_type_impl)
-            },
+            }
             _ => None,
         })
         .collect::<Vec<_>>();
@@ -228,12 +235,16 @@ pub struct ConstStructAttr {
 }
 
 impl ConstStructAttr {
-    pub fn get_absolute_path(&self, path: &Path) -> AbsolutePath {
-        get_absolute_ident_path_from_ident(
-            &path.segments.last().unwrap().ident,
-            self.path_and_ident.clone(),
-        )
-        .unwrap_or(AbsolutePath::new(path.clone()))
+    pub fn get_absolute_path(&self, path: &Path) -> AbsolutePathOrType {
+        Self::get_absolute_path_inner(path, &self.path_and_ident)
+    }
+
+    pub fn get_absolute_path_inner(
+        path: &Path,
+        path_and_ident: &Vec<PathAndIdent>,
+    ) -> AbsolutePathOrType {
+        get_absolute_ident_path_from_ident(path, path_and_ident)
+            .unwrap_or(AbsolutePathOrType::Path(AbsolutePath::new(path.clone())))
     }
 }
 
@@ -289,7 +300,7 @@ pub fn check_macro_export(attr: &Attribute) -> bool {
 
 #[derive(Debug, Clone)]
 pub struct PathAndIdent {
-    pub ident: Ident,
+    pub ident: Path,
     pub _token: Token![:],
     pub path: AbsolutePath,
 }
@@ -319,9 +330,11 @@ impl AbsolutePath {
 
 impl Parse for PathAndIdent {
     fn parse(input: parse::ParseStream) -> Result<Self> {
-        let ident = input.parse()?;
-        let _token = input.parse()?;
-        let path = input.parse()?;
+        let fork = input.fork();
+        let ident = fork.parse()?;
+        let _token = fork.parse()?;
+        let path = fork.parse()?;
+        input.advance_to(&fork);
         Ok(Self {
             ident,
             _token,

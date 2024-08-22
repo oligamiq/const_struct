@@ -13,7 +13,10 @@ use syn::{
 mod const_compat;
 mod const_struct_derive;
 mod ident;
+mod macro_alt;
+mod parse_value;
 mod rewriter;
+mod util;
 mod util_macro;
 
 #[proc_macro_derive(ConstStruct)]
@@ -103,7 +106,23 @@ pub fn const_compat(attr: RawTokenStream, item: RawTokenStream) -> RawTokenStrea
 pub fn call_with_generics(input: RawTokenStream) -> RawTokenStream {
     let output = util_macro::expand_call_fn_with_generics(input.into());
     match output {
-        Ok(output) => output.into(),
+        Ok(output) => {
+            println!("call_with_generics output: {}", output.to_token_stream());
+            output.into()
+        },
+
+        Err(err) => err.to_compile_error().into(),
+    }
+}
+
+#[proc_macro]
+pub fn parse_value(input: RawTokenStream) -> RawTokenStream {
+    let output = parse_value::parse_value_wrapper(input.into());
+    match output {
+        Ok(output) => {
+            println!("parse_value output: {}", output.to_token_stream());
+            output.to_token_stream().into()
+        }
 
         Err(err) => err.to_compile_error().into(),
     }

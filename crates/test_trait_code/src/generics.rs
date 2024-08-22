@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use crate::{
     pre::ConstStructTraits,
     primitive::some::PrimitiveTraits,
-    struct_prim::{ConstStructPrimAny, ConstStructPrimData, ConstStructPrimEnd},
+    struct_prim::{ConstStructPrimData, ConstStructPrimEnd, ConstStructPrimQueue},
     F32,
 };
 
@@ -23,7 +23,7 @@ pub trait TestGenericsTy<S: Float + Copy>: ConstStructTraits<TestGenerics<S>> {
 impl<S: Float + Copy, U: ConstStructTraits<TestGenerics<S>>> TestGenericsTy<S> for U {}
 
 type TestGenericsPrimWrapper<S, A> =
-    ConstStructPrimAny<TestGenerics<S>, ConstStructPrimAny<A, ConstStructPrimEnd>>;
+    ConstStructPrimQueue<TestGenerics<S>, ConstStructPrimQueue<A, ConstStructPrimEnd>>;
 
 impl<S: Float + Copy, A: ConstStructPrimData<Data = S>> PrimitiveTraits
     for TestGenericsPrimWrapper<S, A>
@@ -42,7 +42,7 @@ impl<S: Float + Copy, A: ConstStructPrimData<Data = S>> ConstStructTraits<TestGe
 macro_rules! TestGenerics {
     ($s:expr, $a:expr) => {
         paste::paste! {
-            ConstStructPrimAny<TestGenerics<$s>, ConstStructPrimAny<
+            ConstStructPrimQueue<TestGenerics<$s>, ConstStructPrimQueue<
                 [<$s:camel>]!($a.s),
                 ConstStructPrimEnd,
             >>

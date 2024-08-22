@@ -75,15 +75,15 @@ pub mod some {
         const VALUE: Option<T> = Self::__DATA;
     }
 
-    pub struct OptionImpl<T: PrimitiveTraits> {
+    pub struct SomeImpl<T: PrimitiveTraits> {
         __phantom: core::marker::PhantomData<T>,
     }
 
-    impl<T: PrimitiveTraits> OptionTy<T::DATATYPE> for OptionImpl<T> {
+    impl<T: PrimitiveTraits> OptionTy<T::DATATYPE> for SomeImpl<T> {
         const __DATA: Option<T::DATATYPE> = Some(<T as PrimitiveTraits>::__DATA);
     }
 
-    impl<T: PrimitiveTraits> PrimitiveTraits for OptionImpl<T> {
+    impl<T: PrimitiveTraits> PrimitiveTraits for SomeImpl<T> {
         type DATATYPE = Option<T::DATATYPE>;
         const __DATA: Self::DATATYPE = Some(<T as PrimitiveTraits>::__DATA);
     }
@@ -97,7 +97,7 @@ pub mod some {
     #[macro_export]
     macro_rules! Some {
     ($value:ty) => {
-        $crate::primitive::some::OptionImpl<$value>
+        $crate::primitive::some::SomeImpl<$value>
     };
 }
 

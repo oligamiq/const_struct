@@ -1,6 +1,6 @@
 use crate::{pre::ConstStructTraits, primitive::some::PrimitiveTraits, TestSettingManual};
 
-pub struct ConstStructPrimAny<Key, Tail> {
+pub struct ConstStructPrimQueue<Key, Tail> {
     pub __phantom: core::marker::PhantomData<(Key, Tail)>,
 }
 

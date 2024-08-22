@@ -1,6 +1,6 @@
 use paste::paste;
 
-pub struct ConstStructPrimAny<U, T> {
+pub struct ConstStructPrimQueue<U, T> {
     pub __phantom: core::marker::PhantomData<(U, T)>,
 }
 
@@ -31,4 +31,6 @@ pub struct ConstStructPrimOption<const B: bool, T> {
     pub __phantom: core::marker::PhantomData<T>,
 }
 
-pub struct ConstStructPrimNone;
+// pub struct ConstStructPrimNone;
+
+pub struct ConstStructPrimEnd;

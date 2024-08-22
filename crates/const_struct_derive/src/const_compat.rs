@@ -4,7 +4,7 @@ use proc_macro2::*;
 use quote::{quote, ToTokens as _};
 use syn::*;
 
-use crate::rewriter::Rewriter as _;
+use crate::rewriter::const_compat::Rewriter as _;
 
 #[derive(Debug)]
 enum ConstCompatAttr {
@@ -223,7 +223,7 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
         }
     };
 
-    dbg!(&input);
+    // dbg!(&input);
 
     let keep_type = match input.ty.as_ref() {
         Type::Path(path) => {

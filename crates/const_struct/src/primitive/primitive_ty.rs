@@ -7,14 +7,7 @@ pub trait PrimitiveTraits {
 }
 
 macro_rules! PrimTraitBySizes {
-    ($size:literal, $($name:ident),*) => {
-        $(
-            paste! {
-                PrimTraitBySizes!([<u $size>], $name);
-            }
-        )*
-    };
-    ($base:ident, $($name:ident),*) => {
+    (@inner($dol:tt), $base:ident, $($name:ident),*) => {
         $(
             paste! {
                 pub trait [<$name:camel Ty>] {
@@ -38,9 +31,14 @@ macro_rules! PrimTraitBySizes {
 
                 #[macro_export]
                 #[allow(clippy::useless_transmute)]
+                // https://qiita.com/to-omer/items/a52bb4775ed04effde79
                 macro_rules! [<$name:camel>] {
+                    ([@ <$name:camel> GetGenericsData], $macro_path: path, $dol($dol args:tt)*) => {
+                        $macro_path!([<$name:camel> GetGenericsData](), $dol($dol args)*)
+                    };
+
                     ($value:expr) => {
-                        $crate::primitive::[<$name:camel Impl>]::<{ unsafe { core::mem::transmute::<$name, $base>(($value)) } }>
+                        $crate::primitive::[<$name:camel Impl>]::<{ unsafe { core::mem::transmute::<$name, $base>($value) } }>
                     };
                 }
 
@@ -50,6 +48,16 @@ macro_rules! PrimTraitBySizes {
                 pub(crate) use [<$name:camel>] as [<_ $name:camel>];
             }
         )*
+    };
+    ($size:literal, $($name:ident),*) => {
+        $(
+            paste! {
+                PrimTraitBySizes!([<u $size>], $name);
+            }
+        )*
+    };
+    ($base:ident, $($name:ident),*) => {
+        PrimTraitBySizes!(@inner($), $base, $($name),*);
     };
 }
 
