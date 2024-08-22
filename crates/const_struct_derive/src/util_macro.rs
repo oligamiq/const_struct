@@ -77,6 +77,7 @@ impl ToTokens for TypeOrExpr {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct GenericInfo {
     pub correspondence: Vec<(Ident, TypeOrExpr)>,
 }

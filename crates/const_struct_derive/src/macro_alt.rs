@@ -5,8 +5,7 @@ use quote::ToTokens as _;
 use syn::*;
 
 use crate::{
-    parse_value::struct_ty::parse_value_struct_ty,
-    util_macro::{self, ConstOrType, GenericInfo, GenericsData, TypeOrExpr},
+    parse_value::struct_ty::parse_value_struct_ty, util::gen_get_const_generics, util_macro::{self, ConstOrType, GenericInfo, GenericsData, TypeOrExpr}
 };
 
 struct ExprAndExpr {
@@ -106,19 +105,14 @@ pub fn struct_macro_alt(data: GenericsData) -> impl Fn(TokenStream) -> Result<Ty
                 (TypeOrExpr::Type(_), ConstOrType::Type) => {}
                 (TypeOrExpr::Expr(_), ConstOrType::Const) => {}
                 (TypeOrExpr::Type(ty), ConstOrType::Const) => {
-                    println!("ty: {}", quote::quote! { #ty });
+                    // println!("ty: {}", quote::quote! { #ty });
                     let expr: Expr = parse_quote!(#ty);
                     *expr_or_type = TypeOrExpr::Expr(expr);
                 }
                 (TypeOrExpr::Expr(expr), ConstOrType::Type) => {
-                    println!("expr: {:?}", quote::quote! { #expr });
-                    match parse::<Type>(quote::quote!(expr.clone()).into()) {
-                        Ok(_) => {}
-                        Err(e) => {
-                            println!("error: {:?}", e);
-                        }
-                    }
-                    let ty: Type = parse_quote!(#expr);
+                    // println!("expr: {}", quote::quote! { #expr });
+                    let ty: Type = parse_quote!( #expr );
+                    // println!("ty: {}", quote::quote! { #ty });
                     *expr_or_type = TypeOrExpr::Type(ty);
                 }
             }
@@ -128,15 +122,36 @@ pub fn struct_macro_alt(data: GenericsData) -> impl Fn(TokenStream) -> Result<Ty
             .get_generics_types()
             .into_iter()
             .zip(expr_or_type)
-            .map(|(ty, expr_or_type)| {
-                let ident = match ty {
-                    GenericParam::Type(ty) => ty.ident.clone(),
-                    GenericParam::Const(const_param) => const_param.ident.clone(),
+            .enumerate()
+            .map(|(num, (ty, expr_or_type))| {
+                let ident_and_expr_or_type = match ty {
+                    GenericParam::Type(ty) => {
+                        if let TypeOrExpr::Type(Type::Infer(_)) = expr_or_type {
+                            eprintln!("_ is not allowed in type on inner declaration");
+                            return Err(Error::new(ty.ident.span(), "expected type"))
+                        }
+                        Ok((ty.ident.clone(), expr_or_type))
+                    },
+                    GenericParam::Const(const_param) => {
+                        if let TypeOrExpr::Expr(Expr::Infer(_)) = expr_or_type {
+                            let expr_or_type = gen_get_const_generics(
+                                data.const_fn.clone(),
+                                value.clone(),
+                                num,
+                            );
+                            if let Some(expr_or_type) = expr_or_type {
+                                return Ok((const_param.ident.clone(), TypeOrExpr::Expr(expr_or_type)));
+                            }
+                        }
+                        Ok((const_param.ident.clone(), expr_or_type))
+                    },
                     _ => unimplemented!(),
                 };
-                (ident, expr_or_type)
+                ident_and_expr_or_type
             })
-            .collect::<Vec<_>>();
+            .collect::<Result<Vec<_>>>()?;
+
+        println!("generic_info: {:?}", generic_info);
 
         let parse_value_struct = parse_value_struct_ty(
             data.clone(),
