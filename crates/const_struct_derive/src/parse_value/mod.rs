@@ -1,6 +1,5 @@
 use crate::{
-    const_struct_derive::PathAndIdent, macro_alt::match_underscore_alt,
-    rewriter::change_macro::Switcher,
+    const_struct_derive::PathAndIdent, ident::AbsolutePathOrType, macro_alt::match_underscore_alt, rewriter::change_macro::Switcher
 };
 use parse::{discouraged::Speculative as _, Parse, ParseStream};
 use path::parse_value_path;
@@ -26,6 +25,30 @@ pub struct AdditionData {
     pub data: Vec<PathAndIdent>,
 }
 
+impl AdditionData {
+    pub fn get_absolute_path(&self, path: &Path) -> AbsolutePathOrType {
+        crate::const_struct_derive::ConstStructAttr::get_absolute_path_inner(
+            path,
+            &self.data,
+        )
+    }
+
+    pub fn get_changed_path(&self, path: &Path) -> Path {
+        match self.get_absolute_path(path) {
+            AbsolutePathOrType::Path(path) => path.path(),
+            AbsolutePathOrType::Type(_) => {
+                eprintln!("error: expected path, found type");
+                unreachable!()
+            }
+        }
+    }
+
+    pub fn get_changed_path_from_quote(&self, path: TokenStream) -> Path {
+        let path = parse2::<Path>(path).unwrap();
+        self.get_changed_path(&path)
+    }
+}
+
 impl Into<AdditionData> for AdditionDataArgs {
     fn into(self) -> AdditionData {
         AdditionData {
@@ -42,6 +65,12 @@ impl Default for AdditionDataArgs {
             _paren: Default::default(),
             data: Default::default(),
         }
+    }
+}
+
+impl Default for AdditionData {
+    fn default() -> Self {
+        Self { data: Default::default() }
     }
 }
 

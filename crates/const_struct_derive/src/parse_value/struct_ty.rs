@@ -1,8 +1,11 @@
 use crate::util_macro::{GenericInfo, GenericsData, Label, TypeOrExpr};
 use syn::*;
 
+use super::AdditionData;
+
 /// _ は、GenericInfoを作成するときに考慮する
 pub fn parse_value_struct_ty(
+    addition_data: AdditionData,
     struct_data: GenericsData,
     info: GenericInfo,
     expr: Expr,
@@ -28,7 +31,7 @@ pub fn parse_value_struct_ty(
     let gen_tys = gen_tys
         .iter()
         .map(|ty| {
-            println!("ty__: {:?}", ty);
+            // println!("ty__: {:?}", ty);
 
             let ty = info
             .correspondence
@@ -37,7 +40,7 @@ pub fn parse_value_struct_ty(
                 GenericParam::Const(const_param) => {
                     if const_param.ident == *ident {
                         if let TypeOrExpr::Expr(_) = type_or_expr {
-                            println!("const_param: {:?}", type_or_expr);
+                            // println!("const_param: {:?}", type_or_expr);
                             Some(type_or_expr)
                         } else {
                             None
@@ -47,10 +50,10 @@ pub fn parse_value_struct_ty(
                     }
                 }
                 GenericParam::Type(type_param) => {
-                        println!("ident_: {:?}", ident);
+                        // println!("ident_: {:?}", ident);
                         if type_param.ident == *ident {
                             if let TypeOrExpr::Type(_) = type_or_expr {
-                                println!("type_param: {:?}", type_param);
+                                // println!("type_param: {:?}", type_param);
                                 Some(type_or_expr)
                             } else {
                                 None
@@ -87,19 +90,21 @@ pub fn parse_value_struct_ty(
         #struct_ident<#(#gen_tys),*>
     };
 
-    let ty = gen_value_struct_ty(head_ty, parsed_values);
+    let ty = gen_value_struct_ty(addition_data, head_ty, parsed_values);
 
     Ok(ty)
 }
 
-pub fn gen_value_struct_ty(head_ty: Type, queue_ty: Vec<Type>) -> Type {
+pub fn gen_value_struct_ty(addition_data: AdditionData, head_ty: Type, queue_ty: Vec<Type>) -> Type {
     let queue_ty_rev = queue_ty.iter().rev();
-    let mut ty: Type = parse_quote!(::const_struct::primitive::ConstStructPrimEnd);
+    let const_struct_prim_end_path = addition_data.get_changed_path_from_quote(quote::quote!(::const_struct::primitive::ConstStructPrimEnd));
+    let mut ty: Type = parse_quote!( #const_struct_prim_end_path );
+    let const_struct_prim_queue_path = addition_data.get_changed_path_from_quote(quote::quote!(::const_struct::primitive::ConstStructPrimQueue));
     for queue_ty in queue_ty_rev {
-        ty = parse_quote!(::const_struct::primitive::ConstStructPrimQueue<#queue_ty, #ty>);
+        ty = parse_quote!(#const_struct_prim_queue_path<#queue_ty, #ty>);
     }
     let ty: Type = parse_quote! {
-        ::const_struct::primitive::ConstStructPrimQueue<#head_ty, #ty>
+        #const_struct_prim_queue_path<#head_ty, #ty>
     };
     ty
 }

@@ -5,7 +5,7 @@ use quote::ToTokens as _;
 use syn::*;
 
 use crate::{
-    parse_value::struct_ty::parse_value_struct_ty, util::gen_get_const_generics, util_macro::{self, ConstOrType, GenericInfo, GenericsData, TypeOrExpr}
+    parse_value::{struct_ty::parse_value_struct_ty, AdditionData}, util::gen_get_const_generics, util_macro::{self, ConstOrType, GenericInfo, GenericsData, TypeOrExpr}
 };
 
 struct ExprAndExpr {
@@ -53,23 +53,23 @@ pub struct StructMacroAltArgs {
 
 impl Parse for StructMacroAltArgs {
     fn parse(input: ParseStream) -> Result<Self> {
-        println!("input: {}", input);
+        // println!("input: {}", input);
         let fork = input.fork();
         let mut expr_or_type: Vec<TypeOrExpr> =
             Punctuated::<TypeOrExpr, Token![,]>::parse_terminated(&fork)?
                 .into_iter()
                 .collect();
-        println!("expr_or_type: {}", quote::quote! { #(#expr_or_type),* });
-        for item in &expr_or_type {
-            match item {
-                TypeOrExpr::Type(_) => {
-                    println!("TypeOrExpr::Type");
-                }
-                TypeOrExpr::Expr(_) => {
-                    println!("TypeOrExpr::Expr");
-                }
-            }
-        }
+        // println!("expr_or_type: {}", quote::quote! { #(#expr_or_type),* });
+        // for item in &expr_or_type {
+        //     match item {
+        //         TypeOrExpr::Type(_) => {
+        //             println!("TypeOrExpr::Type");
+        //         }
+        //         TypeOrExpr::Expr(_) => {
+        //             println!("TypeOrExpr::Expr");
+        //         }
+        //     }
+        // }
         let value = match expr_or_type.pop() {
             Some(TypeOrExpr::Expr(expr)) => {
                 expr.clone()
@@ -84,7 +84,7 @@ impl Parse for StructMacroAltArgs {
     }
 }
 
-pub fn struct_macro_alt(data: GenericsData) -> impl Fn(TokenStream) -> Result<Type> {
+pub fn struct_macro_alt(addition_data: AdditionData, data: GenericsData) -> impl Fn(TokenStream) -> Result<Type> {
     if data.label != util_macro::Label::Struct {
         panic!("Expected struct");
     }
@@ -95,9 +95,9 @@ pub fn struct_macro_alt(data: GenericsData) -> impl Fn(TokenStream) -> Result<Ty
             value,
         } = parse2::<StructMacroAltArgs>(input)?;
 
-        println!("expr_or_type: {}", quote::quote! { #(#expr_or_type),* });
-        println!("value: {:?}", value);
-        println!("const_or_type: {:?}", const_or_type);
+        // println!("expr_or_type: {}", quote::quote! { #(#expr_or_type),* });
+        // println!("value: {:?}", value);
+        // println!("const_or_type: {:?}", const_or_type);
 
         // check
         for (expr_or_type, ty) in expr_or_type.iter_mut().zip(const_or_type.iter()) {
@@ -151,9 +151,10 @@ pub fn struct_macro_alt(data: GenericsData) -> impl Fn(TokenStream) -> Result<Ty
             })
             .collect::<Result<Vec<_>>>()?;
 
-        println!("generic_info: {:?}", generic_info);
+        // println!("generic_info: {:?}", generic_info);
 
         let parse_value_struct = parse_value_struct_ty(
+            addition_data.clone(),
             data.clone(),
             GenericInfo {
                 correspondence: generic_info,

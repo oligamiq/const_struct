@@ -221,14 +221,16 @@ pub struct ExpandCallFnWithGenericsArgs {
 
 impl Parse for ExpandCallFnWithGenericsArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        // println!("ExpandCallFnWithGenericsArgs: input: {}", input);
         let addition_data = input.parse::<AdditionDataArgs>().ok();
         let addition_data = addition_data.map(|data| data.into());
         if let Some(_) = addition_data {
+            // println!("success to parse AdditionDataArgs");
             let _comma = input.parse::<Token![,]>()?;
         }
         match input.parse::<GenericsData>() {
             Ok(item) => {
-                println!("success to parse GenericsData");
+                // println!("success to parse GenericsData");
                 let _comma = input.parse::<Token![,]>().ok();
                 // println!("success to parse Token![,]");
                 let call = input.parse::<MyExprCalls>()?;
@@ -241,7 +243,7 @@ impl Parse for ExpandCallFnWithGenericsArgs {
                 })
             }
             Err(e) => {
-                println!("failed to parse GenericsData: {}", e);
+                eprintln!("failed to parse GenericsData: {}", e);
                 // println!("failed to parse GenericsData");
                 let call = input.parse::<MyExprCalls>()?;
                 // println!("success to parse MyExprCalls");
@@ -334,8 +336,10 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
     let ExpandCallFnWithGenericsArgs {
         item: define_data,
         call: mut input,
+        addition_data,
         ..
     } = input_with_data;
+    let addition_data = addition_data.unwrap_or_default();
 
     // println!("define_data: {:#?}", define_data);
 
@@ -360,7 +364,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                 let args = Punctuated::<Expr, Token![,]>::parse_terminated
                     .parse2(tokens)
                     .unwrap_or_else(|e| {
-                        println!("failed!!! {}", e);
+                        eprintln!("failed!!! {}", e);
                         panic!();
                     });
                 // println!("not failed: {}", args.to_token_stream());
@@ -434,13 +438,13 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         match const_or_type {
                             ConstOrType::Const => {
                                 let ty: GenericArgument = parse_quote!({
-                                    <#ty_path as KeepTypeConst<#num>>::N
+                                    <#ty_path as ::const_struct::keeptype::KeepTypeConst<#num>>::N
                                 });
                                 ty
                             }
                             ConstOrType::Type => {
                                 let ty: GenericArgument =
-                                    parse_quote!(<#ty_path as KeepType<#num>>::Type);
+                                    parse_quote!(<#ty_path as ::const_struct::keeptype::KeepType<#num>>::Type);
                                 ty
                             }
                         }
@@ -491,11 +495,11 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     arg.clone()
                 });
 
-                println!("new_generic: {}", quote! { #(#new_generic),* });
+                // println!("new_generic: {}", quote! { #(#new_generic),* });
 
                 let switcher = |inner_mac: Macro| -> TokenStream {
                     if inner_mac.path == mac.path {
-                        let ty = struct_macro_alt(define_data.clone());
+                        let ty = struct_macro_alt(addition_data.clone(), define_data.clone());
                         let ty = ty(inner_mac.tokens.clone()).unwrap();
                         ty.to_token_stream()
                     } else {
@@ -505,7 +509,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
                 let new_generic = new_generic.switcher(&switcher);
 
-                println!("new_generic_switcher: {}", quote! { #(#new_generic),* });
+                // println!("new_generic_switcher: {}", quote! { #(#new_generic),* });
 
                 new_generic
             }
