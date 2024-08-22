@@ -101,7 +101,7 @@ pub fn const_compat(attr: RawTokenStream, item: RawTokenStream) -> RawTokenStrea
     // }
 }
 
-/// macro expansion ignores token `,` and any following rustc
+// macro expansion ignores token `,` and any following rustc
 #[proc_macro]
 pub fn call_with_generics(input: RawTokenStream) -> RawTokenStream {
     let output = util_macro::expand_call_fn_with_generics(input.into());
