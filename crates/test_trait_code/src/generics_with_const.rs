@@ -81,7 +81,9 @@ pub mod tt {
             $macro_path!(
                 @AdditionData(
                     ::const_struct::primitive::ConstStructPrimEnd: ConstStructPrimEnd,
-                    ::const_struct::primitive::ConstStructPrimQueue: ConstStructPrimQueue
+                    ::const_struct::primitive::ConstStructPrimQueue: ConstStructPrimQueue,
+                    ::const_struct::keeptype::KeepType: KeepType,
+                    ::const_struct::keeptype::KeepTypeConst: KeepTypeConst
                 ),
                 @TestGenericsGetGenericsData(
                 struct,

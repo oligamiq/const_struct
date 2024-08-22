@@ -442,13 +442,21 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         let ty_path = ty_path.clone().unwrap();
                         match const_or_type {
                             ConstOrType::Const => {
+                                let keep_type_const_path = addition_data
+                                    .get_changed_path_from_quote(quote! {
+                                        ::const_struct::keeptype::KeepTypeConst
+                                    });
                                 let ty: GenericArgument = parse_quote!({
-                                    <#ty_path as ::const_struct::keeptype::KeepTypeConst<#num>>::N
+                                    <#ty_path as #keep_type_const_path<#num>>::N
                                 });
                                 ty
                             }
                             ConstOrType::Type => {
-                                let ty: GenericArgument = parse_quote!(<#ty_path as ::const_struct::keeptype::KeepType<#num>>::Type);
+                                let keep_type_path = addition_data
+                                    .get_changed_path_from_quote(quote! {
+                                        ::const_struct::keeptype::KeepType
+                                    });
+                                let ty: GenericArgument = parse_quote!(<#ty_path as #keep_type_path<#num>>::Type);
                                 ty
                             }
                         }
