@@ -1,4 +1,5 @@
 use crate::const_struct_derive::{AbsolutePath, PathAndIdent};
+use proc_macro2::TokenStream;
 use quote::format_ident;
 use std::str::FromStr;
 use strum::EnumString;
@@ -48,13 +49,13 @@ pub fn get_absolute_ident_path_from_ident(
     }
     if let Some(ident) = ident.get_ident() {
         if let Some(_) = get_primitive_ident_path(&ident.to_string()) {
-            return Some(AbsolutePathOrType::Type(Box::new(gen_primitive_ty(ident))));
+            return Some(AbsolutePathOrType::Type(Box::new(gen_primitive_ty(ident).unwrap())));
         }
     }
     None
 }
 
-pub fn gen_primitive_ty(ident: &Ident) -> impl Fn(Expr) -> Type {
+pub fn gen_primitive_ty(ident: &Ident) -> Option<impl Fn(Expr) -> Type> {
     // println!("ident: {:?}", ident);
     let base = match ident.to_string().as_str() {
         "U8" | "I8" | "Bool" => String::from("u8"),
@@ -63,7 +64,7 @@ pub fn gen_primitive_ty(ident: &Ident) -> impl Fn(Expr) -> Type {
         "U64" | "I64" | "F64" => String::from("u64"),
         "U128" | "I128" => String::from("u128"),
         "Usize" | "Isize" => String::from("usize"),
-        _ => panic!("unknown primitive type"),
+        _ => return None,
     };
     let base: Ident = format_ident!("{}", base);
     let name = ident.to_string().to_lowercase();
@@ -76,5 +77,36 @@ pub fn gen_primitive_ty(ident: &Ident) -> impl Fn(Expr) -> Type {
         // println!("ty: {:?}", ty);
         ty
     };
-    expr_fn
+    Some(expr_fn)
+}
+
+pub fn gen_option_ty(ident: &Ident) -> Option<impl Fn(TokenStream) -> Type> {
+    let is_some: bool = match ident.to_string().as_str() {
+        "Some" => true,
+        "None" => false,
+        _ => return None,
+    };
+    let expr_fn = move |stream: TokenStream| {
+        if is_some {
+            let ty: Type = parse2::<Type>(stream).unwrap_or_else(|_| {
+                eprintln!("error: Some! expects a type");
+                unimplemented!()
+            });
+            let ty: Type = parse_quote! {
+                ::const_struct::primitive::SomeImpl<#ty>
+            };
+            ty
+        } else {
+            // streamは空っぽのはず
+            if !stream.is_empty() {
+                eprintln!("error: None! does not have any arguments");
+                unimplemented!()
+            }
+            let ty: Type = parse_quote! {
+                ::const_struct::primitive::NoneImpl
+            };
+            ty
+        }
+    };
+    Some(expr_fn)
 }

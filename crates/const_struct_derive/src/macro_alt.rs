@@ -5,9 +5,7 @@ use quote::ToTokens as _;
 use syn::*;
 
 use crate::{
-    parse_value::{struct_ty::parse_value_struct_ty, AdditionData},
-    util::gen_get_const_generics,
-    util_macro::{self, ConstOrType, GenericInfo, GenericsData, TypeOrExpr},
+    ident::{gen_option_ty, gen_primitive_ty}, parse_value::{struct_ty::parse_value_struct_ty, AdditionData}, util::gen_get_const_generics, util_macro::{self, ConstOrType, GenericInfo, GenericsData, TypeOrExpr}
 };
 
 struct ExprAndExpr {
@@ -169,4 +167,18 @@ pub fn struct_macro_alt(
     };
 
     struct_macro
+}
+
+pub fn default_primitive_macro_alt(mac: Macro) -> TokenStream {
+    if let Some(ident) = mac.path.get_ident() {
+        if let Some(ty) = gen_primitive_ty(ident) {
+            ty(parse2(mac.tokens).unwrap()).to_token_stream()
+        } else if let Some(ty) = gen_option_ty(ident) {
+            ty(parse2(mac.tokens).unwrap()).to_token_stream()
+        } else {
+            mac.to_token_stream()
+        }
+    } else {
+        mac.to_token_stream()
+    }
 }

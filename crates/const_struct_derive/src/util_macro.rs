@@ -5,7 +5,7 @@ use quote::{format_ident, quote, ToTokens};
 use syn::*;
 
 use crate::{
-    macro_alt::struct_macro_alt,
+    macro_alt::{default_primitive_macro_alt, struct_macro_alt},
     parse_value::{AdditionData, AdditionDataArgs, TyAndExpr},
     rewriter::change_macro::Switcher,
     util::{add_at_mark, gen_get_const_generics},
@@ -533,12 +533,21 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
     // println!("new_generics: {}", new_generics.to_token_stream());
 
+    let new_generics = new_generics.switcher(&|mac| {
+        if let Some(path) = addition_data.get_addition_data(&mac.path) {
+            let mut mac = mac;
+            mac.path = path;
+            mac.to_token_stream()
+        } else {
+            default_primitive_macro_alt(mac)
+        }
+    });
+
     *generics = new_generics;
 
     // println!("call_with_generics output: {}", input.to_token_stream());
 
     // let switcher
-    // let input = inp
 
     Ok(input.into_token_stream())
 }

@@ -83,7 +83,8 @@ pub mod tt {
                     ::const_struct::primitive::ConstStructPrimEnd: ConstStructPrimEnd,
                     ::const_struct::primitive::ConstStructPrimQueue: ConstStructPrimQueue,
                     ::const_struct::keeptype::KeepType: KeepType,
-                    ::const_struct::keeptype::KeepTypeConst: KeepTypeConst
+                    ::const_struct::keeptype::KeepTypeConst: KeepTypeConst,
+                    F32: F32
                 ),
                 @TestGenericsGetGenericsData(
                 struct,
