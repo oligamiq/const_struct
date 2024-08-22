@@ -13,6 +13,7 @@ mod path;
 pub mod struct_ty;
 mod tuple;
 
+#[derive(Debug, Clone)]
 pub struct AdditionDataArgs {
     pub _at: Token![@],
     pub _ident: Ident,
@@ -20,7 +21,7 @@ pub struct AdditionDataArgs {
     pub data: Punctuated<PathAndIdent, Token![,]>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AdditionData {
     pub data: Vec<PathAndIdent>,
 }

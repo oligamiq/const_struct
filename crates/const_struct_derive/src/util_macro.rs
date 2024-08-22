@@ -4,7 +4,7 @@ use punctuated::Punctuated;
 use quote::{format_ident, quote, ToTokens};
 use syn::*;
 
-use crate::{macro_alt::struct_macro_alt, parse_value::TyAndExpr, rewriter::change_macro::Switcher, util::{add_at_mark, gen_get_const_generics}};
+use crate::{macro_alt::struct_macro_alt, parse_value::{AdditionData, AdditionDataArgs, TyAndExpr}, rewriter::change_macro::Switcher, util::{add_at_mark, gen_get_const_generics}};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Label {
@@ -213,6 +213,7 @@ impl Parse for GenericsData {
 
 #[derive(Debug, Clone)]
 pub struct ExpandCallFnWithGenericsArgs {
+    pub addition_data: Option<AdditionData>,
     pub item: Option<GenericsData>,
     pub _comma: Option<Token![,]>,
     pub call: MyExprCalls,
@@ -220,6 +221,11 @@ pub struct ExpandCallFnWithGenericsArgs {
 
 impl Parse for ExpandCallFnWithGenericsArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let addition_data = input.parse::<AdditionDataArgs>().ok();
+        let addition_data = addition_data.map(|data| data.into());
+        if let Some(_) = addition_data {
+            let _comma = input.parse::<Token![,]>()?;
+        }
         match input.parse::<GenericsData>() {
             Ok(item) => {
                 println!("success to parse GenericsData");
@@ -228,6 +234,7 @@ impl Parse for ExpandCallFnWithGenericsArgs {
                 let call = input.parse::<MyExprCalls>()?;
                 // println!("success to parse MyExprCalls");
                 Ok(Self {
+                    addition_data,
                     item: Some(item),
                     _comma,
                     call,
@@ -239,6 +246,7 @@ impl Parse for ExpandCallFnWithGenericsArgs {
                 let call = input.parse::<MyExprCalls>()?;
                 // println!("success to parse MyExprCalls");
                 Ok(Self {
+                    addition_data,
                     item: None,
                     _comma: None,
                     call,

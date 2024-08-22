@@ -78,7 +78,9 @@ pub mod tt {
     #[macro_export]
     macro_rules! TestGenerics {
         (@TestGenericsGetGenericsData, $macro_path: path, $($arg:tt)*) => {
-            $macro_path!(@TestGenericsGetGenericsData(
+            $macro_path!(
+                @AdditionData(F32: F32),
+                @TestGenericsGetGenericsData(
                 struct,
                 const fn get_const_generics<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) {},
                 parse_value!(
