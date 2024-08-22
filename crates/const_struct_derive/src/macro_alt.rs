@@ -5,7 +5,9 @@ use quote::ToTokens as _;
 use syn::*;
 
 use crate::{
-    parse_value::{struct_ty::parse_value_struct_ty, AdditionData}, util::gen_get_const_generics, util_macro::{self, ConstOrType, GenericInfo, GenericsData, TypeOrExpr}
+    parse_value::{struct_ty::parse_value_struct_ty, AdditionData},
+    util::gen_get_const_generics,
+    util_macro::{self, ConstOrType, GenericInfo, GenericsData, TypeOrExpr},
 };
 
 struct ExprAndExpr {
@@ -71,9 +73,7 @@ impl Parse for StructMacroAltArgs {
         //     }
         // }
         let value = match expr_or_type.pop() {
-            Some(TypeOrExpr::Expr(expr)) => {
-                expr.clone()
-            }
+            Some(TypeOrExpr::Expr(expr)) => expr.clone(),
             _ => return Err(Error::new(fork.span(), "expected expr")),
         };
         input.advance_to(&fork);
@@ -84,7 +84,10 @@ impl Parse for StructMacroAltArgs {
     }
 }
 
-pub fn struct_macro_alt(addition_data: AdditionData, data: GenericsData) -> impl Fn(TokenStream) -> Result<Type> {
+pub fn struct_macro_alt(
+    addition_data: AdditionData,
+    data: GenericsData,
+) -> impl Fn(TokenStream) -> Result<Type> {
     if data.label != util_macro::Label::Struct {
         panic!("Expected struct");
     }
@@ -128,23 +131,23 @@ pub fn struct_macro_alt(addition_data: AdditionData, data: GenericsData) -> impl
                     GenericParam::Type(ty) => {
                         if let TypeOrExpr::Type(Type::Infer(_)) = expr_or_type {
                             eprintln!("_ is not allowed in type on inner declaration");
-                            return Err(Error::new(ty.ident.span(), "expected type"))
+                            return Err(Error::new(ty.ident.span(), "expected type"));
                         }
                         Ok((ty.ident.clone(), expr_or_type))
-                    },
+                    }
                     GenericParam::Const(const_param) => {
                         if let TypeOrExpr::Expr(Expr::Infer(_)) = expr_or_type {
-                            let expr_or_type = gen_get_const_generics(
-                                data.const_fn.clone(),
-                                value.clone(),
-                                num,
-                            );
+                            let expr_or_type =
+                                gen_get_const_generics(data.const_fn.clone(), value.clone(), num);
                             if let Some(expr_or_type) = expr_or_type {
-                                return Ok((const_param.ident.clone(), TypeOrExpr::Expr(expr_or_type)));
+                                return Ok((
+                                    const_param.ident.clone(),
+                                    TypeOrExpr::Expr(expr_or_type),
+                                ));
                             }
                         }
                         Ok((const_param.ident.clone(), expr_or_type))
-                    },
+                    }
                     _ => unimplemented!(),
                 };
                 ident_and_expr_or_type

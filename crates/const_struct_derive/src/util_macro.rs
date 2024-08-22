@@ -4,7 +4,12 @@ use punctuated::Punctuated;
 use quote::{format_ident, quote, ToTokens};
 use syn::*;
 
-use crate::{macro_alt::struct_macro_alt, parse_value::{AdditionData, AdditionDataArgs, TyAndExpr}, rewriter::change_macro::Switcher, util::{add_at_mark, gen_get_const_generics}};
+use crate::{
+    macro_alt::struct_macro_alt,
+    parse_value::{AdditionData, AdditionDataArgs, TyAndExpr},
+    rewriter::change_macro::Switcher,
+    util::{add_at_mark, gen_get_const_generics},
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Label {
@@ -242,8 +247,8 @@ impl Parse for ExpandCallFnWithGenericsArgs {
                     call,
                 })
             }
-            Err(e) => {
-                eprintln!("failed to parse GenericsData: {}", e);
+            Err(_e) => {
+                // eprintln!("failed to parse GenericsData: {}", _e);
                 // println!("failed to parse GenericsData");
                 let call = input.parse::<MyExprCalls>()?;
                 // println!("success to parse MyExprCalls");
@@ -392,11 +397,11 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                 let define_data = define_data.as_ref().unwrap();
 
                 let get_generics = |num: usize, value: Expr| {
-                //     let mut mac = mac.clone();
-                //     let macro_first_arg =
-                //         add_at_mark(format_ident!("{macro_name}GetInnerGenerics{num}"));
-                //     mac.tokens = quote! { #macro_first_arg, #value };
-                //     mac
+                    //     let mut mac = mac.clone();
+                    //     let macro_first_arg =
+                    //         add_at_mark(format_ident!("{macro_name}GetInnerGenerics{num}"));
+                    //     mac.tokens = quote! { #macro_first_arg, #value };
+                    //     mac
                     gen_get_const_generics(define_data.const_fn.clone(), value, num)
                 };
 
@@ -443,8 +448,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                                 ty
                             }
                             ConstOrType::Type => {
-                                let ty: GenericArgument =
-                                    parse_quote!(<#ty_path as ::const_struct::keeptype::KeepType<#num>>::Type);
+                                let ty: GenericArgument = parse_quote!(<#ty_path as ::const_struct::keeptype::KeepType<#num>>::Type);
                                 ty
                             }
                         }

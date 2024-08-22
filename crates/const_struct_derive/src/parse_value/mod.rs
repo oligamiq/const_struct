@@ -1,5 +1,6 @@
 use crate::{
-    const_struct_derive::PathAndIdent, ident::AbsolutePathOrType, macro_alt::match_underscore_alt, rewriter::change_macro::Switcher
+    const_struct_derive::PathAndIdent, ident::AbsolutePathOrType, macro_alt::match_underscore_alt,
+    rewriter::change_macro::Switcher,
 };
 use parse::{discouraged::Speculative as _, Parse, ParseStream};
 use path::parse_value_path;
@@ -27,10 +28,7 @@ pub struct AdditionData {
 
 impl AdditionData {
     pub fn get_absolute_path(&self, path: &Path) -> AbsolutePathOrType {
-        crate::const_struct_derive::ConstStructAttr::get_absolute_path_inner(
-            path,
-            &self.data,
-        )
+        crate::const_struct_derive::ConstStructAttr::get_absolute_path_inner(path, &self.data)
     }
 
     pub fn get_changed_path(&self, path: &Path) -> Path {
@@ -70,7 +68,9 @@ impl Default for AdditionDataArgs {
 
 impl Default for AdditionData {
     fn default() -> Self {
-        Self { data: Default::default() }
+        Self {
+            data: Default::default(),
+        }
     }
 }
 
