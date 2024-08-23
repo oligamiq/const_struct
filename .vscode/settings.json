@@ -2,6 +2,7 @@
     "cSpell.words": [
         "Compat",
         "elems",
+        "Hasher",
         "impls",
         "isize",
         "keeptype",

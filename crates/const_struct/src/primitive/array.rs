@@ -1,3 +1,5 @@
+use core::char;
+
 use super::ConstStructPrimEnd;
 
 pub trait ConstStructPrimQueue {
@@ -96,6 +98,50 @@ pub fn tester() {
             str: &'static str,
         }
 
+
+        // let hash = {
+        //     let mut hasher = core::hash::DefaultHasher::new();
+
+        //     let chars = STR.chars();
+        //     let hash = core::hash::Hash(STR);
+        //     hash
+        // };
+        impl ConstStructPrimQueue for StrPointerAndLength<0, {
+            const LEN: usize = STR.len();
+            LEN
+        }> {
+            type Data = &'static str;
+            const __DATA: Self::Data = "Hello, World!";
+        }
+        0
+    }, {
+        let str = {
+            Def {
+                str: "Hello, World!",
+            }
+        }.str;
+        str.len()
+    }>;
+
+    type C = StrPointerAndLength<{
+        const STR: &'static str = {
+            Def {
+                str: "Hello, World!",
+            }
+        }.str;
+
+        pub struct AStruct {
+            str: &'static str,
+        }
+
+
+        // let hash = {
+        //     let mut hasher = core::hash::DefaultHasher::new();
+
+        //     let chars = STR.chars();
+        //     let hash = core::hash::Hash(STR);
+        //     hash
+        // };
         impl ConstStructPrimQueue for StrPointerAndLength<0, {
             const LEN: usize = STR.len();
             LEN
