@@ -64,6 +64,11 @@ mod test {
             (None, 0.6, Some(true))
         );
 
+        type V = const_struct::parse_value!(
+            [u8; 9],
+            [0, 1, 2, 3, 4, 5, 6, 7, 8]
+        );
+
         // no_std_compat::println!("{:?}", <B as ::const_struct::PrimitiveTraits>::__DATA);
 
         // type C = const_struct::parse_value!((TestGenerics<_>,), (TestGenerics { a: 7 },));

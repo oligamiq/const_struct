@@ -196,3 +196,15 @@ pub fn tester(test_setting: TestSetting) {
 ## マクロを使わない手動実装:未テスト
 - プリミティブ型（アウトサイドマクロ）
 - Enumに対するConstStruct、アウトサイドマクロ、インサイドマクロ
+
+# 開発者へ
+## 気を付けるべきエラー
+```rust
+pointers cannot be cast to integers during const eval
+at compile-time, pointers do not have an integer value
+avoiding this restriction via `transmute`, `union`, or raw pointers leads to compile-time undefined behavior
+```
+
+```rust
+constructing invalid value: encountered a dangling reference (0x48[noalloc] has no provenance)
+```
