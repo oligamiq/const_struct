@@ -68,7 +68,7 @@ impl<const SIZE: usize, const LEN: usize, T: ConstStructPrimQueue<Data = [u8; SI
     };
 }
 
-pub struct StrPointerAndLength<const PTR: usize, const LEN: usize>;
+pub struct HashBridge<const NAME_HASH: u64, const FILE_NAME_HASH: u64, const COLUMN: u32, const LINE: u32>;
 
 pub struct Def {
     str: &'static str,
@@ -85,79 +85,51 @@ pub fn call_tester<T: ConstStructPrimQueue<Data = &'static str>>() -> &'static s
     T::__DATA
 }
 
+macro_rules! TestSettingManual {
+    ($value:expr) => {
+        HashBridge<{
+            const name_hash: u64 = {
+                let struct_name = "StrPointerAndLength";
+                let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
+                crc.checksum(struct_name.as_bytes())
+            };
+
+            const file_hash: u64 = {
+                let file_name = file!();
+                let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
+                crc.checksum(file_name.as_bytes())
+            };
+
+            const column: u32 = column!();
+
+            const line: u32 = line!();
+
+            impl ConstStructPrimQueue for HashBridge<name_hash, file_hash, column, line> {
+                type Data = &'static str;
+                const __DATA: Self::Data = $value;
+            }
+
+            name_hash
+        }, {
+            const file_hash: u64 = {
+                let file_name = file!();
+                let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
+                crc.checksum(file_name.as_bytes())
+            };
+
+            file_hash
+        }, {
+            column!()
+        }, {
+            line!()
+        }>
+    }
+}
+
 #[test]
 pub fn tester() {
-    type B = StrPointerAndLength<{
-        const STR: &'static str = {
-            Def {
-                str: "Hello, World!",
-            }
-        }.str;
 
-        pub struct AStruct {
-            str: &'static str,
-        }
-
-
-        // let hash = {
-        //     let mut hasher = core::hash::DefaultHasher::new();
-
-        //     let chars = STR.chars();
-        //     let hash = core::hash::Hash(STR);
-        //     hash
-        // };
-        impl ConstStructPrimQueue for StrPointerAndLength<0, {
-            const LEN: usize = STR.len();
-            LEN
-        }> {
-            type Data = &'static str;
-            const __DATA: Self::Data = "Hello, World!";
-        }
-        0
-    }, {
-        let str = {
-            Def {
-                str: "Hello, World!",
-            }
-        }.str;
-        str.len()
-    }>;
-
-    type C = StrPointerAndLength<{
-        const STR: &'static str = {
-            Def {
-                str: "Hello, World!",
-            }
-        }.str;
-
-        pub struct AStruct {
-            str: &'static str,
-        }
-
-
-        // let hash = {
-        //     let mut hasher = core::hash::DefaultHasher::new();
-
-        //     let chars = STR.chars();
-        //     let hash = core::hash::Hash(STR);
-        //     hash
-        // };
-        impl ConstStructPrimQueue for StrPointerAndLength<0, {
-            const LEN: usize = STR.len();
-            LEN
-        }> {
-            type Data = &'static str;
-            const __DATA: Self::Data = "Hello, World!";
-        }
-        0
-    }, {
-        let str = {
-            Def {
-                str: "Hello, World!",
-            }
-        }.str;
-        str.len()
-    }>;
+    type B = TestSettingManual!("Hello, World!");
 
     let b = call_tester::<B>();
 
