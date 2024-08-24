@@ -1,4 +1,4 @@
-use crate::util_macro::{GenericInfo, GenericsData, Label, TypeOrExpr};
+use crate::{util::gen_get_const_generics, util_macro::{GenericInfo, GenericsData, Label, TypeOrExpr}};
 use quote::ToTokens as _;
 use syn::*;
 
@@ -71,9 +71,10 @@ pub fn parse_value_struct_ty(
                     }
                     _ => unimplemented!(),
                 });
-            ty.expect("ty not found")
+            ty.unwrap_or(&TypeOrExpr::Expr(parse_quote! { _ })).clone()
         })
-        .map(|ty_or_expr| match ty_or_expr {
+        .enumerate()
+        .map(|(num, ty_or_expr)| match ty_or_expr {
             TypeOrExpr::Type(ty) => {
                 if let Type::Infer(_) = ty {
                     eprintln!("error: This function does not support Type::Infer");
@@ -82,10 +83,15 @@ pub fn parse_value_struct_ty(
 
                 GenericArgument::Type(ty.clone())
             }
-            TypeOrExpr::Expr(expr) => {
-                if let Expr::Infer(_) = expr {
-                    eprintln!("error: This function does not support Expr::Infer");
-                    unimplemented!()
+            TypeOrExpr::Expr(inner_expr) => {
+                if let Expr::Infer(_) = inner_expr {
+                    let expr = gen_get_const_generics(struct_data.const_fn.clone(), expr.clone(), num);
+                    if let Some(expr) = expr {
+                        return GenericArgument::Const(expr);
+                    } else {
+                        eprintln!("error: This function does not support Expr::Infer");
+                        unimplemented!()
+                    }
                 }
 
                 GenericArgument::Const(expr.clone())

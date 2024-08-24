@@ -114,7 +114,7 @@ mod tests {
             str: "test",
         })>();
 
-        let c = call_with_generics!(caller::<TestStructWithGenerics!(_, TestStructWithGenerics {
+        let c = call_with_generics!(caller::<TestStructWithGenerics!(TestStructWithGenerics {
             test_data: Some(1),
             test_data2: Some(Some(2)),
             test_data3: 3,
