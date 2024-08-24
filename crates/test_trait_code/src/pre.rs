@@ -20,7 +20,8 @@ impl<const NAME_HASH: u64, const FILE_NAME_HASH: u64, const COLUMN: u32, const L
 }
 
 impl<const NAME_HASH: u64, const FILE_NAME_HASH: u64, const COLUMN: u32, const LINE: u32>
-HashBridge<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE> {
+    HashBridge<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE>
+{
     pub const fn new() -> Self {
         Self
     }
@@ -42,8 +43,8 @@ macro_rules! match_underscore {
 }
 
 // Debug
-impl<const NAME_HASH: u64, const FILE_NAME_HASH: u64, const COLUMN: u32, const LINE: u32> core::fmt::Debug
-    for HashBridge<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE>
+impl<const NAME_HASH: u64, const FILE_NAME_HASH: u64, const COLUMN: u32, const LINE: u32>
+    core::fmt::Debug for HashBridge<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("HashBridge")

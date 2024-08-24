@@ -1,4 +1,7 @@
-use crate::{util::gen_get_const_generics, util_macro::{GenericInfo, GenericsData, Label, TypeOrExpr}};
+use crate::{
+    util::gen_get_const_generics,
+    util_macro::{GenericInfo, GenericsData, Label, TypeOrExpr},
+};
 use quote::ToTokens as _;
 use syn::*;
 
@@ -85,7 +88,8 @@ pub fn parse_value_struct_ty(
             }
             TypeOrExpr::Expr(inner_expr) => {
                 if let Expr::Infer(_) = inner_expr {
-                    let expr = gen_get_const_generics(struct_data.const_fn.clone(), expr.clone(), num);
+                    let expr =
+                        gen_get_const_generics(struct_data.const_fn.clone(), expr.clone(), num);
                     if let Some(expr) = expr {
                         return GenericArgument::Const(expr);
                     } else {
@@ -105,9 +109,12 @@ pub fn parse_value_struct_ty(
 
     println!("head_ty: {}", head_ty.to_token_stream());
 
-    let str_hash = addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::str_hash });
-    let primitive_traits = addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::PrimitiveTraits });
-    let hash_bridge = addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::HashBridge });
+    let str_hash =
+        addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::str_hash });
+    let primitive_traits = addition_data
+        .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::PrimitiveTraits });
+    let hash_bridge =
+        addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::HashBridge });
     let ty: Type = parse_quote! {
         HashBridge<{
             const NAME_HASH: u64 = #str_hash(stringify!(#expr));

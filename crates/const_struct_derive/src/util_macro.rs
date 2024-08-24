@@ -201,9 +201,10 @@ impl Parse for GenericsData {
         let _comma = content.parse::<Token![,]>()?;
         let const_fn = content.parse::<ItemFn>()?;
         let (_comma2, macros) = match content.parse::<Token![,]>() {
-            Ok(comma) => {
-                (Some(comma), Punctuated::<Macro, Token![,]>::parse_terminated(&content)?)
-            },
+            Ok(comma) => (
+                Some(comma),
+                Punctuated::<Macro, Token![,]>::parse_terminated(&content)?,
+            ),
             _ => (None, Punctuated::new()),
         };
         input.advance_to(&input_try);

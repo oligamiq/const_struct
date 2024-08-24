@@ -1,5 +1,5 @@
-use crate::pre::PrimitiveTraits;
 use crate::pre::str_hash;
+use crate::pre::PrimitiveTraits;
 
 #[derive(Debug)]
 pub struct TestStruct {
@@ -9,16 +9,14 @@ pub struct TestStruct {
     str: &'static str,
 }
 
-pub trait TestStructTy:
-    PrimitiveTraits<DATATYPE = TestStruct> {
+pub trait TestStructTy: PrimitiveTraits<DATATYPE = TestStruct> {
     const TEST_DATA: [u8; 16] = <Self as PrimitiveTraits>::__DATA.test_data;
     const TEST_DATA2: Option<Option<u32>> = <Self as PrimitiveTraits>::__DATA.test_data2;
     const TEST_DATA3: u32 = <Self as PrimitiveTraits>::__DATA.test_data3;
     const STR: &'static str = <Self as PrimitiveTraits>::__DATA.str;
 }
 
-impl<U: PrimitiveTraits<DATATYPE = TestStruct>> TestStructTy for U {
-}
+impl<U: PrimitiveTraits<DATATYPE = TestStruct>> TestStructTy for U {}
 
 macro_rules! TestStruct {
     ($value:expr) => {

@@ -3,8 +3,7 @@
 mod pre;
 mod primitive;
 
-mod non_generics;
 mod generics;
+mod non_generics;
 
-fn main() {
-}
+fn main() {}

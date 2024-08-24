@@ -1,6 +1,6 @@
+use super::PrimitiveTraits;
 use core::mem::transmute;
 use paste::paste;
-use super::PrimitiveTraits;
 
 macro_rules! PrimTraitBySizes {
     (@inner($dol:tt), $base:ident, $($name:ident),*) => {

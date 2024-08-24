@@ -1,5 +1,5 @@
-use crate::pre::{str_hash, PrimitiveTraits};
 use crate::match_underscore;
+use crate::pre::{str_hash, PrimitiveTraits};
 
 #[derive(Debug)]
 pub struct TestStructWithGenerics<const T: usize> {
@@ -11,7 +11,7 @@ pub struct TestStructWithGenerics<const T: usize> {
 }
 
 pub trait TestStructWithGenericsTy<const T: usize>:
-    PrimitiveTraits<DATATYPE = TestStructWithGenerics<{T}>>
+    PrimitiveTraits<DATATYPE = TestStructWithGenerics<{ T }>>
 {
     const TEST_DATA: Option<u32> = <Self as PrimitiveTraits>::__DATA.test_data;
     const TEST_DATA2: Option<Option<u32>> = <Self as PrimitiveTraits>::__DATA.test_data2;
@@ -20,7 +20,10 @@ pub trait TestStructWithGenericsTy<const T: usize>:
     const STR: &'static str = <Self as PrimitiveTraits>::__DATA.str;
 }
 
-impl<U: PrimitiveTraits<DATATYPE = TestStructWithGenerics<{T}>>, const T: usize> TestStructWithGenericsTy<{T}> for U {}
+impl<U: PrimitiveTraits<DATATYPE = TestStructWithGenerics<{ T }>>, const T: usize>
+    TestStructWithGenericsTy<{ T }> for U
+{
+}
 
 #[macro_export]
 macro_rules! TestStructWithGenerics {
@@ -76,26 +79,30 @@ macro_rules! TestStructWithGenerics {
 
 #[cfg(test)]
 mod tests {
-    use std::{arch::x86_64, fmt::Debug};
+    use std::fmt::Debug;
 
     use const_struct_derive::call_with_generics;
 
     use super::*;
     use crate::pre::HashBridge;
 
-    fn caller<const T: usize, U: TestStructWithGenericsTy<T> + Debug>() -> TestStructWithGenerics<T> {
+    fn caller<const T: usize, U: TestStructWithGenericsTy<T> + Debug>() -> TestStructWithGenerics<T>
+    {
         U::__DATA
     }
 
     #[test]
     fn test() {
-        type T = TestStructWithGenerics!(_, TestStructWithGenerics {
-            test_data: Some(1),
-            test_data2: Some(Some(2)),
-            test_data3: 3,
-            test_data4: [0; 8],
-            str: "test",
-        });
+        type T = TestStructWithGenerics!(
+            _,
+            TestStructWithGenerics {
+                test_data: Some(1),
+                test_data2: Some(Some(2)),
+                test_data3: 3,
+                test_data4: [0; 8],
+                str: "test",
+            }
+        );
 
         let t: T = unsafe { core::mem::zeroed() };
         dbg!(t);
@@ -106,20 +113,28 @@ mod tests {
         assert_eq!(T::TEST_DATA4, [0; 8]);
         assert_eq!(T::STR, "test");
 
-        caller::<8, TestStructWithGenerics!(_, TestStructWithGenerics {
-            test_data: Some(1),
-            test_data2: Some(Some(2)),
-            test_data3: 3,
-            test_data4: [0; 8],
-            str: "test",
-        })>();
+        caller::<
+            8,
+            TestStructWithGenerics!(
+                _,
+                TestStructWithGenerics {
+                    test_data: Some(1),
+                    test_data2: Some(Some(2)),
+                    test_data3: 3,
+                    test_data4: [0; 8],
+                    str: "test",
+                }
+            ),
+        >();
 
-        let c = call_with_generics!(caller::<TestStructWithGenerics!(TestStructWithGenerics {
-            test_data: Some(1),
-            test_data2: Some(Some(2)),
-            test_data3: 3,
-            test_data4: [0; 8],
-            str: "test",
-        })>());
+        let c = call_with_generics!(caller::<
+            TestStructWithGenerics!(TestStructWithGenerics {
+                test_data: Some(1),
+                test_data2: Some(Some(2)),
+                test_data3: 3,
+                test_data4: [0; 8],
+                str: "test",
+            }),
+        >());
     }
 }
