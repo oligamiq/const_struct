@@ -94,10 +94,7 @@ pub fn struct_macro_alt(
     }
     // let const_or_type = data.const_or_type();
     let struct_macro = move |input: TokenStream| {
-        let StructMacroAltArgs {
-            value,
-            ..
-        } = parse2::<StructMacroAltArgs>(input)?;
+        let StructMacroAltArgs { value, .. } = parse2::<StructMacroAltArgs>(input)?;
 
         // println!("expr_or_type: {}", quote::quote! { #(#expr_or_type),* });
         // println!("value: {:?}", value);
@@ -155,8 +152,11 @@ pub fn struct_macro_alt(
         //     })
         //     .collect::<Result<Vec<_>>>()?;
 
-        let generic_info =
-            data.get_generics_types().into_iter().zip(new_generic.clone()).map(|(ty, expr_or_type)| {
+        let generic_info = data
+            .get_generics_types()
+            .into_iter()
+            .zip(new_generic.clone())
+            .map(|(ty, expr_or_type)| {
                 let ident_and_expr_or_type = match ty {
                     GenericParam::Type(ty) => {
                         if let GenericArgument::Type(ty_) = expr_or_type {
@@ -177,7 +177,8 @@ pub fn struct_macro_alt(
                     _ => unimplemented!(),
                 };
                 ident_and_expr_or_type
-            }).collect::<Result<Vec<_>>>()?;
+            })
+            .collect::<Result<Vec<_>>>()?;
 
         // println!("generic_info: {:?}", generic_info);
 

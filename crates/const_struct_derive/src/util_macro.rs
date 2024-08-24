@@ -478,7 +478,11 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
                 let switcher = |inner_mac: Macro| -> TokenStream {
                     if inner_mac.path == mac.path {
-                        let ty = struct_macro_alt(addition_data.clone(), define_data.clone(), new_generic_only_type.clone());
+                        let ty = struct_macro_alt(
+                            addition_data.clone(),
+                            define_data.clone(),
+                            new_generic_only_type.clone(),
+                        );
                         let ty = ty(inner_mac.tokens.clone()).unwrap();
                         ty.to_token_stream()
                     } else {
