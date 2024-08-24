@@ -89,12 +89,10 @@ pub fn parse_value_struct_ty(
             }
             TypeOrExpr::Expr(inner_expr) => {
                 if let Expr::Infer(_) = inner_expr {
-                    // println!("num: {}", num);
+                    println!("num: {}", num);
 
                     let expr =
                         gen_get_const_generics(struct_data.const_fn.clone(), expr.clone(), num);
-
-                    // println!("expr: {}", quote::quote! { #expr });
 
                     if let Some(expr) = expr {
                         return GenericArgument::Const(expr);

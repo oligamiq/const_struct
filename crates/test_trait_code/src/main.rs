@@ -3,8 +3,8 @@
 mod pre;
 mod primitive;
 
-mod with_const_generics;
-mod non_generics;
 mod generics;
+mod non_generics;
+mod with_const_generics;
 
 fn main() {}

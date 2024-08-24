@@ -379,6 +379,8 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     });
                 // println!("not failed: {}", args.to_token_stream());
 
+                // dbg!(&args);
+
                 let macro_name = mac.path.segments.last().unwrap().ident.to_string();
 
                 let mut exist_define_data = false;
@@ -473,6 +475,16 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     }
                 };
 
+                let type_num = const_or_type
+                    .iter()
+                    .filter(|const_or_type| {
+                        if let ConstOrType::Type = const_or_type {
+                            true
+                        } else {
+                            false
+                        }
+                    })
+                    .count();
                 let args_len = args.len();
                 let mut new_generic = if args_len == const_or_type.len() + 1 {
                     args.into_iter()
@@ -492,15 +504,36 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                             }
                         })
                         .collect::<Vec<GenericArgument>>()
-                } else if args.len() == 1 {
+                } else if args_len == 1 {
                     const_or_type
                         .iter()
                         .enumerate()
                         .map(|(num, _)| infer_process(num))
                         .collect::<Vec<GenericArgument>>()
+                } else if args_len == type_num + 1 {
+                    let mut args = args.into_iter();
+                    const_or_type
+                        .iter()
+                        .enumerate()
+                        .map(|(num, const_or_type)| {
+                            if let ConstOrType::Type = const_or_type {
+                                let arg = args.next().unwrap();
+                                let str = arg.to_token_stream().to_string();
+                                let generics = match parse_str::<GenericArgument>(&str) {
+                                    Ok(generics) => generics,
+                                    Err(_) => panic!("failed to parse Argument"),
+                                };
+                                generics
+                            } else {
+                                infer_process(num)
+                            }
+                        })
+                        .collect::<Vec<GenericArgument>>()
                 } else {
                     panic!("failed to parse Argument");
                 };
+
+                let new_generic_only_type = new_generic.clone();
 
                 new_generic.push(if is_outer_declaration {
                     GenericArgument::Type(Type::Path(TypePath {
@@ -517,7 +550,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
                 let switcher = |inner_mac: Macro| -> TokenStream {
                     if inner_mac.path == mac.path {
-                        let ty = struct_macro_alt(addition_data.clone(), define_data.clone());
+                        let ty = struct_macro_alt(addition_data.clone(), define_data.clone(), new_generic_only_type.clone());
                         let ty = ty(inner_mac.tokens.clone()).unwrap();
                         ty.to_token_stream()
                     } else {

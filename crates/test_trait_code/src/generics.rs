@@ -26,8 +26,11 @@ pub trait TestStructWithFloatGenericsTy<const T: usize, S: Float + Copy>:
     const FLOAT: S = <Self as PrimitiveTraits>::__DATA.float;
 }
 
-impl<U: PrimitiveTraits<DATATYPE = TestStructWithFloatGenerics<{ T }, S>>, const T: usize, S: Float + Copy>
-    TestStructWithFloatGenericsTy<{ T }, S> for U
+impl<
+        U: PrimitiveTraits<DATATYPE = TestStructWithFloatGenerics<{ T }, S>>,
+        const T: usize,
+        S: Float + Copy,
+    > TestStructWithFloatGenericsTy<{ T }, S> for U
 {
 }
 
@@ -92,8 +95,8 @@ mod tests {
     use super::*;
     use crate::pre::HashBridge;
 
-    fn caller<const T: usize, F: Float + Copy, U: TestStructWithFloatGenericsTy<T, F> + Debug>() -> TestStructWithFloatGenerics<T, F>
-    {
+    fn caller<const T: usize, F: Float + Copy, U: TestStructWithFloatGenericsTy<T, F> + Debug>(
+    ) -> TestStructWithFloatGenerics<T, F> {
         U::__DATA
     }
 
@@ -139,14 +142,17 @@ mod tests {
         >();
 
         let c = call_with_generics!(caller::<
-            TestStructWithFloatGenerics!(_, f32, TestStructWithFloatGenerics {
-                test_data: Some(1),
-                test_data2: Some(Some(2)),
-                test_data3: 3,
-                test_data4: [0; 8],
-                str: "test",
-                float: 0.0,
-            }),
+            TestStructWithFloatGenerics!(
+                f32,
+                TestStructWithFloatGenerics {
+                    test_data: Some(1),
+                    test_data2: Some(Some(2)),
+                    test_data3: 3,
+                    test_data4: [0; 8],
+                    str: "test",
+                    float: 0.0,
+                }
+            ),
         >());
     }
 }
