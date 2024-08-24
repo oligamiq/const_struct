@@ -45,7 +45,7 @@ pub struct GenericsData {
     pub label: Label,
     pub _comma: Token![,],
     pub const_fn: ItemFn,
-    pub _comma2: Token![,],
+    pub _comma2: Option<Token![,]>,
     pub macros: Punctuated<Macro, Token![,]>,
 }
 
@@ -200,8 +200,12 @@ impl Parse for GenericsData {
         let label = content.parse::<Label>()?;
         let _comma = content.parse::<Token![,]>()?;
         let const_fn = content.parse::<ItemFn>()?;
-        let _comma2 = content.parse::<Token![,]>()?;
-        let macros = Punctuated::<Macro, Token![,]>::parse_terminated(&content)?;
+        let (_comma2, macros) = match content.parse::<Token![,]>() {
+            Ok(comma) => {
+                (Some(comma), Punctuated::<Macro, Token![,]>::parse_terminated(&content)?)
+            },
+            _ => (None, Punctuated::new()),
+        };
         input.advance_to(&input_try);
         Ok(Self {
             _at,

@@ -1,4 +1,5 @@
 use crate::util_macro::{GenericInfo, GenericsData, Label, TypeOrExpr};
+use quote::ToTokens as _;
 use syn::*;
 
 use super::AdditionData;
@@ -18,15 +19,21 @@ pub fn parse_value_struct_ty(
 
     // println!("struct_ident: {:?}", struct_ident);
 
-    let parsed_values = struct_data.get_parsed_values(expr, &info)?;
+    // let parsed_values = struct_data.get_parsed_values(expr.clone(), &info)?;
 
     // println!("parsed_values: {:?}", parsed_values);
 
     let gen_tys = struct_data.get_generics_types();
 
-    // println!("gen_tys: {:?}", gen_tys);
+    println!("gen_tys: {}", quote::quote! { #(#gen_tys),* });
 
-    // println!("info: {:?}", info);
+    {
+        println!("info: ");
+        let info = &info.correspondence;
+        for (ident, type_or_expr) in info.iter() {
+            println!("{}: {}", ident, quote::quote! { #type_or_expr });
+        }
+    };
 
     let gen_tys = gen_tys
         .iter()
@@ -90,28 +97,29 @@ pub fn parse_value_struct_ty(
         #struct_ident<#(#gen_tys),*>
     };
 
-    let ty = gen_value_struct_ty(addition_data, head_ty, parsed_values);
+    println!("head_ty: {}", head_ty.to_token_stream());
+
+    let str_hash = addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::str_hash });
+    let primitive_traits = addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::PrimitiveTraits });
+    let hash_bridge = addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::HashBridge });
+    let ty: Type = parse_quote! {
+        HashBridge<{
+            const NAME_HASH: u64 = #str_hash(stringify!(#expr));
+
+            impl #primitive_traits for #hash_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> {
+                type DATATYPE = #head_ty;
+                const __DATA: Self::DATATYPE = #expr;
+            }
+
+            NAME_HASH
+        }, {
+            #str_hash(file!())
+        }, {
+            column!()
+        }, {
+            line!()
+        }>
+    };
 
     Ok(ty)
-}
-
-pub fn gen_value_struct_ty(
-    addition_data: AdditionData,
-    head_ty: Type,
-    queue_ty: Vec<Type>,
-) -> Type {
-    let queue_ty_rev = queue_ty.iter().rev();
-    let const_struct_prim_end_path = addition_data
-        .get_changed_path_from_quote(quote::quote!(::const_struct::primitive::ConstStructPrimEnd));
-    let mut ty: Type = parse_quote!( #const_struct_prim_end_path );
-    let const_struct_prim_queue_path = addition_data.get_changed_path_from_quote(quote::quote!(
-        ::const_struct::primitive::ConstStructPrimQueue
-    ));
-    for queue_ty in queue_ty_rev {
-        ty = parse_quote!(#const_struct_prim_queue_path<#queue_ty, #ty>);
-    }
-    let ty: Type = parse_quote! {
-        #const_struct_prim_queue_path<#head_ty, #ty>
-    };
-    ty
 }
