@@ -143,6 +143,7 @@ version = "0.3.1"
 dependencies = [
  "const_struct_derive",
  "crc",
+ "no-std-compat",
  "paste",
 ]
 

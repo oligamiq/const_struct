@@ -68,6 +68,7 @@ impl<const SIZE: usize, const LEN: usize, T: ConstStructPrimQueue<Data = [u8; SI
     };
 }
 
+#[derive(Debug)]
 pub struct HashBridge<
     const NAME_HASH: u64,
     const FILE_NAME_HASH: u64,

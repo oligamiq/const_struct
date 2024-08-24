@@ -2,9 +2,7 @@
 
 use core::mem::transmute;
 
-use some::PrimitiveTraits;
-
-use crate::pre::ConstStructTraits;
+use crate::pre::PrimitiveTraits;
 
 pub trait F32Ty {
     const __DATA: f32;
@@ -55,10 +53,7 @@ macro_rules! U32 {
 }
 
 pub mod some {
-    pub trait PrimitiveTraits {
-        type DATATYPE;
-        const __DATA: Self::DATATYPE;
-    }
+    use crate::pre::PrimitiveTraits;
 
     pub trait OptionTy<T> {
         const __DATA: Option<T>;

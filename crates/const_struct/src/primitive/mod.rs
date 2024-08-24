@@ -11,3 +11,8 @@ pub use enum_ty::*;
 pub mod struct_ty;
 pub use struct_ty::*;
 pub mod array;
+
+pub trait PrimitiveTraits {
+    type DATATYPE;
+    const __DATA: Self::DATATYPE;
+}
