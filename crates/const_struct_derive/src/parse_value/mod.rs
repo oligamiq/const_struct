@@ -10,10 +10,10 @@ use punctuated::Punctuated;
 use syn::*;
 use tuple::parse_value_tuple;
 
+mod array;
 mod path;
 pub mod struct_ty;
 mod tuple;
-mod array;
 
 #[derive(Debug, Clone)]
 pub struct AdditionDataArgs {
@@ -49,14 +49,19 @@ impl AdditionData {
     }
 
     pub fn check_addition_data(&self, path: &Path) -> bool {
-        self.data.iter().any(|path_and_ident| &path_and_ident.ident == path)
+        self.data
+            .iter()
+            .any(|path_and_ident| &path_and_ident.ident == path)
     }
 
     pub fn get_addition_data(&self, path: &Path) -> Option<Path> {
-        self.data.iter().find(|path_and_ident| &path_and_ident.ident == path).map(|path| {
-            let path = path.path.path();
-            path
-        })
+        self.data
+            .iter()
+            .find(|path_and_ident| &path_and_ident.ident == path)
+            .map(|path| {
+                let path = path.path.path();
+                path
+            })
     }
 }
 

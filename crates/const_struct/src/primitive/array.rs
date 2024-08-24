@@ -68,7 +68,12 @@ impl<const SIZE: usize, const LEN: usize, T: ConstStructPrimQueue<Data = [u8; SI
     };
 }
 
-pub struct HashBridge<const NAME_HASH: u64, const FILE_NAME_HASH: u64, const COLUMN: u32, const LINE: u32>;
+pub struct HashBridge<
+    const NAME_HASH: u64,
+    const FILE_NAME_HASH: u64,
+    const COLUMN: u32,
+    const LINE: u32,
+>;
 
 pub struct Def {
     str: &'static str,
@@ -88,36 +93,32 @@ pub fn call_tester<T: ConstStructPrimQueue<Data = &'static str>>() -> &'static s
 macro_rules! TestSettingManual {
     ($value:expr) => {
         HashBridge<{
-            const name_hash: u64 = {
-                let struct_name = "StrPointerAndLength";
+            const NAME_HASH: u64 = {
+                let str = stringify!($value);
                 let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
-                crc.checksum(struct_name.as_bytes())
+                crc.checksum(str.as_bytes())
             };
 
-            const file_hash: u64 = {
+            const FILE_HASH: u64 = {
                 let file_name = file!();
                 let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
                 crc.checksum(file_name.as_bytes())
             };
 
-            const column: u32 = column!();
-
-            const line: u32 = line!();
-
-            impl ConstStructPrimQueue for HashBridge<name_hash, file_hash, column, line> {
+            impl ConstStructPrimQueue for HashBridge<NAME_HASH, FILE_HASH, {column!()}, {line!()}> {
                 type Data = &'static str;
                 const __DATA: Self::Data = $value;
             }
 
-            name_hash
+            NAME_HASH
         }, {
-            const file_hash: u64 = {
+            const FILE_HASH: u64 = {
                 let file_name = file!();
                 let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
                 crc.checksum(file_name.as_bytes())
             };
 
-            file_hash
+            FILE_HASH
         }, {
             column!()
         }, {
@@ -128,7 +129,6 @@ macro_rules! TestSettingManual {
 
 #[test]
 pub fn tester() {
-
     type B = TestSettingManual!("Hello, World!");
 
     let b = call_tester::<B>();

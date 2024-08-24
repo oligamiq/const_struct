@@ -5,7 +5,10 @@ use quote::ToTokens as _;
 use syn::*;
 
 use crate::{
-    ident::{gen_option_ty, gen_primitive_ty}, parse_value::{struct_ty::parse_value_struct_ty, AdditionData}, util::gen_get_const_generics, util_macro::{self, ConstOrType, GenericInfo, GenericsData, TypeOrExpr}
+    ident::{gen_option_ty, gen_primitive_ty},
+    parse_value::{struct_ty::parse_value_struct_ty, AdditionData},
+    util::gen_get_const_generics,
+    util_macro::{self, ConstOrType, GenericInfo, GenericsData, TypeOrExpr},
 };
 
 struct ExprAndExpr {

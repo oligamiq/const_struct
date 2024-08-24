@@ -109,7 +109,7 @@ pub fn call_with_generics(input: RawTokenStream) -> RawTokenStream {
         Ok(output) => {
             println!("call_with_generics output: {}", output.to_token_stream());
             output.into()
-        },
+        }
 
         Err(err) => err.to_compile_error().into(),
     }
