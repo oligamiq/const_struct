@@ -6,7 +6,7 @@ use syn::*;
 
 use crate::{
     macro_alt::{default_primitive_macro_alt, struct_macro_alt},
-    parse_value::{AdditionData, AdditionDataArgs, TyAndExpr},
+    parse_value::{AdditionData, AdditionDataArgs},
     rewriter::change_macro::Switcher,
     util::{add_at_mark, gen_get_const_generics},
 };
@@ -45,8 +45,6 @@ pub struct GenericsData {
     pub label: Label,
     pub _comma: Token![,],
     pub const_fn: ItemFn,
-    pub _comma2: Option<Token![,]>,
-    pub macros: Punctuated<Macro, Token![,]>,
 }
 
 #[derive(Debug, Clone)]
@@ -127,67 +125,6 @@ impl GenericsData {
             _ => unimplemented!(),
         }
     }
-
-    pub fn get_parsed_value(
-        &self,
-        num: usize,
-        expr_arg: Expr,
-        generic_info: &GenericInfo,
-    ) -> Result<Type> {
-        let macro_num = self.macros.iter().nth(num).unwrap();
-        if macro_num.path.is_ident("parse_value") {
-            let tokens = macro_num.tokens.clone();
-            let TyAndExpr {
-                ty,
-                expr,
-                additional_data,
-                ..
-            } = parse2::<TyAndExpr>(tokens)?;
-            let additional_data = additional_data.unwrap_or_default();
-            let change_expr = |mac: Macro| {
-                if mac.path.is_ident("expr") {
-                    expr_arg.to_token_stream()
-                } else {
-                    mac.to_token_stream()
-                }
-            };
-            let expr = expr.switcher(&change_expr);
-            let change_ty = |mac: Macro| {
-                if mac.path.is_ident("gen") {
-                    let ident = parse::<Ident>(mac.tokens.clone().into()).unwrap();
-                    let ty_or_expr = &generic_info
-                        .correspondence
-                        .iter()
-                        .find(|(ident2, _)| ident == *ident2)
-                        .unwrap()
-                        .1;
-                    ty_or_expr.to_token_stream()
-                } else {
-                    mac.to_token_stream()
-                }
-            };
-            let ty = ty.switcher(&change_ty);
-            let ret_ty = crate::parse_value::parse_value(ty, expr, &additional_data.into())?;
-
-            Ok(ret_ty)
-        } else {
-            panic!("failed to get_parsed_value");
-        }
-    }
-
-    pub fn get_parsed_values(
-        &self,
-        expr_arg: Expr,
-        generic_info: &GenericInfo,
-    ) -> Result<Vec<Type>> {
-        let ret = self
-            .macros
-            .iter()
-            .enumerate()
-            .map(|(num, _)| self.get_parsed_value(num, expr_arg.clone(), generic_info))
-            .collect::<Result<Vec<_>>>()?;
-        Ok(ret)
-    }
 }
 
 impl Parse for GenericsData {
@@ -200,13 +137,6 @@ impl Parse for GenericsData {
         let label = content.parse::<Label>()?;
         let _comma = content.parse::<Token![,]>()?;
         let const_fn = content.parse::<ItemFn>()?;
-        let (_comma2, macros) = match content.parse::<Token![,]>() {
-            Ok(comma) => (
-                Some(comma),
-                Punctuated::<Macro, Token![,]>::parse_terminated(&content)?,
-            ),
-            _ => (None, Punctuated::new()),
-        };
         input.advance_to(&input_try);
         Ok(Self {
             _at,
@@ -215,8 +145,6 @@ impl Parse for GenericsData {
             label,
             _comma,
             const_fn,
-            _comma2,
-            macros,
         })
     }
 }

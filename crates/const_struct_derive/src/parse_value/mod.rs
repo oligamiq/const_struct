@@ -48,6 +48,7 @@ impl AdditionData {
         self.get_changed_path(&path)
     }
 
+    #[allow(dead_code)]
     pub fn check_addition_data(&self, path: &Path) -> bool {
         self.data
             .iter()
