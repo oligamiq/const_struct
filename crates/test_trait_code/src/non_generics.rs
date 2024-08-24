@@ -1,4 +1,5 @@
 use crate::pre::PrimitiveTraits;
+use crate::pre::str_hash;
 
 #[derive(Debug)]
 pub struct TestStruct {
@@ -22,32 +23,16 @@ impl<U: PrimitiveTraits<DATATYPE = TestStruct>> TestStructTy for U {
 macro_rules! TestStruct {
     ($value:expr) => {
         HashBridge<{
-            const NAME_HASH: u64 = {
-                let str = stringify!($value);
-                let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
-                crc.checksum(str.as_bytes())
-            };
+            const NAME_HASH: u64 = str_hash(stringify!($value));
 
-            const FILE_HASH: u64 = {
-                let file_name = file!();
-                let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
-                crc.checksum(file_name.as_bytes())
-            };
-
-            impl PrimitiveTraits for HashBridge<NAME_HASH, FILE_HASH, {column!()}, {line!()}> {
+            impl PrimitiveTraits for HashBridge<NAME_HASH, {str_hash(file!())}, {column!()}, {line!()}> {
                 type DATATYPE = TestStruct;
                 const __DATA: Self::DATATYPE = $value;
             }
 
             NAME_HASH
         }, {
-            const FILE_HASH: u64 = {
-                let file_name = file!();
-                let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
-                crc.checksum(file_name.as_bytes())
-            };
-
-            FILE_HASH
+            str_hash(file!())
         }, {
             column!()
         }, {
