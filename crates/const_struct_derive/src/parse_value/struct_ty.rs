@@ -50,7 +50,8 @@ pub fn parse_value_struct_ty(
                     GenericParam::Const(const_param) => {
                         if const_param.ident == *ident {
                             if let TypeOrExpr::Expr(_) = type_or_expr {
-                                // println!("const_param: {:?}", type_or_expr);
+                                println!("const_param: {}", quote::quote! { #const_param });
+                                println!("type_or_expr: {}", quote::quote! { #type_or_expr });
                                 Some(type_or_expr)
                             } else {
                                 None
@@ -88,8 +89,13 @@ pub fn parse_value_struct_ty(
             }
             TypeOrExpr::Expr(inner_expr) => {
                 if let Expr::Infer(_) = inner_expr {
+                    // println!("num: {}", num);
+
                     let expr =
                         gen_get_const_generics(struct_data.const_fn.clone(), expr.clone(), num);
+
+                    // println!("expr: {}", quote::quote! { #expr });
+
                     if let Some(expr) = expr {
                         return GenericArgument::Const(expr);
                     } else {
@@ -98,10 +104,12 @@ pub fn parse_value_struct_ty(
                     }
                 }
 
-                GenericArgument::Const(expr.clone())
+                GenericArgument::Const(inner_expr.clone())
             }
         })
         .collect::<Vec<GenericArgument>>();
+
+    println!("gen_tys: {}", quote::quote! { #(#gen_tys),* });
 
     let head_ty: Type = parse_quote! {
         #struct_ident<#(#gen_tys),*>
