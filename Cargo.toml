@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/const_struct_derive", "crates/test_code", "crates/test_trait_code_old", "crates/test_trait_code", "crates/test_gen_code", "crates/const_struct", "crates/tests"]
+members = ["crates/const_struct_derive", "crates/test_code", "crates/test_trait_code_old_old", "crates/test_trait_code_old", "crates/test_trait_code", "crates/test_gen_code", "crates/const_struct", "crates/tests"]
 default-members = ["crates/const_struct_derive", "crates/const_struct", "crates/test_code"]
 
 [workspace.package]

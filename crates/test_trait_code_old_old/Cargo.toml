@@ -1,0 +1,10 @@
+[package]
+name = "test_trait_code_old_old"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+publish = false
+
+[package.metadata.release]
+release = false
