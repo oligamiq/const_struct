@@ -16,6 +16,16 @@ pub const fn str_hash(s: &str) -> u64 {
     crc.checksum(s.as_bytes())
 }
 
+#[macro_export]
+macro_rules! match_underscore {
+    (_, $tt_is_underscore:expr) => {
+        $tt_is_underscore
+    };
+    ($input:expr, $tt_is_underscore:expr) => {
+        $input
+    };
+}
+
 // Debug
 impl<const NAME_HASH: u64, const FILE_NAME_HASH: u64, const COLUMN: u32, const LINE: u32> core::fmt::Debug
     for HashBridge<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE>
