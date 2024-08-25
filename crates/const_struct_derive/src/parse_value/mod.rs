@@ -7,6 +7,7 @@ use parse::{discouraged::Speculative as _, Parse, ParseStream};
 use path::parse_value_path;
 use proc_macro2::{Span, TokenStream};
 use punctuated::Punctuated;
+use quote::ToTokens;
 use syn::*;
 use tuple::parse_value_tuple;
 
@@ -63,6 +64,13 @@ impl AdditionData {
                 let path = path.path.path();
                 path
             })
+    }
+}
+
+impl ToTokens for AdditionData {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let data = &self.data;
+        tokens.extend(quote::quote! { #(#data),* });
     }
 }
 

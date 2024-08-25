@@ -16,3 +16,11 @@ pub trait PrimitiveTraits {
     type DATATYPE;
     const __DATA: Self::DATATYPE;
 }
+
+#[derive(Debug)]
+pub struct HashBridge<
+    const NAME_HASH: u64,
+    const FILE_NAME_HASH: u64,
+    const COLUMN: u32,
+    const LINE: u32,
+>;

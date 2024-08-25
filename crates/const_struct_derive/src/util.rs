@@ -14,6 +14,18 @@ pub fn add_at_mark(ident: Ident) -> TokenStream {
     tokens
 }
 
+pub fn add_dollar_mark(ident: Ident) -> TokenStream {
+    let mut tokens = TokenStream::new();
+
+    // `$` をトークンとして追加
+    tokens.append(proc_macro2::Punct::new('$', Spacing::Joint));
+
+    // `ident` をトークンとして追加
+    tokens.extend(quote! { #ident });
+
+    tokens
+}
+
 // pub struct TestGenerics<const T: usize, S: Float> {
 //     s: S,
 // }
@@ -32,11 +44,29 @@ pub fn add_at_mark(ident: Ident) -> TokenStream {
 /// const fn get_const_generics_a<const A: usize, S: Float + Copy>(_: TestGenerics<A, S>) -> usize {
 ///     A
 /// }
+///
+/// get_const_generics_a($value)
 pub fn gen_get_const_generics(
     get_const_generics_fn_seed: ItemFn,
     value: Expr,
     num: usize,
 ) -> Option<Expr> {
+    let get_const_generics_fn_seed = gen_get_const_generics_inner(get_const_generics_fn_seed, num)?;
+    let fn_ident = get_const_generics_fn_seed.sig.ident.clone();
+
+    let expr: Expr = parse_quote!({
+        #get_const_generics_fn_seed
+
+        #fn_ident(#value)
+    });
+
+    Some(expr)
+}
+
+pub fn gen_get_const_generics_inner(
+    get_const_generics_fn_seed: ItemFn,
+    num: usize,
+) -> Option<ItemFn> {
     let mut get_const_generics_fn_seed = get_const_generics_fn_seed;
     let fn_ident = get_const_generics_fn_seed.sig.ident.clone();
 
@@ -63,11 +93,5 @@ pub fn gen_get_const_generics(
         None,
     )];
 
-    let expr: Expr = parse_quote!({
-        #get_const_generics_fn_seed
-
-        #fn_ident(#value)
-    });
-
-    Some(expr)
+    Some(get_const_generics_fn_seed)
 }
