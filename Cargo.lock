@@ -148,15 +148,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "test_trait_code_old"
-version = "0.3.1"
-dependencies = [
- "const_struct",
- "const_struct_derive",
- "paste",
-]
-
-[[package]]
 name = "test_trait_code_old_old"
 version = "0.3.1"
 

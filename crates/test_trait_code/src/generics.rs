@@ -16,7 +16,7 @@ pub struct TestStructWithFloatGenerics<const T: usize, S: Float> {
 }
 
 pub trait TestStructWithFloatGenericsTy<const T: usize, S: Float + Copy>:
-    PrimitiveTraits<DATATYPE = TestStructWithFloatGenerics<{ T }, S>>
+    PrimitiveTraits<DATATYPE = TestStructWithFloatGenerics<T, S>>
 {
     const TEST_DATA: Option<u32> = <Self as PrimitiveTraits>::__DATA.test_data;
     const TEST_DATA2: Option<Option<u32>> = <Self as PrimitiveTraits>::__DATA.test_data2;
@@ -27,10 +27,10 @@ pub trait TestStructWithFloatGenericsTy<const T: usize, S: Float + Copy>:
 }
 
 impl<
-        U: PrimitiveTraits<DATATYPE = TestStructWithFloatGenerics<{ T }, S>>,
+        U: PrimitiveTraits<DATATYPE = TestStructWithFloatGenerics<T, S>>,
         const T: usize,
         S: Float + Copy,
-    > TestStructWithFloatGenericsTy<{ T }, S> for U
+    > TestStructWithFloatGenericsTy<T, S> for U
 {
 }
 
