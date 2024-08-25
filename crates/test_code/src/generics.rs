@@ -20,8 +20,6 @@ pub fn tester_test_generics<const T: usize, S: Float + Copy + Debug, U: TestGene
     no_std_compat::println!("tester_test_generics: {:?}", U::__DATA);
 }
 
-// use _TestGenerics as TestGenerics;
-
 #[test]
 fn test_generics() {
     tester_test_generics::<7, f32, TestGenerics!(7, f32, TestGenerics { s: 0.0 })>();

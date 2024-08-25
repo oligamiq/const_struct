@@ -4,6 +4,7 @@ use crate::parse_value::AdditionData;
 use crate::util::add_at_mark;
 use crate::util::add_dollar_mark;
 use crate::util_macro::ConstOrType;
+use crate::util::gen_get_const_generics_inner;
 use convert_case::Casing;
 use convert_case::{Case, Casing as _};
 use parse::discouraged::Speculative as _;
@@ -231,7 +232,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     trait_impl.generics.params.extend(generics_with_copy.params);
     trait_impl.generics.where_clause = generics_with_copy.where_clause.clone();
 
-    println!("################# 1");
+    println!("### 1 ###");
 
     let name_with_get_generics_data = add_at_mark(format_ident!("{}GetGenericsData", name));
     let addition_data = &user_attrs.addition_data;
@@ -240,8 +241,6 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     );
     const_fn.vis = vis.clone();
     const_fn.sig.generics = generics.clone();
-
-    println!("################# 2");
 
     let generics_snake = generics
         .params
@@ -257,8 +256,6 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .map(|(ident, const_or_type)| (format_ident!("{}", ident.to_string().from_case(Case::UpperCamel).to_case(Case::Snake)), const_or_type))
         .collect::<Vec<_>>();
 
-    println!("################# 3");
-
     let mut macro_args = generics_snake.iter().map(|(ident, const_or_type)| {
         let ident_with_dollar = add_dollar_mark(ident.clone());
         match const_or_type {
@@ -268,44 +265,36 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     }).collect::<Punctuated<_, Token![,]>>();
     macro_args.push(quote! { $value: expr });
 
-    println!("################# 4");
-
     let hash_bridge = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::HashBridge });
     let str_hash = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::str_hash });
     let match_underscore_path = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::match_underscore });
 
-    println!("################# 5");
+    let gen_args = generics_snake
+        .iter()
+        .enumerate()
+        .map(|(num, (ident, const_or_type))| {
+            let ident_with_dollar = add_dollar_mark(ident.clone());
+            let arg = match const_or_type {
+                ConstOrType::Const => {
+                    let get_const_generics_fn_seed = gen_get_const_generics_inner(const_fn.clone(), num).unwrap();
+                    let fn_ident = get_const_generics_fn_seed.sig.ident.clone();
+                    quote! { {
+                        #match_underscore_path!(#ident_with_dollar, {
+                            #get_const_generics_fn_seed
 
-    let mut self_ty: Type = parse_quote! { #name };
-    match self_ty {
-        Type::Path(ref mut path) => {
-            println!("################# 6");
+                            #fn_ident($value)
+                        })
+                    }}
+                },
+                ConstOrType::Type => {
+                    quote! { #ident_with_dollar }
+                },
+            };
+            arg
+        })
+        .collect::<Punctuated<TokenStream, Token![,]>>();
 
-            let path = &mut path.path;
-            let last = path.segments.last_mut().unwrap();
-            last.arguments = PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                colon2_token: None,
-                args: generics_snake
-                    .iter()
-                    .map(|(ident, const_or_type)| {
-                        let ident_with_dollar = add_dollar_mark(ident.clone());
-                        let arg: GenericArgument = match const_or_type {
-                            ConstOrType::Const => {
-                                parse_quote! { #ident_with_dollar }
-                            },
-                            ConstOrType::Type => {
-                                parse_quote! { #ident_with_dollar }
-                            },
-                        };
-                        arg
-                    })
-                    .collect::<Punctuated<GenericArgument, Token![,]>>(),
-                lt_token: Default::default(),
-                gt_token: Default::default(),
-            });
-        }
-        _ => {}
-    }
+    println!("gen_args: {}", gen_args.to_token_stream());
 
     let macro_export = quote! {
         macro_rules! #name {
@@ -328,7 +317,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                     const NAME_HASH: u64 = #str_hash(stringify!($value));
 
                     impl #primitive_traits_path for #hash_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> {
-                        type DATATYPE = #self_ty;
+                        type DATATYPE = #name<#gen_args>;
                         const __DATA: Self::DATATYPE = {
                             $value
                         };
@@ -347,15 +336,21 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     };
     let macro_export = if user_attrs.macro_export {
         let name_with_underscore = format_ident!("_{name}");
-        let name_module = format_ident!("__{name}");
-        let mut use_: ItemUse = parse_quote!(use #name_module::#name as #name_with_underscore;);
-        use_.vis = vis.clone();
+        let name_module = format_ident!("__{}", name.to_string().to_case(Case::Snake));
+        let use_: ItemUse = parse_quote!(pub(crate) use #name as #name_with_underscore;);
+        let use_outer: ItemUse = parse_quote!(pub(crate) use #name_module::#name_with_underscore as #name;);
         quote! {
             pub mod #name_module {
                 #[macro_export]
                 #macro_export
+
+                #[doc(hidden)]
+                #[allow(unused_imports)]
+                #use_
             }
-            #use_
+            #[doc(hidden)]
+            #[allow(unused_imports)]
+            #use_outer
         }
     } else {
         macro_export

@@ -68,11 +68,11 @@ pub fn gen_get_const_generics_inner(
     num: usize,
 ) -> Option<ItemFn> {
     let mut get_const_generics_fn_seed = get_const_generics_fn_seed;
-    let fn_ident = get_const_generics_fn_seed.sig.ident.clone();
 
     let generics = get_const_generics_fn_seed.sig.generics.clone();
     let generics_arg = generics.params;
     let num_arg = generics_arg.get(num)?;
+
     let num_arg = match num_arg {
         GenericParam::Const(con) => con,
         _ => return None,
