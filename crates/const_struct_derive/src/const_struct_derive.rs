@@ -1,5 +1,6 @@
 use crate::ident::get_absolute_ident_path_from_ident;
 use crate::ident::AbsolutePathOrType;
+use crate::parse_value::AdditionData;
 use convert_case::{Case, Casing as _};
 use parse::discouraged::Speculative as _;
 use parse::{Parse, Parser};
@@ -145,9 +146,10 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .filter_map(|(num, param)| match param {
             GenericParam::Const(param) => {
                 let ty = &param.ty;
+                let keeptype = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::keeptype::KeepType });
                 let mut keep_type_impl: ItemImpl = parse_quote! {
                     #[automatically_derived]
-                    impl ::const_struct::keeptype::KeepType<#num> for #datatype {
+                    impl #keeptype<#num> for #datatype {
                         type Type = #ty;
                     }
                 };
@@ -231,12 +233,22 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 #[derive(Debug)]
 pub struct ConstStructAttr {
     macro_export: bool,
-    path_and_ident: Vec<PathAndIdent>,
+    addition_data: AdditionData,
 }
 
 impl ConstStructAttr {
     pub fn get_absolute_path(&self, path: &Path) -> AbsolutePathOrType {
-        Self::get_absolute_path_inner(path, &self.path_and_ident)
+        Self::get_absolute_path_inner(path, &self.addition_data.data)
+    }
+
+    pub fn get_absolute_path_path(&self, path: &Path) -> Path {
+        match self.get_absolute_path(path) {
+            AbsolutePathOrType::Path(path) => path.path(),
+            AbsolutePathOrType::Type(_) => {
+                eprintln!("error: expected path, found type");
+                unreachable!()
+            }
+        }
     }
 
     pub fn get_absolute_path_inner(
@@ -252,7 +264,7 @@ impl Default for ConstStructAttr {
     fn default() -> Self {
         Self {
             macro_export: false,
-            path_and_ident: vec![],
+            addition_data: Default::default(),
         }
     }
 }
@@ -270,9 +282,13 @@ pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<ConstStructAt
         .flat_map(|attr| register_ident_path(attr).unwrap_or_default())
         .collect::<Vec<_>>();
 
+    let addition_data = AdditionData {
+        data: path_and_ident,
+    };
+
     let attr = ConstStructAttr {
         macro_export: is_macro_export,
-        path_and_ident,
+        addition_data,
     };
 
     Ok(attr)
