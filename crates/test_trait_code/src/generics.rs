@@ -151,7 +151,11 @@ mod tests {
             ),
         >();
 
-        let c = call_with_generics!(caller::<
+        let c = call_with_generics!(
+            @AdditionData(
+                ::const_struct::call_with_generics: call_with_generics
+            ),
+            caller::<
             TestStructWithFloatGenerics!(
                 f32,
                 TestStructWithFloatGenerics {

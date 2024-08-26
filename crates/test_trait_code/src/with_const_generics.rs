@@ -36,7 +36,7 @@ macro_rules! TestStructWithGenerics {
                     ::const_struct::keeptype::KeepType: KeepType,
                     ::const_struct::keeptype::KeepTypeConst: KeepTypeConst,
                     ::const_struct::primitive::PrimitiveTraits: PrimitiveTraits,
-                    ::const_struct::str_hash: str_hash,
+                    ::const_struct::primitive::str_hash: str_hash,
                     ::const_struct::primitive::HashBridge: HashBridge,
                     ::const_struct::primitive::HashBridgeBridge: HashBridgeBridge,
                     F32: F32
@@ -141,7 +141,11 @@ mod tests {
             ),
         >();
 
-        let c = call_with_generics!(caller::<
+        let c = call_with_generics!(
+            @AdditionData(
+                ::const_struct::call_with_generics: call_with_generics
+            ),
+            caller::<
             TestStructWithGenerics!(TestStructWithGenerics {
                 test_data: Some(1),
                 test_data2: Some(Some(2)),
