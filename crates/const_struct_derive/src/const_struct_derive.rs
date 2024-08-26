@@ -3,8 +3,9 @@ use crate::ident::AbsolutePathOrType;
 use crate::parse_value::AdditionData;
 use crate::util::add_at_mark;
 use crate::util::add_dollar_mark;
-use crate::util::add_dollar_mark_inner;
+use crate::util::check_meta_path;
 use crate::util::gen_get_const_generics_inner;
+use crate::util::item_fn_with_meta;
 use crate::util_macro::ConstOrType;
 use convert_case::Case;
 use convert_case::Casing;
@@ -238,6 +239,8 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .extend(generics_with_copy.params.clone());
     trait_impl.generics.where_clause = generics_with_copy.where_clause.clone();
 
+
+
     // println!("### 1 ###");
 
     let name_with_get_generics_data = add_at_mark(format_ident!("{}GetGenericsData", name));
@@ -247,6 +250,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     );
     const_fn.vis = vis.clone();
     const_fn.sig.generics = generics_with_copy.clone();
+    let const_fn = item_fn_with_meta(const_fn);
 
     let generics_snake = generics
         .params
@@ -391,7 +395,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         }
     };
 
-    // println!("macro_export: {}", macro_export.to_token_stream());
+    println!("macro_export: {}", macro_export.to_token_stream());
 
     Ok(quote! {
         #(#keep_type_impls)*
@@ -423,16 +427,7 @@ impl ConstStructAttr {
     }
 
     pub fn get_absolute_path_meta_path(&self, path: &Path) -> TokenStream {
-        let path = self.get_absolute_path_path(path);
-        if let (None, Some(PathSegment { ident, arguments: PathArguments::None })) = (path.leading_colon, path.segments.first()) {
-            if ident == "crate" {
-                add_dollar_mark_inner(path.to_token_stream())
-            } else {
-                path.to_token_stream()
-            }
-        } else {
-            path.to_token_stream()
-        }
+        check_meta_path(&self.get_absolute_path_path(path))
     }
 
     pub fn get_absolute_path_inner(
