@@ -240,6 +240,7 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
                             // println!("###ty {}", ty.to_token_stream());
                             let item: ItemImpl = parse_quote! {
                                 #[automatically_derived]
+                                #[doc(hidden)]
                                 impl ::const_struct::keeptype::KeepType<#num> for #ty_name {
                                     type Type = #ty;
                                 }
@@ -252,6 +253,7 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
                             let input_ty = &input.ty;
                             let item: ItemImpl = parse_quote! {
                                 #[automatically_derived]
+                                #[doc(hidden)]
                                 impl ::const_struct::keeptype::KeepTypeConst<#num> for #ty_name {
                                     type DATATYPE = <#input_ty as ::const_struct::keeptype::KeepType<#num>>::Type;
                                     const N: Self::DATATYPE = { #con };
