@@ -25,23 +25,29 @@ macro_rules! PrimTraitBySizes {
                     const __DATA: <Self as PrimitiveTraits>::DATATYPE = unsafe { transmute::<$base, $name>(T) };
                 }
 
-                #[macro_export]
-                #[allow(clippy::useless_transmute)]
-                // https://qiita.com/to-omer/items/a52bb4775ed04effde79
-                macro_rules! [<$name:camel>] {
-                    ([@ <$name:camel> GetGenericsData], $macro_path: path, $dol($dol args:tt)*) => {
-                        $macro_path!([<$name:camel> GetGenericsData](), $dol($dol args)*)
-                    };
+                pub mod [<__ $name>] {
+                    #[macro_export]
+                    #[allow(clippy::useless_transmute)]
+                    // https://qiita.com/to-omer/items/a52bb4775ed04effde79
+                    macro_rules! [<$name:camel>] {
+                        ([@ <$name:camel> GetGenericsData], $macro_path: path, $dol($dol args:tt)*) => {
+                            $macro_path!([<$name:camel> GetGenericsData](), $dol($dol args)*)
+                        };
 
-                    ($value:expr) => {
-                        $crate::primitive::[<$name:camel Impl>]::<{ unsafe { core::mem::transmute::<$name, $base>($value) } }>
-                    };
+                        ($value:expr) => {
+                            $crate::primitive::[<$name:camel Impl>]::<{ unsafe { core::mem::transmute::<$name, $base>($value) } }>
+                        };
+                    }
+
+                    /// https://github.com/rust-lang/rust/pull/52234
+                    #[doc(hidden)] /** Not part of the public API */
+                    #[allow(unused_imports)]
+                    pub(crate) use [<$name:camel>] as [<_ $name:camel>];
                 }
 
-                /// https://github.com/rust-lang/rust/pull/52234
-                #[doc(hidden)] /** Not part of the public API */
+                #[doc(hidden)]
                 #[allow(unused_imports)]
-                pub(crate) use [<$name:camel>] as [<_ $name:camel>];
+                pub(crate) use [<__ $name>]::[<_ $name:camel>] as [<$name:camel>];
             }
         )*
     };
@@ -66,7 +72,7 @@ PrimTraitBySizes!(usize, usize, isize);
 
 #[cfg(test)]
 mod tests {
-    use crate::primitive::{F32Ty, U32Ty, _F32 as F32, _U32 as U32};
+    use crate::primitive::{F32Ty, U32Ty, F32, U32};
 
     pub const fn tester_inner<T: F32Ty>() -> f32 {
         T::VALUE

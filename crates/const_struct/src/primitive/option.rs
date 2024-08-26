@@ -56,7 +56,7 @@ macro_rules! None {
 
 #[cfg(test)]
 mod tests {
-    use crate::primitive::{F32Ty, U32Ty, _F32 as F32, _U32 as U32};
+    use crate::primitive::{F32Ty, U32Ty, F32, U32};
     use core::mem;
 
     use super::OptionTy;
