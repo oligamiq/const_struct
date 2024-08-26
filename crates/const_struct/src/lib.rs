@@ -1,4 +1,3 @@
-#![no_std]
 //! # const_struct
 //!
 //! This crate provides a way to create a struct with const generics and const values.
@@ -11,6 +10,12 @@
 //!     tester::<F32!(0.5)>();
 //! }
 //! ```
+//!
+//! This crate is no_std compatible.
+//! used unsafe code:
+//! * `core::mem::zeroed`
+//! * `core::mem::transmute`
+#![no_std]
 
 pub mod prelude;
 pub mod primitive;
