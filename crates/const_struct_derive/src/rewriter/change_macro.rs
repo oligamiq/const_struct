@@ -2011,7 +2011,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for TypeParamBound {
         match self {
             TypeParamBound::Trait(trait_bound) => {
                 let trait_bound = trait_bound.switcher(u);
-                return TypeParamBound::Trait(trait_bound);
+                TypeParamBound::Trait(trait_bound)
             }
             _ => self,
         }
@@ -2028,12 +2028,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for TraitBound {
             path,
         } = self;
         let path = path.switcher(u);
-        return TraitBound {
+        TraitBound {
             paren_token,
             modifier,
             lifetimes,
             path,
-        };
+        }
     }
 }
 
@@ -2055,7 +2055,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for TraitItem {
                 let ty = ty.switcher(u);
                 let default = default.switcher(u);
                 let generics = generics.switcher(u);
-                return TraitItem::Const(TraitItemConst {
+                TraitItem::Const(TraitItemConst {
                     attrs,
                     const_token,
                     ident,
@@ -2064,7 +2064,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for TraitItem {
                     default,
                     semi_token,
                     generics,
-                });
+                })
             }
             TraitItem::Macro(TraitItemMacro {
                 attrs,
@@ -2073,11 +2073,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for TraitItem {
             }) => {
                 let attrs = attrs.switcher(u);
                 let mac = u(mac);
-                return parse_quote! {
+                parse_quote! {
                     #( #attrs )*
                     #mac
                     #semi_token
-                };
+                }
             }
             TraitItem::Type(TraitItemType {
                 attrs,
@@ -2093,7 +2093,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for TraitItem {
                 let generics = generics.switcher(u);
                 let bounds = bounds.switcher(u);
                 let default = default.switcher(u);
-                return TraitItem::Type(TraitItemType {
+                TraitItem::Type(TraitItemType {
                     attrs,
                     type_token,
                     ident,
@@ -2102,10 +2102,10 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for TraitItem {
                     bounds,
                     default,
                     semi_token,
-                });
+                })
             }
             TraitItem::Verbatim(tts) => {
-                return TraitItem::Verbatim(tts);
+                TraitItem::Verbatim(tts)
             }
             TraitItem::Fn(TraitItemFn {
                 attrs,
@@ -2116,12 +2116,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for TraitItem {
                 let attrs = attrs.switcher(u);
                 let sig = sig.switcher(u);
                 let default = default.switcher(u);
-                return TraitItem::Fn(TraitItemFn {
+                TraitItem::Fn(TraitItemFn {
                     attrs,
                     sig,
                     default,
                     semi_token,
-                });
+                })
             }
             _ => unreachable!(),
         }
@@ -2133,7 +2133,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Block {
     fn switcher(self, u: &U) -> Self {
         let Block { brace_token, stmts } = self;
         let stmts = stmts.switcher(u);
-        return Block { brace_token, stmts };
+        Block { brace_token, stmts }
     }
 }
 
@@ -2148,12 +2148,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for FieldValue {
         } = self;
         let attrs = attrs.switcher(u);
         let expr = expr.switcher(u);
-        return FieldValue {
+        FieldValue {
             attrs,
             member,
             colon_token,
             expr,
-        };
+        }
     }
 }
 
@@ -2172,14 +2172,14 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Arm {
         let pat = pat.switcher(u);
         let guard = guard.switcher(u);
         let body = body.switcher(u);
-        return Arm {
+        Arm {
             attrs,
             pat,
             guard,
             fat_arrow_token,
             body,
             comma,
-        };
+        }
     }
 }
 
@@ -2199,11 +2199,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Attribute {
         //     }
         //     _ => meta,
         // };
-        return Attribute {
+        Attribute {
             pound_token,
             style,
             bracket_token,
             meta,
-        };
+        }
     }
 }
