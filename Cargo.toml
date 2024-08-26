@@ -1,11 +1,11 @@
 [workspace]
 resolver = "2"
 members = ["crates/const_struct_derive", "crates/test_code", "crates/test_trait_code_old_old", "crates/test_trait_code", "crates/test_gen_code", "crates/const_struct", "crates/tests"]
-default-members = ["crates/const_struct_derive", "crates/const_struct", "crates/test_code"]
+default-members = ["crates/const_struct_derive", "crates/const_struct", "crates/test_code", "crates/tests", "crates/test_trait_code", "crates/test_gen_code"]
 
 [workspace.package]
 authors = ["oligami <nziq53@gmail.com>"]
-version = "0.3.1"
+version = "0.4.0"
 edition = "2021"
 description = "macro that allows const structures to be passed as const generics"
 license = "MIT"
