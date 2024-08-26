@@ -161,6 +161,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                     .get_absolute_path_path(&parse_quote! { ::const_struct::keeptype::KeepType });
                 let mut keep_type_impl: ItemImpl = parse_quote! {
                     #[automatically_derived]
+                    #[doc(hidden)]
                     impl #keeptype<#num> for #datatype {
                         type Type = #ty;
                     }
