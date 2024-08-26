@@ -1,6 +1,5 @@
 use crate::pre::str_hash;
 use crate::pre::PrimitiveTraits;
-use const_struct::primitive::HashBridge;
 
 #[derive(Debug)]
 pub struct TestStruct {
@@ -24,9 +23,11 @@ macro_rules! TestStruct {
         HashBridge<{
             const NAME_HASH: u64 = str_hash(stringify!($value));
 
-            impl PrimitiveTraits for HashBridge<NAME_HASH, {str_hash(file!())}, {column!()}, {line!()}> {
-                type DATATYPE = TestStruct;
-                const __DATA: Self::DATATYPE = $value;
+            type T = TestStruct;
+
+            impl HashBridgeBridge<NAME_HASH, {str_hash(file!())}, {column!()}, {line!()}> for T {
+                type DATATYPE = T;
+                const DATA: Self::DATATYPE = $value;
             }
 
             NAME_HASH
@@ -36,13 +37,17 @@ macro_rules! TestStruct {
             column!()
         }, {
             line!()
-        }>
+        },
+        TestStruct
+        >
     };
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::hash_bridge::HashBridge;
 
     #[test]
     fn test() {

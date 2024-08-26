@@ -1,5 +1,3 @@
-use const_struct::primitive::HashBridge;
-
 pub trait PrimitiveTraits {
     type DATATYPE;
     const __DATA: Self::DATATYPE;

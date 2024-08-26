@@ -53,17 +53,19 @@ macro_rules! TestStructWithGenerics {
         HashBridge<{
             const NAME_HASH: u64 = str_hash(stringify!($value));
 
-            impl PrimitiveTraits for HashBridge<NAME_HASH, {str_hash(file!())}, {column!()}, {line!()}> {
-                type DATATYPE = TestStructWithGenerics<{
-                    match_underscore!($t, {
-                        const fn get_generic<const T: usize>(_: TestStructWithGenerics<{ T }>) -> usize {
-                            T
-                        }
+            type T = TestStructWithGenerics<{
+                match_underscore!($t, {
+                    const fn get_generic<const T: usize>(_: TestStructWithGenerics<{ T }>) -> usize {
+                        T
+                    }
 
-                        get_generic($value)
-                    })
-                }>;
-                const __DATA: Self::DATATYPE = $value;
+                    get_generic($value)
+                })
+            }>;
+
+            impl HashBridgeBridge<NAME_HASH, {str_hash(file!())}, {column!()}, {line!()}> for T {
+                type DATATYPE = T
+                const DATA: Self::DATATYPE = $value;
             }
 
             NAME_HASH
@@ -73,7 +75,17 @@ macro_rules! TestStructWithGenerics {
             column!()
         }, {
             line!()
+        },
+        TestStructWithGenerics<{
+            match_underscore!($t, {
+                const fn get_generic<const T: usize>(_: TestStructWithGenerics<{ T }>) -> usize {
+                    T
+                }
+
+                get_generic($value)
+            })
         }>
+        >
     };
 }
 
@@ -82,9 +94,10 @@ mod tests {
     use std::fmt::Debug;
 
     use const_struct_derive::call_with_generics;
-    use const_struct::primitive::HashBridge;
 
     use super::*;
+
+    use crate::hash_bridge::HashBridge;
 
     fn caller<const T: usize, U: TestStructWithGenericsTy<T> + Debug>() -> TestStructWithGenerics<T>
     {
