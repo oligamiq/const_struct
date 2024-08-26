@@ -372,6 +372,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         quote! {
             pub mod #name_module {
                 #[macro_export]
+                #[allow(unused_macros)]
                 #macro_export
 
                 #[doc(hidden)]
@@ -383,7 +384,10 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             #use_outer
         }
     } else {
-        macro_export
+        quote! {
+            #[allow(unused_macros)]
+            #macro_export
+        }
     };
 
     // println!("macro_export: {}", macro_export.to_token_stream());
