@@ -37,7 +37,8 @@ macro_rules! TestStructWithGenerics {
                     ::const_struct::keeptype::KeepTypeConst: KeepTypeConst,
                     ::const_struct::primitive::PrimitiveTraits: PrimitiveTraits,
                     ::const_struct::str_hash: str_hash,
-                    ::const_struct::HashBridge: HashBridge,
+                    ::const_struct::primitive::HashBridge: HashBridge,
+                    ::const_struct::primitive::HashBridgeBridge: HashBridgeBridge,
                     F32: F32
                 ),
                 @TestStructWithGenericsGetGenericsData(
@@ -64,7 +65,7 @@ macro_rules! TestStructWithGenerics {
             }>;
 
             impl HashBridgeBridge<NAME_HASH, {str_hash(file!())}, {column!()}, {line!()}> for T {
-                type DATATYPE = T
+                type DATATYPE = T;
                 const DATA: Self::DATATYPE = $value;
             }
 
@@ -97,7 +98,7 @@ mod tests {
 
     use super::*;
 
-    use crate::hash_bridge::HashBridge;
+    use crate::hash_bridge::{HashBridge, HashBridgeBridge};
 
     fn caller<const T: usize, U: TestStructWithGenericsTy<T> + Debug>() -> TestStructWithGenerics<T>
     {

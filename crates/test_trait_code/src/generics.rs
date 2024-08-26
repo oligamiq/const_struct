@@ -48,6 +48,7 @@ macro_rules! TestStructWithFloatGenerics {
                     ::const_struct::primitive::PrimitiveTraits: PrimitiveTraits,
                     ::const_struct::str_hash: str_hash,
                     ::const_struct::primitive::HashBridge: HashBridge,
+                    ::const_struct::primitive::HashBridgeBridge: HashBridgeBridge,
                     F32: F32
                 ),
                 @TestStructWithFloatGenericsGetGenericsData(

@@ -47,7 +47,7 @@ macro_rules! TestStruct {
 mod tests {
     use super::*;
 
-    use crate::hash_bridge::HashBridge;
+    use crate::hash_bridge::{HashBridge, HashBridgeBridge};
 
     #[test]
     fn test() {

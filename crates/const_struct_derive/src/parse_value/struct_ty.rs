@@ -124,7 +124,7 @@ pub fn parse_value_struct_ty(
     let hash_bridge_bridge = addition_data
         .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridgeBridge });
     let ty: Type = parse_quote! {
-        HashBridge<{
+        #hash_bridge<{
             const NAME_HASH: u64 = #str_hash(stringify!(#expr));
 
             type T = #head_ty;
