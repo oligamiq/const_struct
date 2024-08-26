@@ -22,7 +22,7 @@ pub fn tester_test_generics<const T: usize, S: Float + Copy + Debug, U: TestGene
 
 #[cfg(test)]
 pub mod test {
-    use super::{tester_test_generics, TestGenerics, BTy};
+    use super::{tester_test_generics, BTy, TestGenerics};
 
     #[test]
     fn test_generics() {
@@ -40,7 +40,6 @@ pub mod test {
         const_struct::call_with_generics!(tester_test_generics::<TestGenerics!(BTy)>());
         tester_test_generics::<7, f32, BTy>();
     }
-
 }
 
 #[cfg(test)]
@@ -61,8 +60,9 @@ pub mod test2 {
             super::TestGenerics!(f32, TestGenerics::<7, f32> { s: 0.0 }),
         >());
 
-        const_struct::call_with_generics!(tester_test_generics::<super::TestGenerics!(super::BTy)>());
+        const_struct::call_with_generics!(
+            tester_test_generics::<super::TestGenerics!(super::BTy)>()
+        );
         tester_test_generics::<7, f32, super::BTy>();
     }
-
 }
