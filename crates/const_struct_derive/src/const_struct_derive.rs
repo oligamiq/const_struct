@@ -395,7 +395,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         }
     };
 
-    println!("macro_export: {}", macro_export.to_token_stream());
+    // println!("macro_export: {}", macro_export.to_token_stream());
 
     Ok(quote! {
         #(#keep_type_impls)*
