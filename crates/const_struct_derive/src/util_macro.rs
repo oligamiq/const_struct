@@ -323,8 +323,8 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         add_at_mark(format_ident!("{macro_name}GetGenericsData"));
                     // println!("q1: {:#?}", get_generics_data);
                     let self_macro = mac.path.clone();
-                    let call_with_generics_path = addition_data
-                        .get_changed_path_from_quote(quote! {
+                    let call_with_generics_path =
+                        addition_data.get_changed_path_from_quote(quote! {
                             ::const_struct::call_with_generics
                         });
                     // println!("addition_data: {:#?}", addition_data);
@@ -409,13 +409,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
                 let type_num = const_or_type
                     .iter()
-                    .filter(|const_or_type| {
-                        if let ConstOrType::Type = const_or_type {
-                            true
-                        } else {
-                            false
-                        }
-                    })
+                    .filter(|const_or_type| matchs!(const_or_type, ConstOrType::Type))
                     .count();
                 let args_len = args.len();
                 let mut new_generic = if args_len == const_or_type.len() + 1 {
@@ -427,12 +421,10 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                             _ => {
                                 let str = arg.to_token_stream().to_string();
                                 // println!("str: {}", str);
-                                let generics = match parse_str::<GenericArgument>(&str) {
+                                match parse_str::<GenericArgument>(&str) {
                                     Ok(generics) => generics,
                                     Err(_) => panic!("failed to parse Argument"),
-                                };
-                                // println!("success: str");
-                                generics
+                                }
                             }
                         })
                         .collect::<Vec<GenericArgument>>()
@@ -451,11 +443,10 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                             if let ConstOrType::Type = const_or_type {
                                 let arg = args.next().unwrap();
                                 let str = arg.to_token_stream().to_string();
-                                let generics = match parse_str::<GenericArgument>(&str) {
+                                match parse_str::<GenericArgument>(&str) {
                                     Ok(generics) => generics,
                                     Err(_) => panic!("failed to parse Argument"),
-                                };
-                                generics
+                                }
                             } else {
                                 infer_process(num)
                             }

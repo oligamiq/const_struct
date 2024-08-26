@@ -16,13 +16,16 @@ pub struct TestGenerics<const T: usize, S: Float> {
 #[const_struct]
 const B: TestGenerics<7, f32> = TestGenerics { s: 0.0 };
 
-
 #[cfg(test)]
 pub mod test {
-    use super::{BTy, TestGenerics, TestGenericsTy, Float};
+    use super::{BTy, Float, TestGenerics, TestGenericsTy};
     use core::fmt::Debug;
 
-    pub fn tester_test_generics<const T: usize, S: Float + Copy + Debug, U: TestGenericsTy<T, S>>() {
+    pub fn tester_test_generics<
+        const T: usize,
+        S: Float + Copy + Debug,
+        U: TestGenericsTy<T, S>,
+    >() {
         no_std_compat::println!("tester_test_generics: {:?}", U::__DATA);
     }
 
@@ -46,10 +49,14 @@ pub mod test {
 
 #[cfg(test)]
 pub mod test2 {
-    use crate::generics::{TestGenerics, TestGenericsTy, Float};
+    use crate::generics::{Float, TestGenerics, TestGenericsTy};
     use core::fmt::Debug;
 
-    pub fn tester_test_generics<const T: usize, S: Float + Copy + Debug, U: TestGenericsTy<T, S>>() {
+    pub fn tester_test_generics<
+        const T: usize,
+        S: Float + Copy + Debug,
+        U: TestGenericsTy<T, S>,
+    >() {
         no_std_compat::println!("tester_test_generics: {:?}", U::__DATA);
     }
 

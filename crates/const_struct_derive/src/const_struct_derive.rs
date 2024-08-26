@@ -239,8 +239,6 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .extend(generics_with_copy.params.clone());
     trait_impl.generics.where_clause = generics_with_copy.where_clause.clone();
 
-
-
     // println!("### 1 ###");
 
     let name_with_get_generics_data = add_at_mark(format_ident!("{}GetGenericsData", name));
@@ -289,12 +287,12 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .collect::<Punctuated<_, Token![,]>>();
     macro_args.push(quote! { $value: expr });
 
-    let hash_bridge =
-        user_attrs.get_absolute_path_meta_path(&parse_quote! { ::const_struct::primitive::HashBridge });
+    let hash_bridge = user_attrs
+        .get_absolute_path_meta_path(&parse_quote! { ::const_struct::primitive::HashBridge });
     let hash_bridge_bridge = user_attrs
         .get_absolute_path_meta_path(&parse_quote! { ::const_struct::primitive::HashBridgeBridge });
-    let str_hash =
-        user_attrs.get_absolute_path_meta_path(&parse_quote! { ::const_struct::primitive::str_hash });
+    let str_hash = user_attrs
+        .get_absolute_path_meta_path(&parse_quote! { ::const_struct::primitive::str_hash });
     let match_underscore_path =
         user_attrs.get_absolute_path_meta_path(&parse_quote! { ::const_struct::match_underscore });
 
