@@ -11,7 +11,7 @@
 //! }
 //! ```
 //!
-//! This crate is no_std compatible.
+//! This crate is no_std.
 //! used unsafe code:
 //! * `core::mem::zeroed`
 //! * `core::mem::transmute`
