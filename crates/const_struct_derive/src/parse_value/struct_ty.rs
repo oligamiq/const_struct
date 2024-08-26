@@ -28,15 +28,15 @@ pub fn parse_value_struct_ty(
 
     let gen_tys = struct_data.get_generics_types();
 
-    println!("gen_tys: {}", quote::quote! { #(#gen_tys),* });
+    // println!("gen_tys: {}", quote::quote! { #(#gen_tys),* });
 
-    {
-        println!("info: ");
-        let info = &info.correspondence;
-        for (ident, type_or_expr) in info.iter() {
-            println!("{}: {}", ident, quote::quote! { #type_or_expr });
-        }
-    };
+    // {
+    //     println!("info: ");
+    //     let info = &info.correspondence;
+    //     for (ident, type_or_expr) in info.iter() {
+    //         println!("{}: {}", ident, quote::quote! { #type_or_expr });
+    //     }
+    // };
 
     let gen_tys = gen_tys
         .iter()
@@ -50,8 +50,8 @@ pub fn parse_value_struct_ty(
                     GenericParam::Const(const_param) => {
                         if const_param.ident == *ident {
                             if let TypeOrExpr::Expr(_) = type_or_expr {
-                                println!("const_param: {}", quote::quote! { #const_param });
-                                println!("type_or_expr: {}", quote::quote! { #type_or_expr });
+                                // println!("const_param: {}", quote::quote! { #const_param });
+                                // println!("type_or_expr: {}", quote::quote! { #type_or_expr });
                                 Some(type_or_expr)
                             } else {
                                 None
@@ -89,7 +89,7 @@ pub fn parse_value_struct_ty(
             }
             TypeOrExpr::Expr(inner_expr) => {
                 if let Expr::Infer(_) = inner_expr {
-                    println!("num: {}", num);
+                    // println!("num: {}", num);
 
                     let expr =
                         gen_get_const_generics(struct_data.const_fn.clone(), expr.clone(), num);
@@ -107,13 +107,13 @@ pub fn parse_value_struct_ty(
         })
         .collect::<Vec<GenericArgument>>();
 
-    println!("gen_tys: {}", quote::quote! { #(#gen_tys),* });
+    // println!("gen_tys: {}", quote::quote! { #(#gen_tys),* });
 
     let head_ty: Type = parse_quote! {
         #struct_ident<#(#gen_tys),*>
     };
 
-    println!("head_ty: {}", head_ty.to_token_stream());
+    // println!("head_ty: {}", head_ty.to_token_stream());
 
     let str_hash =
         addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::str_hash });

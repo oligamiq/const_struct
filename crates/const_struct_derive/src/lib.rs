@@ -104,11 +104,11 @@ pub fn const_compat(attr: RawTokenStream, item: RawTokenStream) -> RawTokenStrea
 // macro expansion ignores token `,` and any following rustc
 #[proc_macro]
 pub fn call_with_generics(input: RawTokenStream) -> RawTokenStream {
-    println!("call_with_generics input: {}", input.to_string());
+    // println!("call_with_generics input: {}", input.to_string());
     let output = util_macro::expand_call_fn_with_generics(input.into());
     match output {
         Ok(output) => {
-            println!("call_with_generics output: {}", output.to_token_stream());
+            // println!("call_with_generics output: {}", output.to_token_stream());
             output.into()
         }
 
@@ -121,7 +121,7 @@ pub fn parse_value(input: RawTokenStream) -> RawTokenStream {
     let output = parse_value::parse_value_wrapper(input.into());
     match output {
         Ok(output) => {
-            println!("parse_value output: {}", output.to_token_stream());
+            // println!("parse_value output: {}", output.to_token_stream());
             output.to_token_stream().into()
         }
 

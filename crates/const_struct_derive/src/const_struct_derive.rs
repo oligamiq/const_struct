@@ -232,7 +232,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     trait_impl.generics.params.extend(generics_with_copy.params.clone());
     trait_impl.generics.where_clause = generics_with_copy.where_clause.clone();
 
-    println!("### 1 ###");
+    // println!("### 1 ###");
 
     let name_with_get_generics_data = add_at_mark(format_ident!("{}GetGenericsData", name));
     let addition_data = &user_attrs.addition_data;
@@ -295,7 +295,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         })
         .collect::<Punctuated<TokenStream, Token![,]>>();
 
-    println!("gen_args: {}", gen_args.to_token_stream());
+    // println!("gen_args: {}", gen_args.to_token_stream());
 
     let macro_export = quote! {
         macro_rules! #name {
@@ -361,7 +361,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         macro_export
     };
 
-    println!("macro_export: {}", macro_export.to_token_stream());
+    // println!("macro_export: {}", macro_export.to_token_stream());
 
     Ok(quote! {
         #(#keep_type_impls)*
