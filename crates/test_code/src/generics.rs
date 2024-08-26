@@ -1,5 +1,6 @@
 use const_struct::{const_struct, ConstStruct};
 use core::fmt::Debug;
+use const_struct::call_with_generics;
 
 pub trait Float {}
 
@@ -23,4 +24,5 @@ pub fn tester_test_generics<const T: usize, S: Float + Copy + Debug, U: TestGene
 #[test]
 fn test_generics() {
     tester_test_generics::<7, f32, TestGenerics!(7, f32, TestGenerics { s: 0.0 })>();
+    call_with_generics!(tester_test_generics::<TestGenerics!(7, f32, TestGenerics { s: 0.0 })>());
 }

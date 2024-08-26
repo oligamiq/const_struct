@@ -299,7 +299,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
     let macro_export = quote! {
         macro_rules! #name {
-            (name_with_get_generics_data, $macro_path: path, $($arg:tt)*) => {
+            (#name_with_get_generics_data, $macro_path: path, $($arg:tt)*) => {
                 {
                     $macro_path!(
                         @AdditionData(

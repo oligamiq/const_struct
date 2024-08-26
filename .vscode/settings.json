@@ -14,5 +14,6 @@
         "turbofish",
         "usize"
     ],
-    "rust-analyzer.checkOnSave": true
+    "rust-analyzer.checkOnSave": true,
+    "editor.formatOnSave": false
 }
