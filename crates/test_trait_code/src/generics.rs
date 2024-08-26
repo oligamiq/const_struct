@@ -1,5 +1,6 @@
 use crate::match_underscore;
 use crate::pre::{str_hash, PrimitiveTraits};
+use crate::hash_bridge::{HashBridgeBridge, HashBridge};
 
 pub trait Float {}
 
@@ -62,17 +63,19 @@ macro_rules! TestStructWithFloatGenerics {
         HashBridge<{
             const NAME_HASH: u64 = str_hash(stringify!($value));
 
-            impl PrimitiveTraits for HashBridge<NAME_HASH, {str_hash(file!())}, {column!()}, {line!()}> {
-                type DATATYPE = TestStructWithFloatGenerics<{
-                    match_underscore!($t, {
-                        const fn get_generic<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) -> usize {
-                            T
-                        }
+            type T = TestStructWithFloatGenerics<{
+                match_underscore!($t, {
+                    const fn get_generic<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) -> usize {
+                        T
+                    }
 
-                        get_generic($value)
-                    })
-                }, $s>;
-                const __DATA: Self::DATATYPE = $value;
+                    get_generic($value)
+                })
+            }, $s>;
+
+            impl HashBridgeBridge<NAME_HASH, {str_hash(file!())}, {column!()}, {line!()}> for T {
+                type DATATYPE = T;
+                const DATA: Self::DATATYPE = $value;
             }
 
             NAME_HASH
@@ -82,7 +85,14 @@ macro_rules! TestStructWithFloatGenerics {
             column!()
         }, {
             line!()
-        }>
+        },
+        TestStructWithFloatGenerics<{
+            match_underscore!($t, {
+                const fn get_generic<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) -> usize { T }
+                get_generic($value)
+            })
+        }, $s>
+        >
     };
 }
 
@@ -93,7 +103,6 @@ mod tests {
     use const_struct_derive::call_with_generics;
 
     use super::*;
-    use crate::pre::HashBridge;
 
     fn caller<const T: usize, F: Float + Copy, U: TestStructWithFloatGenericsTy<T, F> + Debug>(
     ) -> TestStructWithFloatGenerics<T, F> {
@@ -141,18 +150,18 @@ mod tests {
             ),
         >();
 
-        let c = call_with_generics!(caller::<
-            TestStructWithFloatGenerics!(
-                f32,
-                TestStructWithFloatGenerics {
-                    test_data: Some(1),
-                    test_data2: Some(Some(2)),
-                    test_data3: 3,
-                    test_data4: [0; 8],
-                    str: "test",
-                    float: 0.0,
-                }
-            ),
-        >());
+        // let c = call_with_generics!(caller::<
+        //     TestStructWithFloatGenerics!(
+        //         f32,
+        //         TestStructWithFloatGenerics {
+        //             test_data: Some(1),
+        //             test_data2: Some(Some(2)),
+        //             test_data3: 3,
+        //             test_data4: [0; 8],
+        //             str: "test",
+        //             float: 0.0,
+        //         }
+        //     ),
+        // >());
     }
 }

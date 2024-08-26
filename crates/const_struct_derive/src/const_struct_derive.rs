@@ -266,7 +266,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     macro_args.push(quote! { $value: expr });
 
     let hash_bridge = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::HashBridge });
-    let str_hash = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::str_hash });
+    let str_hash = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::str_hash });
     let match_underscore_path = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::match_underscore });
 
     let gen_args = generics_snake

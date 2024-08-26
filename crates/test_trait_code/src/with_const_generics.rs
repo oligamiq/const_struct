@@ -82,9 +82,9 @@ mod tests {
     use std::fmt::Debug;
 
     use const_struct_derive::call_with_generics;
+    use const_struct::primitive::HashBridge;
 
     use super::*;
-    use crate::pre::HashBridge;
 
     fn caller<const T: usize, U: TestStructWithGenericsTy<T> + Debug>() -> TestStructWithGenerics<T>
     {

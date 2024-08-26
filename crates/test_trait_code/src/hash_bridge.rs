@@ -1,21 +1,4 @@
-pub mod primitive_ty;
-pub use primitive_ty::*;
-pub mod option;
-pub use option::*;
-pub mod tuple;
-pub use tuple::*;
-pub mod unit;
-pub use unit::*;
-pub mod enum_ty;
-pub use enum_ty::*;
-pub mod struct_ty;
-pub use struct_ty::*;
-pub mod array;
-
-pub trait PrimitiveTraits {
-    type DATATYPE;
-    const __DATA: Self::DATATYPE;
-}
+use crate::pre::PrimitiveTraits;
 
 pub struct HashBridge<
     const NAME_HASH: u64,
@@ -67,7 +50,7 @@ pub const fn str_hash(s: &str) -> u64 {
     crc.checksum(s.as_bytes())
 }
 
-pub trait HashBridgeTy<
+pub trait HashBridgeBridge<
     const NAME_HASH: u64,
     const FILE_NAME_HASH: u64,
     const COLUMN: u32,
@@ -77,7 +60,7 @@ pub trait HashBridgeTy<
     const DATA: Self::DATATYPE;
 }
 
-impl<U: HashBridgeTy<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE>, const NAME_HASH: u64, const FILE_NAME_HASH: u64, const COLUMN: u32, const LINE: u32> PrimitiveTraits for HashBridge<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE, U> {
+impl<U: HashBridgeBridge<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE>, const NAME_HASH: u64, const FILE_NAME_HASH: u64, const COLUMN: u32, const LINE: u32> PrimitiveTraits for HashBridge<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE, U> {
     type DATATYPE = U::DATATYPE;
     const __DATA: Self::DATATYPE = U::DATA;
 }

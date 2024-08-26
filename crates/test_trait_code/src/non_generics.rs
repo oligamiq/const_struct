@@ -1,5 +1,6 @@
 use crate::pre::str_hash;
 use crate::pre::PrimitiveTraits;
+use const_struct::primitive::HashBridge;
 
 #[derive(Debug)]
 pub struct TestStruct {
@@ -42,7 +43,6 @@ macro_rules! TestStruct {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pre::HashBridge;
 
     #[test]
     fn test() {

@@ -22,5 +22,39 @@ pub fn tester_test_generics<const T: usize, S: Float + Copy + Debug, U: TestGene
 
 #[test]
 fn test_generics() {
-    tester_test_generics::<7, f32, TestGenerics!(7, f32, TestGenerics { s: 0.0 })>();
+    // tester_test_generics::<7, f32, TestGenerics!(7, f32, TestGenerics { s: 0.0 })>();
+
+    tester_test_generics::<
+    7,
+    f32,
+    ::const_struct::primitive::HashBridge<
+        {
+            const NAME_HASH: u64 = ::const_struct::primitive::str_hash(
+                "TestGenerics { s: 0.0 }",
+            );
+            impl ::const_struct::PrimitiveTraits
+            for ::const_struct::primitive::HashBridge<
+                NAME_HASH,
+                {
+                    ::const_struct::primitive::str_hash(
+                        "crates\\test_code\\src\\generics.rs",
+                    )
+                },
+                { 36u32 },
+                { 25u32 },
+            > {
+                type DATATYPE = TestGenerics<{ 7 }, f32>;
+                const __DATA: Self::DATATYPE = { TestGenerics { s: 0.0 } };
+            }
+            NAME_HASH
+        },
+        {
+            ::const_struct::primitive::str_hash(
+                "crates\\test_code\\src\\generics.rs",
+            )
+        },
+        { 36u32 },
+        { 25u32 },
+        >,
+    >();
 }
