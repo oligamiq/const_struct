@@ -3,6 +3,7 @@ use crate::ident::AbsolutePathOrType;
 use crate::parse_value::AdditionData;
 use crate::util::add_at_mark;
 use crate::util::add_dollar_mark;
+use crate::util::add_dollar_mark_inner;
 use crate::util::gen_get_const_generics_inner;
 use crate::util_macro::ConstOrType;
 use convert_case::Case;
@@ -285,13 +286,13 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     macro_args.push(quote! { $value: expr });
 
     let hash_bridge =
-        user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::HashBridge });
+        user_attrs.get_absolute_path_meta_path(&parse_quote! { ::const_struct::primitive::HashBridge });
     let hash_bridge_bridge = user_attrs
-        .get_absolute_path_path(&parse_quote! { ::const_struct::primitive::HashBridgeBridge });
+        .get_absolute_path_meta_path(&parse_quote! { ::const_struct::primitive::HashBridgeBridge });
     let str_hash =
-        user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::str_hash });
+        user_attrs.get_absolute_path_meta_path(&parse_quote! { ::const_struct::primitive::str_hash });
     let match_underscore_path =
-        user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::match_underscore });
+        user_attrs.get_absolute_path_meta_path(&parse_quote! { ::const_struct::match_underscore });
 
     let gen_args = generics_snake
         .iter()
@@ -418,6 +419,19 @@ impl ConstStructAttr {
                 eprintln!("error: expected path, found type");
                 unreachable!()
             }
+        }
+    }
+
+    pub fn get_absolute_path_meta_path(&self, path: &Path) -> TokenStream {
+        let path = self.get_absolute_path_path(path);
+        if let (None, Some(PathSegment { ident, arguments: PathArguments::None })) = (path.leading_colon, path.segments.first()) {
+            if ident == "crate" {
+                add_dollar_mark_inner(path.to_token_stream())
+            } else {
+                path.to_token_stream()
+            }
+        } else {
+            path.to_token_stream()
         }
     }
 
