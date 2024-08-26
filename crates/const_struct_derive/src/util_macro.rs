@@ -323,10 +323,10 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         add_at_mark(format_ident!("{macro_name}GetGenericsData"));
                     // println!("q1: {:#?}", get_generics_data);
                     let self_macro = mac.path.clone();
-                    // let q = quote! { #self_macro!(#get_generics_data, ::const_struct_derive::call_with_generics, #input) };
+                    // let q = quote! { #self_macro!(#get_generics_data, ::const_struct::call_with_generics, #input) };
                     // println!("q: {}", q);
                     return Ok(
-                        quote! { #self_macro!(#get_generics_data, ::const_struct_derive::call_with_generics, #input) }.into(),
+                        quote! { #self_macro!(#get_generics_data, ::const_struct::call_with_generics, #input) }.into(),
                     );
                 }
                 let define_data = define_data.as_ref().unwrap();
