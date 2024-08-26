@@ -301,7 +301,8 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .enumerate()
         .map(|(num, (ident, const_or_type))| {
             let ident_with_dollar = add_dollar_mark(ident.clone());
-            let arg = match const_or_type {
+            
+            match const_or_type {
                 ConstOrType::Const => {
                     let get_const_generics_fn_seed =
                         gen_get_const_generics_inner(const_fn.clone(), num).unwrap();
@@ -317,8 +318,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                 ConstOrType::Type => {
                     quote! { #ident_with_dollar }
                 }
-            };
-            arg
+            }
         })
         .collect::<Punctuated<TokenStream, Token![,]>>();
 
@@ -404,6 +404,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 }
 
 #[derive(Debug)]
+#[derive(Default)]
 pub struct ConstStructAttr {
     macro_export: bool,
     addition_data: AdditionData,
@@ -437,14 +438,6 @@ impl ConstStructAttr {
     }
 }
 
-impl Default for ConstStructAttr {
-    fn default() -> Self {
-        Self {
-            macro_export: false,
-            addition_data: Default::default(),
-        }
-    }
-}
 
 pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<ConstStructAttr> {
     let attr = input

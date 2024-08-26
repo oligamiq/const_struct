@@ -28,10 +28,7 @@ impl<U: Fn(Macro) -> TokenStream, T: Switcher<U>> Switcher<U> for Vec<T> {
 /// Option
 impl<U: Fn(Macro) -> TokenStream, T: Switcher<U>> Switcher<U> for Option<T> {
     fn switcher(self, u: &U) -> Self {
-        match self {
-            Some(item) => Some(item.switcher(u)),
-            None => None,
-        }
+        self.map(|item| item.switcher(u))
     }
 }
 
@@ -61,12 +58,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Type {
             }) => {
                 let elem = elem.switcher(u);
                 let len = len.switcher(u);
-                return Type::Array(TypeArray {
+                Type::Array(TypeArray {
                     elem,
                     len,
                     bracket_token,
                     semi_token,
-                });
+                })
             }
             Type::BareFn(TypeBareFn {
                 lifetimes,
@@ -80,7 +77,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Type {
             }) => {
                 let inputs = inputs.switcher(u);
                 let output = output.switcher(u);
-                return Type::BareFn(TypeBareFn {
+                Type::BareFn(TypeBareFn {
                     lifetimes,
                     inputs,
                     output,
@@ -89,27 +86,27 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Type {
                     abi,
                     paren_token,
                     variadic,
-                });
+                })
             }
             Type::Group(TypeGroup { elem, group_token }) => {
                 let elem = elem.switcher(u);
-                return Type::Group(TypeGroup { elem, group_token });
+                Type::Group(TypeGroup { elem, group_token })
             }
             Type::ImplTrait(TypeImplTrait { bounds, impl_token }) => {
                 let bounds = bounds.switcher(u);
-                return Type::ImplTrait(TypeImplTrait { bounds, impl_token });
+                Type::ImplTrait(TypeImplTrait { bounds, impl_token })
             }
             Type::Macro(TypeMacro { mac, .. }) => {
                 let mac = u(mac);
-                return parse_quote! { #mac };
+                parse_quote! { #mac }
             }
             Type::Paren(TypeParen { elem, paren_token }) => {
                 let elem = elem.switcher(u);
-                return Type::Paren(TypeParen { elem, paren_token });
+                Type::Paren(TypeParen { elem, paren_token })
             }
             Type::Path(TypePath { qself, path }) => {
                 let path = path.switcher(u);
-                return Type::Path(TypePath { qself, path });
+                Type::Path(TypePath { qself, path })
             }
             Type::Ptr(TypePtr {
                 elem,
@@ -118,12 +115,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Type {
                 const_token,
             }) => {
                 let elem = elem.switcher(u);
-                return Type::Ptr(TypePtr {
+                Type::Ptr(TypePtr {
                     elem,
                     mutability,
                     star_token,
                     const_token,
-                });
+                })
             }
             Type::Reference(TypeReference {
                 elem,
@@ -132,36 +129,36 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Type {
                 and_token,
             }) => {
                 let elem = elem.switcher(u);
-                return Type::Reference(TypeReference {
+                Type::Reference(TypeReference {
                     elem,
                     lifetime,
                     mutability,
                     and_token,
-                });
+                })
             }
             Type::Slice(TypeSlice {
                 elem,
                 bracket_token,
             }) => {
                 let elem = elem.switcher(u);
-                return Type::Slice(TypeSlice {
+                Type::Slice(TypeSlice {
                     elem,
                     bracket_token,
-                });
+                })
             }
             Type::TraitObject(TypeTraitObject { bounds, dyn_token }) => {
                 let bounds = bounds.switcher(u);
-                return Type::TraitObject(TypeTraitObject { bounds, dyn_token });
+                Type::TraitObject(TypeTraitObject { bounds, dyn_token })
             }
             Type::Tuple(TypeTuple { elems, paren_token }) => {
                 let elems = elems.switcher(u);
-                return Type::Tuple(TypeTuple { elems, paren_token });
+                Type::Tuple(TypeTuple { elems, paren_token })
             }
-            Type::Infer(_) => return self,
-            Type::Never(_) => return self,
-            Type::Verbatim(_) => return self,
+            Type::Infer(_) => self,
+            Type::Never(_) => self,
+            Type::Verbatim(_) => self,
             _ => unreachable!(),
-        };
+        }
     }
 }
 
@@ -176,11 +173,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let elems = elems.switcher(u);
-                return Expr::Array(ExprArray {
+                Expr::Array(ExprArray {
                     attrs,
                     bracket_token,
                     elems,
-                });
+                })
             }
             Expr::Assign(ExprAssign {
                 attrs,
@@ -191,12 +188,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let attrs = attrs.switcher(u);
                 let left = left.switcher(u);
                 let right = right.switcher(u);
-                return Expr::Assign(ExprAssign {
+                Expr::Assign(ExprAssign {
                     attrs,
                     left,
                     eq_token,
                     right,
-                });
+                })
             }
             Expr::Async(ExprAsync {
                 attrs,
@@ -206,12 +203,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let block = block.switcher(u);
-                return Expr::Async(ExprAsync {
+                Expr::Async(ExprAsync {
                     attrs,
                     async_token,
                     block,
                     capture,
-                });
+                })
             }
             Expr::Await(ExprAwait {
                 attrs,
@@ -221,12 +218,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let base = base.switcher(u);
-                return Expr::Await(ExprAwait {
+                Expr::Await(ExprAwait {
                     attrs,
                     base,
                     dot_token,
                     await_token,
-                });
+                })
             }
             Expr::Binary(ExprBinary {
                 attrs,
@@ -237,12 +234,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let attrs = attrs.switcher(u);
                 let left = left.switcher(u);
                 let right = right.switcher(u);
-                return Expr::Binary(ExprBinary {
+                Expr::Binary(ExprBinary {
                     attrs,
                     left,
                     op,
                     right,
-                });
+                })
             }
             Expr::Block(ExprBlock {
                 attrs,
@@ -251,11 +248,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let block = block.switcher(u);
-                return Expr::Block(ExprBlock {
+                Expr::Block(ExprBlock {
                     attrs,
                     block,
                     label,
-                });
+                })
             }
             Expr::Break(ExprBreak {
                 attrs,
@@ -265,12 +262,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
-                return Expr::Break(ExprBreak {
+                Expr::Break(ExprBreak {
                     attrs,
                     break_token,
                     label,
                     expr,
-                });
+                })
             }
             Expr::Call(ExprCall {
                 attrs,
@@ -281,12 +278,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let attrs = attrs.switcher(u);
                 let func = func.switcher(u);
                 let args = args.switcher(u);
-                return Expr::Call(ExprCall {
+                Expr::Call(ExprCall {
                     attrs,
                     func,
                     args,
                     paren_token,
-                });
+                })
             }
             Expr::Cast(ExprCast {
                 attrs,
@@ -297,12 +294,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
                 let ty = ty.switcher(u);
-                return Expr::Cast(ExprCast {
+                Expr::Cast(ExprCast {
                     attrs,
                     expr,
                     as_token,
                     ty,
-                });
+                })
             }
             Expr::Closure(ExprClosure {
                 attrs,
@@ -321,7 +318,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let inputs = inputs.switcher(u);
                 let output = output.switcher(u);
                 let body = body.switcher(u);
-                return Expr::Closure(ExprClosure {
+                Expr::Closure(ExprClosure {
                     attrs,
                     asyncness,
                     movability,
@@ -333,7 +330,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                     body,
                     lifetimes,
                     constness,
-                });
+                })
             }
             Expr::Continue(ExprContinue {
                 attrs,
@@ -341,11 +338,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 label,
             }) => {
                 let attrs = attrs.switcher(u);
-                return Expr::Continue(ExprContinue {
+                Expr::Continue(ExprContinue {
                     attrs,
                     continue_token,
                     label,
-                });
+                })
             }
             Expr::Field(ExprField {
                 attrs,
@@ -355,12 +352,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let base = base.switcher(u);
-                return Expr::Field(ExprField {
+                Expr::Field(ExprField {
                     attrs,
                     base,
                     dot_token,
                     member,
-                });
+                })
             }
             Expr::ForLoop(ExprForLoop {
                 attrs,
@@ -375,7 +372,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let pat = pat.switcher(u);
                 let expr = expr.switcher(u);
                 let body = body.switcher(u);
-                return Expr::ForLoop(ExprForLoop {
+                Expr::ForLoop(ExprForLoop {
                     attrs,
                     label,
                     for_token,
@@ -383,7 +380,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                     in_token,
                     expr,
                     body,
-                });
+                })
             }
             Expr::Group(ExprGroup {
                 attrs,
@@ -392,11 +389,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
-                return Expr::Group(ExprGroup {
+                Expr::Group(ExprGroup {
                     attrs,
                     group_token,
                     expr,
-                });
+                })
             }
             Expr::If(ExprIf {
                 attrs,
@@ -409,13 +406,13 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let cond = cond.switcher(u);
                 let then_branch = then_branch.switcher(u);
                 let else_branch = else_branch.switcher(u);
-                return Expr::If(ExprIf {
+                Expr::If(ExprIf {
                     attrs,
                     if_token,
                     cond,
                     then_branch,
                     else_branch,
-                });
+                })
             }
             Expr::Index(ExprIndex {
                 attrs,
@@ -426,12 +423,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
                 let index = index.switcher(u);
-                return Expr::Index(ExprIndex {
+                Expr::Index(ExprIndex {
                     attrs,
                     expr,
                     bracket_token,
                     index,
-                });
+                })
             }
             Expr::Let(ExprLet {
                 attrs,
@@ -443,17 +440,17 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let attrs = attrs.switcher(u);
                 let pat = pat.switcher(u);
                 let expr = expr.switcher(u);
-                return Expr::Let(ExprLet {
+                Expr::Let(ExprLet {
                     attrs,
                     let_token,
                     pat,
                     eq_token,
                     expr,
-                });
+                })
             }
             Expr::Lit(ExprLit { attrs, lit }) => {
                 let attrs = attrs.switcher(u);
-                return Expr::Lit(ExprLit { attrs, lit });
+                Expr::Lit(ExprLit { attrs, lit })
             }
             Expr::Loop(ExprLoop {
                 attrs,
@@ -463,16 +460,16 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let body = body.switcher(u);
-                return Expr::Loop(ExprLoop {
+                Expr::Loop(ExprLoop {
                     attrs,
                     label,
                     loop_token,
                     body,
-                });
+                })
             }
             Expr::Macro(ExprMacro { mac, .. }) => {
                 let mac = u(mac);
-                return parse_quote! { #mac };
+                parse_quote! { #mac }
             }
             Expr::Match(ExprMatch {
                 attrs,
@@ -484,13 +481,13 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
                 let arms = arms.switcher(u);
-                return Expr::Match(ExprMatch {
+                Expr::Match(ExprMatch {
                     attrs,
                     match_token,
                     expr,
                     brace_token,
                     arms,
-                });
+                })
             }
             Expr::MethodCall(ExprMethodCall {
                 attrs,
@@ -504,7 +501,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let attrs = attrs.switcher(u);
                 let receiver = receiver.switcher(u);
                 let args = args.switcher(u);
-                return Expr::MethodCall(ExprMethodCall {
+                Expr::MethodCall(ExprMethodCall {
                     attrs,
                     receiver,
                     dot_token,
@@ -512,7 +509,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                     turbofish,
                     paren_token,
                     args,
-                });
+                })
             }
             Expr::Paren(ExprParen {
                 attrs,
@@ -521,16 +518,16 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
-                return Expr::Paren(ExprParen {
+                Expr::Paren(ExprParen {
                     attrs,
                     paren_token,
                     expr,
-                });
+                })
             }
             Expr::Path(ExprPath { attrs, path, qself }) => {
                 let attrs = attrs.switcher(u);
                 let path = path.switcher(u);
-                return Expr::Path(ExprPath { attrs, path, qself });
+                Expr::Path(ExprPath { attrs, path, qself })
             }
             Expr::Range(ExprRange {
                 attrs,
@@ -541,12 +538,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let attrs = attrs.switcher(u);
                 let start = start.switcher(u);
                 let end = end.switcher(u);
-                return Expr::Range(ExprRange {
+                Expr::Range(ExprRange {
                     attrs,
                     limits,
                     start,
                     end,
-                });
+                })
             }
             Expr::Reference(ExprReference {
                 attrs,
@@ -556,12 +553,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
-                return Expr::Reference(ExprReference {
+                Expr::Reference(ExprReference {
                     attrs,
                     and_token,
                     mutability,
                     expr,
-                });
+                })
             }
             Expr::Repeat(ExprRepeat {
                 attrs,
@@ -573,13 +570,13 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
                 let len = len.switcher(u);
-                return Expr::Repeat(ExprRepeat {
+                Expr::Repeat(ExprRepeat {
                     attrs,
                     bracket_token,
                     expr,
                     semi_token,
                     len,
-                });
+                })
             }
             Expr::Return(ExprReturn {
                 attrs,
@@ -588,11 +585,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
-                return Expr::Return(ExprReturn {
+                Expr::Return(ExprReturn {
                     attrs,
                     return_token,
                     expr,
-                });
+                })
             }
             Expr::Struct(ExprStruct {
                 attrs,
@@ -607,7 +604,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let path = path.switcher(u);
                 let fields = fields.switcher(u);
                 let rest = rest.switcher(u);
-                return Expr::Struct(ExprStruct {
+                Expr::Struct(ExprStruct {
                     attrs,
                     path,
                     brace_token,
@@ -615,7 +612,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                     dot2_token,
                     rest,
                     qself,
-                });
+                })
             }
             Expr::Try(ExprTry {
                 attrs,
@@ -624,11 +621,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
-                return Expr::Try(ExprTry {
+                Expr::Try(ExprTry {
                     attrs,
                     expr,
                     question_token,
-                });
+                })
             }
             Expr::TryBlock(ExprTryBlock {
                 attrs,
@@ -637,11 +634,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let block = block.switcher(u);
-                return Expr::TryBlock(ExprTryBlock {
+                Expr::TryBlock(ExprTryBlock {
                     attrs,
                     try_token,
                     block,
-                });
+                })
             }
             Expr::Tuple(ExprTuple {
                 attrs,
@@ -650,16 +647,16 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let elems = elems.switcher(u);
-                return Expr::Tuple(ExprTuple {
+                Expr::Tuple(ExprTuple {
                     attrs,
                     paren_token,
                     elems,
-                });
+                })
             }
             Expr::Unary(ExprUnary { attrs, op, expr }) => {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
-                return Expr::Unary(ExprUnary { attrs, op, expr });
+                Expr::Unary(ExprUnary { attrs, op, expr })
             }
             Expr::Unsafe(ExprUnsafe {
                 attrs,
@@ -668,14 +665,14 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let block = block.switcher(u);
-                return Expr::Unsafe(ExprUnsafe {
+                Expr::Unsafe(ExprUnsafe {
                     attrs,
                     unsafe_token,
                     block,
-                });
+                })
             }
             Expr::Verbatim(tts) => {
-                return Expr::Verbatim(tts);
+                Expr::Verbatim(tts)
             }
             Expr::While(ExprWhile {
                 attrs,
@@ -687,13 +684,13 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 let attrs = attrs.switcher(u);
                 let cond = cond.switcher(u);
                 let body = body.switcher(u);
-                return Expr::While(ExprWhile {
+                Expr::While(ExprWhile {
                     attrs,
                     label,
                     while_token,
                     cond,
                     body,
-                });
+                })
             }
             Expr::Yield(ExprYield {
                 attrs,
@@ -702,16 +699,16 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
             }) => {
                 let attrs = attrs.switcher(u);
                 let expr = expr.switcher(u);
-                return Expr::Yield(ExprYield {
+                Expr::Yield(ExprYield {
                     attrs,
                     yield_token,
                     expr,
-                });
+                })
             }
-            Expr::Const(_) => return self,
-            Expr::Infer(_) => return self,
+            Expr::Const(_) => self,
+            Expr::Infer(_) => self,
             _ => unreachable!(),
-        };
+        }
     }
 }
 
@@ -721,7 +718,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
         match self {
             Pat::Macro(PatMacro { mac, .. }) => {
                 let mac = u(mac);
-                return parse_quote! { #mac };
+                parse_quote! { #mac }
             }
             Pat::Const(PatConst {
                 attrs,
@@ -730,11 +727,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
             }) => {
                 let attrs = attrs.switcher(u);
                 let block = block.switcher(u);
-                return Pat::Const(PatConst {
+                Pat::Const(PatConst {
                     attrs,
                     const_token,
                     block,
-                });
+                })
             }
             Pat::Ident(PatIdent {
                 attrs,
@@ -745,18 +742,18 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
             }) => {
                 let attrs = attrs.switcher(u);
                 let subpat = subpat.switcher(u);
-                return Pat::Ident(PatIdent {
+                Pat::Ident(PatIdent {
                     attrs,
                     by_ref,
                     mutability,
                     ident,
                     subpat,
-                });
+                })
             }
             Pat::Path(PatPath { attrs, qself, path }) => {
                 let attrs = attrs.switcher(u);
                 let path = path.switcher(u);
-                return Pat::Path(PatPath { attrs, qself, path });
+                Pat::Path(PatPath { attrs, qself, path })
             }
             Pat::Struct(PatStruct {
                 attrs,
@@ -770,14 +767,14 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
                 let path = path.switcher(u);
                 let fields = fields.switcher(u);
                 let rest = rest.switcher(u);
-                return Pat::Struct(PatStruct {
+                Pat::Struct(PatStruct {
                     attrs,
                     path,
                     brace_token,
                     fields,
                     rest,
                     qself,
-                });
+                })
             }
             Pat::TupleStruct(PatTupleStruct {
                 attrs,
@@ -789,13 +786,13 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
                 let attrs = attrs.switcher(u);
                 let path = path.switcher(u);
                 let elems = elems.switcher(u);
-                return Pat::TupleStruct(PatTupleStruct {
+                Pat::TupleStruct(PatTupleStruct {
                     attrs,
                     path,
                     paren_token,
                     qself,
                     elems,
-                });
+                })
             }
             Pat::Tuple(PatTuple {
                 attrs,
@@ -804,11 +801,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
             }) => {
                 let attrs = attrs.switcher(u);
                 let elems = elems.switcher(u);
-                return Pat::Tuple(PatTuple {
+                Pat::Tuple(PatTuple {
                     attrs,
                     elems,
                     paren_token,
-                });
+                })
             }
             Pat::Type(PatType {
                 attrs,
@@ -819,26 +816,26 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
                 let attrs = attrs.switcher(u);
                 let pat = pat.switcher(u);
                 let ty = ty.switcher(u);
-                return Pat::Type(PatType {
+                Pat::Type(PatType {
                     attrs,
                     pat,
                     colon_token,
                     ty,
-                });
+                })
             }
             Pat::Wild(PatWild {
                 attrs,
                 underscore_token,
             }) => {
                 let attrs = attrs.switcher(u);
-                return Pat::Wild(PatWild {
+                Pat::Wild(PatWild {
                     attrs,
                     underscore_token,
-                });
+                })
             }
             Pat::Lit(PatLit { attrs, lit }) => {
                 let attrs = attrs.switcher(u);
-                return Pat::Lit(PatLit { attrs, lit });
+                Pat::Lit(PatLit { attrs, lit })
             }
             Pat::Range(PatRange {
                 attrs,
@@ -849,12 +846,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
                 let attrs = attrs.switcher(u);
                 let start = start.switcher(u);
                 let end = end.switcher(u);
-                return Pat::Range(PatRange {
+                Pat::Range(PatRange {
                     attrs,
                     limits,
                     start,
                     end,
-                });
+                })
             }
             Pat::Slice(PatSlice {
                 attrs,
@@ -863,11 +860,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
             }) => {
                 let attrs = attrs.switcher(u);
                 let elems = elems.switcher(u);
-                return Pat::Slice(PatSlice {
+                Pat::Slice(PatSlice {
                     attrs,
                     bracket_token,
                     elems,
-                });
+                })
             }
             Pat::Or(PatOr {
                 attrs,
@@ -876,11 +873,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
             }) => {
                 let attrs = attrs.switcher(u);
                 let cases = cases.switcher(u);
-                return Pat::Or(PatOr {
+                Pat::Or(PatOr {
                     attrs,
                     cases,
                     leading_vert,
-                });
+                })
             }
             Pat::Reference(PatReference {
                 attrs,
@@ -890,12 +887,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
             }) => {
                 let attrs = attrs.switcher(u);
                 let pat = pat.switcher(u);
-                return Pat::Reference(PatReference {
+                Pat::Reference(PatReference {
                     attrs,
                     and_token,
                     mutability,
                     pat,
-                });
+                })
             }
             Pat::Paren(PatParen {
                 attrs,
@@ -904,18 +901,18 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
             }) => {
                 let attrs = attrs.switcher(u);
                 let pat = pat.switcher(u);
-                return Pat::Paren(PatParen {
+                Pat::Paren(PatParen {
                     attrs,
                     paren_token,
                     pat,
-                });
+                })
             }
             Pat::Rest(PatRest { attrs, dot2_token }) => {
                 let attrs = attrs.switcher(u);
-                return Pat::Rest(PatRest { attrs, dot2_token });
+                Pat::Rest(PatRest { attrs, dot2_token })
             }
             Pat::Verbatim(tts) => {
-                return Pat::Verbatim(tts);
+                Pat::Verbatim(tts)
             }
             _ => unreachable!(),
         }
@@ -942,7 +939,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                 let ty = ty.switcher(u);
                 let expr = expr.switcher(u);
                 let generics = generics.switcher(u);
-                return Item::Const(ItemConst {
+                Item::Const(ItemConst {
                     attrs,
                     vis,
                     const_token,
@@ -953,7 +950,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                     expr,
                     semi_token,
                     generics,
-                });
+                })
             }
             Item::Enum(ItemEnum {
                 attrs,
@@ -967,7 +964,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                 let attrs = attrs.switcher(u);
                 let generics = generics.switcher(u);
                 let variants = variants.switcher(u);
-                return Item::Enum(ItemEnum {
+                Item::Enum(ItemEnum {
                     attrs,
                     vis,
                     enum_token,
@@ -975,7 +972,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                     generics,
                     brace_token,
                     variants,
-                });
+                })
             }
             Item::ExternCrate(ItemExternCrate {
                 attrs,
@@ -987,7 +984,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                 semi_token,
             }) => {
                 let attrs = attrs.switcher(u);
-                return Item::ExternCrate(ItemExternCrate {
+                Item::ExternCrate(ItemExternCrate {
                     attrs,
                     vis,
                     extern_token,
@@ -995,7 +992,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                     ident,
                     rename,
                     semi_token,
-                });
+                })
             }
             Item::Fn(ItemFn {
                 attrs,
@@ -1006,12 +1003,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                 let attrs = attrs.switcher(u);
                 let sig = sig.switcher(u);
                 let block = block.switcher(u);
-                return Item::Fn(ItemFn {
+                Item::Fn(ItemFn {
                     attrs,
                     vis,
                     sig,
                     block,
-                });
+                })
             }
             Item::Impl(ItemImpl {
                 attrs,
@@ -1028,7 +1025,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                 let generics = generics.switcher(u);
                 let self_ty = self_ty.switcher(u);
                 let items = items.switcher(u);
-                return Item::Impl(ItemImpl {
+                Item::Impl(ItemImpl {
                     attrs,
                     defaultness,
                     unsafety,
@@ -1038,7 +1035,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                     self_ty,
                     brace_token,
                     items,
-                });
+                })
             }
             Item::Macro(ItemMacro {
                 attrs,
@@ -1048,12 +1045,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
             }) => {
                 let attrs = attrs.switcher(u);
                 let mac = u(mac);
-                return parse_quote! {
+                parse_quote! {
                     #( #attrs )*
                     #ident
                     #mac
                     #semi_token
-                };
+                }
             }
             Item::Mod(ItemMod {
                 attrs,
@@ -1066,7 +1063,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
             }) => {
                 let attrs = attrs.switcher(u);
                 let content = content.switcher(u);
-                return Item::Mod(ItemMod {
+                Item::Mod(ItemMod {
                     attrs,
                     vis,
                     mod_token,
@@ -1074,7 +1071,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                     content,
                     semi,
                     unsafety,
-                });
+                })
             }
             Item::Static(ItemStatic {
                 attrs,
@@ -1091,7 +1088,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                 let attrs = attrs.switcher(u);
                 let ty = ty.switcher(u);
                 let expr = expr.switcher(u);
-                return Item::Static(ItemStatic {
+                Item::Static(ItemStatic {
                     attrs,
                     vis,
                     static_token,
@@ -1102,7 +1099,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                     eq_token,
                     expr,
                     semi_token,
-                });
+                })
             }
             Item::Struct(ItemStruct {
                 attrs,
@@ -1116,7 +1113,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                 let attrs = attrs.switcher(u);
                 let generics = generics.switcher(u);
                 let fields = fields.switcher(u);
-                return Item::Struct(ItemStruct {
+                Item::Struct(ItemStruct {
                     attrs,
                     vis,
                     struct_token,
@@ -1124,7 +1121,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                     generics,
                     fields,
                     semi_token,
-                });
+                })
             }
             Item::Trait(ItemTrait {
                 attrs,
@@ -1144,7 +1141,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                 let generics = generics.switcher(u);
                 let supertraits = supertraits.switcher(u);
                 let items = items.switcher(u);
-                return Item::Trait(ItemTrait {
+                Item::Trait(ItemTrait {
                     attrs,
                     vis,
                     unsafety,
@@ -1157,7 +1154,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                     brace_token,
                     items,
                     restriction,
-                });
+                })
             }
             Item::TraitAlias(ItemTraitAlias {
                 attrs,
@@ -1172,7 +1169,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                 let attrs = attrs.switcher(u);
                 let generics = generics.switcher(u);
                 let bounds = bounds.switcher(u);
-                return Item::TraitAlias(ItemTraitAlias {
+                Item::TraitAlias(ItemTraitAlias {
                     attrs,
                     vis,
                     trait_token,
@@ -1181,7 +1178,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                     eq_token,
                     bounds,
                     semi_token,
-                });
+                })
             }
             Item::Type(ItemType {
                 attrs,
@@ -1196,7 +1193,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                 let attrs = attrs.switcher(u);
                 let generics = generics.switcher(u);
                 let ty = ty.switcher(u);
-                return Item::Type(ItemType {
+                Item::Type(ItemType {
                     attrs,
                     vis,
                     type_token,
@@ -1205,7 +1202,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                     eq_token,
                     ty,
                     semi_token,
-                });
+                })
             }
             Item::Union(ItemUnion {
                 attrs,
@@ -1218,14 +1215,14 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
                 let attrs = attrs.switcher(u);
                 let generics = generics.switcher(u);
                 let fields = fields.switcher(u);
-                return Item::Union(ItemUnion {
+                Item::Union(ItemUnion {
                     attrs,
                     vis,
                     union_token,
                     ident,
                     generics,
                     fields,
-                });
+                })
             }
             Item::Use(ItemUse {
                 attrs,
@@ -1237,14 +1234,14 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
             }) => {
                 let attrs = attrs.switcher(u);
                 let tree = tree.switcher(u);
-                return Item::Use(ItemUse {
+                Item::Use(ItemUse {
                     attrs,
                     vis,
                     use_token,
                     leading_colon,
                     tree,
                     semi_token,
-                });
+                })
             }
             Item::ForeignMod(ItemForeignMod {
                 attrs,
@@ -1255,15 +1252,15 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Item {
             }) => {
                 let attrs = attrs.switcher(u);
                 let items = items.switcher(u);
-                return Item::ForeignMod(ItemForeignMod {
+                Item::ForeignMod(ItemForeignMod {
                     attrs,
                     abi,
                     brace_token,
                     items,
                     unsafety,
-                });
+                })
             }
-            Item::Verbatim(_) => return self,
+            Item::Verbatim(_) => self,
             _ => unreachable!(),
         }
     }
@@ -1281,12 +1278,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Variant {
         let attrs = attrs.switcher(u);
         let fields = fields.switcher(u);
         let discriminant = discriminant.switcher(u);
-        return Variant {
+        Variant {
             attrs,
             ident,
             fields,
             discriminant,
-        };
+        }
     }
 }
 
@@ -1302,12 +1299,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ForeignItem {
             }) => {
                 let attrs = attrs.switcher(u);
                 let sig = sig.switcher(u);
-                return ForeignItem::Fn(ForeignItemFn {
+                ForeignItem::Fn(ForeignItemFn {
                     attrs,
                     vis,
                     sig,
                     semi_token,
-                });
+                })
             }
             ForeignItem::Static(ForeignItemStatic {
                 attrs,
@@ -1321,7 +1318,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ForeignItem {
             }) => {
                 let attrs = attrs.switcher(u);
                 let ty = ty.switcher(u);
-                return ForeignItem::Static(ForeignItemStatic {
+                ForeignItem::Static(ForeignItemStatic {
                     attrs,
                     vis,
                     static_token,
@@ -1330,7 +1327,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ForeignItem {
                     colon_token,
                     ty,
                     semi_token,
-                });
+                })
             }
             ForeignItem::Type(ForeignItemType {
                 attrs,
@@ -1342,14 +1339,14 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ForeignItem {
             }) => {
                 let attrs = attrs.switcher(u);
                 let generics = generics.switcher(u);
-                return ForeignItem::Type(ForeignItemType {
+                ForeignItem::Type(ForeignItemType {
                     attrs,
                     vis,
                     type_token,
                     ident,
                     generics,
                     semi_token,
-                });
+                })
             }
             ForeignItem::Macro(ForeignItemMacro {
                 attrs,
@@ -1358,13 +1355,13 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ForeignItem {
             }) => {
                 let attrs = attrs.switcher(u);
                 let mac = u(mac);
-                return parse_quote! {
+                parse_quote! {
                     #( #attrs )*
                     #mac
                     #semi_token
-                };
+                }
             }
-            ForeignItem::Verbatim(_) => return self,
+            ForeignItem::Verbatim(_) => self,
             _ => unreachable!(),
         }
     }
@@ -1375,14 +1372,14 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for UseTree {
     fn switcher(self, u: &U) -> Self {
         match self {
             UseTree::Glob(UseGlob { star_token }) => {
-                return UseTree::Glob(UseGlob { star_token });
+                UseTree::Glob(UseGlob { star_token })
             }
             UseTree::Group(UseGroup { brace_token, items }) => {
                 let items = items.switcher(u);
-                return UseTree::Group(UseGroup { brace_token, items });
+                UseTree::Group(UseGroup { brace_token, items })
             }
             UseTree::Name(UseName { ident }) => {
-                return UseTree::Name(UseName { ident });
+                UseTree::Name(UseName { ident })
             }
             UseTree::Path(UsePath {
                 ident,
@@ -1390,22 +1387,22 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for UseTree {
                 colon2_token,
             }) => {
                 let tree = tree.switcher(u);
-                return UseTree::Path(UsePath {
+                UseTree::Path(UsePath {
                     ident,
                     tree,
                     colon2_token,
-                });
+                })
             }
             UseTree::Rename(UseRename {
                 ident,
                 as_token,
                 rename,
             }) => {
-                return UseTree::Rename(UseRename {
+                UseTree::Rename(UseRename {
                     ident,
                     as_token,
                     rename,
-                });
+                })
             }
         }
     }
@@ -1416,7 +1413,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for FieldsNamed {
     fn switcher(self, u: &U) -> Self {
         let FieldsNamed { brace_token, named } = self;
         let named = named.switcher(u);
-        return FieldsNamed { brace_token, named };
+        FieldsNamed { brace_token, named }
     }
 }
 
@@ -1426,17 +1423,17 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Fields {
         match self {
             Fields::Named(fields_named) => {
                 let fields_named = fields_named.switcher(u);
-                return Fields::Named(fields_named);
+                Fields::Named(fields_named)
             }
             Fields::Unnamed(FieldsUnnamed {
                 paren_token,
                 unnamed,
             }) => {
                 let unnamed = unnamed.switcher(u);
-                return Fields::Unnamed(FieldsUnnamed {
+                Fields::Unnamed(FieldsUnnamed {
                     paren_token,
                     unnamed,
-                });
+                })
             }
             Fields::Unit => self,
         }
@@ -1456,14 +1453,14 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Field {
         } = self;
         let attrs = attrs.switcher(u);
         let ty = ty.switcher(u);
-        return Field {
+        Field {
             attrs,
             vis,
             ident,
             colon_token,
             ty,
             mutability,
-        };
+        }
     }
 }
 
@@ -1488,7 +1485,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ImplItem {
                 let ty = ty.switcher(u);
                 let expr = expr.switcher(u);
                 let generics = generics.switcher(u);
-                return ImplItem::Const(ImplItemConst {
+                ImplItem::Const(ImplItemConst {
                     attrs,
                     vis,
                     defaultness,
@@ -1500,7 +1497,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ImplItem {
                     expr,
                     semi_token,
                     generics,
-                });
+                })
             }
             ImplItem::Macro(ImplItemMacro {
                 attrs,
@@ -1509,11 +1506,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ImplItem {
             }) => {
                 let attrs = attrs.switcher(u);
                 let mac = u(mac);
-                return parse_quote! {
+                parse_quote! {
                     #( #attrs )*
                     #mac
                     #semi_token
-                };
+                }
             }
             ImplItem::Type(ImplItemType {
                 attrs,
@@ -1529,7 +1526,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ImplItem {
                 let attrs = attrs.switcher(u);
                 let generics = generics.switcher(u);
                 let ty = ty.switcher(u);
-                return ImplItem::Type(ImplItemType {
+                ImplItem::Type(ImplItemType {
                     attrs,
                     vis,
                     defaultness,
@@ -1539,10 +1536,10 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ImplItem {
                     eq_token,
                     ty,
                     semi_token,
-                });
+                })
             }
             ImplItem::Verbatim(tts) => {
-                return ImplItem::Verbatim(tts);
+                ImplItem::Verbatim(tts)
             }
             ImplItem::Fn(ImplItemFn {
                 attrs,
@@ -1554,13 +1551,13 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ImplItem {
                 let attrs = attrs.switcher(u);
                 let sig = sig.switcher(u);
                 let block = block.switcher(u);
-                return ImplItem::Fn(ImplItemFn {
+                ImplItem::Fn(ImplItemFn {
                     attrs,
                     vis,
                     defaultness,
                     sig,
                     block,
-                });
+                })
             }
             _ => unreachable!(),
         }
@@ -1586,7 +1583,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Signature {
         let generics = generics.switcher(u);
         let inputs = inputs.switcher(u);
         let output = output.switcher(u);
-        return Signature {
+        Signature {
             constness,
             asyncness,
             unsafety,
@@ -1598,7 +1595,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Signature {
             inputs,
             variadic,
             output,
-        };
+        }
     }
 }
 
@@ -1616,14 +1613,14 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for FnArg {
             }) => {
                 let attrs = attrs.switcher(u);
                 let ty = ty.switcher(u);
-                return FnArg::Receiver(Receiver {
+                FnArg::Receiver(Receiver {
                     attrs,
                     reference,
                     mutability,
                     self_token,
                     colon_token,
                     ty,
-                });
+                })
             }
             FnArg::Typed(PatType {
                 attrs,
@@ -1634,12 +1631,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for FnArg {
                 let attrs = attrs.switcher(u);
                 let pat = pat.switcher(u);
                 let ty = ty.switcher(u);
-                return FnArg::Typed(PatType {
+                FnArg::Typed(PatType {
                     attrs,
                     pat,
                     colon_token,
                     ty,
-                });
+                })
             }
         }
     }
@@ -1651,20 +1648,20 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Stmt {
         match self {
             Stmt::Local(local) => {
                 let local = local.switcher(u);
-                return Stmt::Local(local);
+                Stmt::Local(local)
             }
             Stmt::Item(item) => {
                 let item = item.switcher(u);
-                return Stmt::Item(item);
+                Stmt::Item(item)
             }
             Stmt::Expr(expr, semi_token) => {
                 let expr = expr.switcher(u);
-                return Stmt::Expr(expr, semi_token);
+                Stmt::Expr(expr, semi_token)
             }
             Stmt::Macro(mut stmt) => {
                 stmt.attrs = stmt.attrs.switcher(u);
                 let mac = u(stmt.mac);
-                return parse_quote! { #mac };
+                parse_quote! { #mac }
             }
         }
     }
@@ -1681,12 +1678,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Generics {
         } = self;
         let params = params.switcher(u);
         let where_clause = where_clause.switcher(u);
-        return Generics {
+        Generics {
             lt_token,
             params,
             gt_token,
             where_clause,
-        };
+        }
     }
 }
 
@@ -1705,14 +1702,14 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for GenericParam {
                 let attrs = attrs.switcher(u);
                 let bounds = bounds.switcher(u);
                 let default = default.switcher(u);
-                return GenericParam::Type(TypeParam {
+                GenericParam::Type(TypeParam {
                     attrs,
                     ident,
                     colon_token,
                     bounds,
                     eq_token,
                     default,
-                });
+                })
             }
             _ => self,
         }
@@ -1727,10 +1724,10 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for WhereClause {
             predicates,
         } = self;
         let predicates = predicates.switcher(u);
-        return WhereClause {
+        WhereClause {
             where_token,
             predicates,
-        };
+        }
     }
 }
 
@@ -1740,7 +1737,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for WherePredicate {
         match self {
             WherePredicate::Type(type_pred) => {
                 let type_pred = type_pred.switcher(u);
-                return WherePredicate::Type(type_pred);
+                WherePredicate::Type(type_pred)
             }
             _ => self,
         }
@@ -1759,12 +1756,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for PredicateType {
         } = self;
         let bounded_ty = bounded_ty.switcher(u);
         let bounds = bounds.switcher(u);
-        return PredicateType {
+        PredicateType {
             lifetimes,
             bounded_ty,
             colon_token,
             bounds,
-        };
+        }
     }
 }
 
@@ -1781,13 +1778,13 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Local {
         let attrs = attrs.switcher(u);
         let pat = pat.switcher(u);
         let init = init.switcher(u);
-        return Local {
+        Local {
             attrs,
             let_token,
             pat,
             init,
             semi_token,
-        };
+        }
     }
 }
 
@@ -1801,11 +1798,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for LocalInit {
         } = self;
         let expr = expr.switcher(u);
         let diverge = diverge.switcher(u);
-        return LocalInit {
+        LocalInit {
             eq_token,
             expr,
             diverge,
-        };
+        }
     }
 }
 
@@ -1820,12 +1817,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for FieldPat {
         } = self;
         let attrs = attrs.switcher(u);
         let pat = pat.switcher(u);
-        return FieldPat {
+        FieldPat {
             attrs,
             member,
             colon_token,
             pat,
-        };
+        }
     }
 }
 
@@ -1834,7 +1831,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for PatRest {
     fn switcher(self, u: &U) -> Self {
         let PatRest { attrs, dot2_token } = self;
         let attrs = attrs.switcher(u);
-        return PatRest { attrs, dot2_token };
+        PatRest { attrs, dot2_token }
     }
 }
 
@@ -1846,10 +1843,10 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Path {
             segments,
         } = self;
         let segments = segments.switcher(u);
-        return Path {
+        Path {
             leading_colon,
             segments,
-        };
+        }
     }
 }
 
@@ -1858,7 +1855,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for PathSegment {
     fn switcher(self, u: &U) -> Self {
         let PathSegment { ident, arguments } = self;
         let arguments = arguments.switcher(u);
-        return PathSegment { ident, arguments };
+        PathSegment { ident, arguments }
     }
 }
 
@@ -1873,12 +1870,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for PathArguments {
                 gt_token,
             }) => {
                 let args = args.switcher(u);
-                return PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                PathArguments::AngleBracketed(AngleBracketedGenericArguments {
                     colon2_token,
                     lt_token,
                     args,
                     gt_token,
-                });
+                })
             }
             PathArguments::Parenthesized(ParenthesizedGenericArguments {
                 paren_token,
@@ -1887,11 +1884,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for PathArguments {
             }) => {
                 let inputs = inputs.switcher(u);
                 let output = output.switcher(u);
-                return PathArguments::Parenthesized(ParenthesizedGenericArguments {
+                PathArguments::Parenthesized(ParenthesizedGenericArguments {
                     paren_token,
                     inputs,
                     output,
-                });
+                })
             }
             _ => self,
         }
@@ -1905,11 +1902,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for GenericArgument {
             GenericArgument::Lifetime(_) => todo!(),
             GenericArgument::Type(ty) => {
                 let ty = ty.switcher(u);
-                return GenericArgument::Type(ty);
+                GenericArgument::Type(ty)
             }
             GenericArgument::Const(expr) => {
                 let expr = expr.switcher(u);
-                return GenericArgument::Const(expr);
+                GenericArgument::Const(expr)
             }
             GenericArgument::AssocType(AssocType {
                 ident,
@@ -1919,12 +1916,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for GenericArgument {
             }) => {
                 let ty = ty.switcher(u);
                 let generics = generics.switcher(u);
-                return GenericArgument::AssocType(AssocType {
+                GenericArgument::AssocType(AssocType {
                     ident,
                     eq_token,
                     ty,
                     generics,
-                });
+                })
             }
             GenericArgument::AssocConst(AssocConst {
                 ident,
@@ -1934,12 +1931,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for GenericArgument {
             }) => {
                 let generics = generics.switcher(u);
                 let value = value.switcher(u);
-                return GenericArgument::AssocConst(AssocConst {
+                GenericArgument::AssocConst(AssocConst {
                     ident,
                     eq_token,
                     generics,
                     value,
-                });
+                })
             }
             GenericArgument::Constraint(Constraint {
                 colon_token,
@@ -1949,12 +1946,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for GenericArgument {
             }) => {
                 let bounds = bounds.switcher(u);
                 let generics = generics.switcher(u);
-                return GenericArgument::Constraint(Constraint {
+                GenericArgument::Constraint(Constraint {
                     colon_token,
                     bounds,
                     ident,
                     generics,
-                });
+                })
             }
             _ => unreachable!(),
         }
@@ -1971,12 +1968,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for AngleBracketedGenericArguments
             gt_token,
         } = self;
         let args = args.switcher(u);
-        return AngleBracketedGenericArguments {
+        AngleBracketedGenericArguments {
             colon2_token,
             lt_token,
             args,
             gt_token,
-        };
+        }
     }
 }
 
@@ -1988,7 +1985,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for BareFnArg {
         } = self;
         let ty = ty.switcher(u);
         let attrs = attrs.switcher(u);
-        return BareFnArg { name, ty, attrs };
+        BareFnArg { name, ty, attrs }
     }
 }
 
@@ -1998,7 +1995,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ReturnType {
         match self {
             ReturnType::Type(arrow, ty) => {
                 let ty = ty.switcher(u);
-                return ReturnType::Type(arrow, ty);
+                ReturnType::Type(arrow, ty)
             }
             _ => self,
         }

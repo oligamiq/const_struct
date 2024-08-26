@@ -231,7 +231,8 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
             let segments = path.segments;
             let last = segments.last().unwrap();
             let generics = last.arguments.clone();
-            let generics = match generics {
+            
+            match generics {
                 PathArguments::AngleBracketed(generics) => {
                     let args = generics.args;
                     let args = args.into_iter().enumerate().filter_map(|(num, arg)| match arg {
@@ -261,8 +262,7 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
                     Some(args)
                 }
                 _ => None,
-            };
-            generics
+            }
         },
         // Tupleの実装を考えなければならない
         _ => None,
