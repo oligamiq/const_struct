@@ -72,12 +72,20 @@ pub trait HashBridgeBridge<
     const FILE_NAME_HASH: u64,
     const COLUMN: u32,
     const LINE: u32,
-> {
+>
+{
     type DATATYPE;
     const DATA: Self::DATATYPE;
 }
 
-impl<U: HashBridgeBridge<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE>, const NAME_HASH: u64, const FILE_NAME_HASH: u64, const COLUMN: u32, const LINE: u32> PrimitiveTraits for HashBridge<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE, U> {
+impl<
+        U: HashBridgeBridge<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE>,
+        const NAME_HASH: u64,
+        const FILE_NAME_HASH: u64,
+        const COLUMN: u32,
+        const LINE: u32,
+    > PrimitiveTraits for HashBridge<NAME_HASH, FILE_NAME_HASH, COLUMN, LINE, U>
+{
     type DATATYPE = U::DATATYPE;
     const __DATA: Self::DATATYPE = U::DATA;
 }

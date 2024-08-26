@@ -1,6 +1,6 @@
+use crate::hash_bridge::{HashBridge, HashBridgeBridge};
 use crate::match_underscore;
 use crate::pre::{str_hash, PrimitiveTraits};
-use crate::hash_bridge::{HashBridgeBridge, HashBridge};
 
 pub trait Float {}
 

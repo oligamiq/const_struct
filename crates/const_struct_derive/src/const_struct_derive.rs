@@ -3,16 +3,16 @@ use crate::ident::AbsolutePathOrType;
 use crate::parse_value::AdditionData;
 use crate::util::add_at_mark;
 use crate::util::add_dollar_mark;
-use crate::util_macro::ConstOrType;
 use crate::util::gen_get_const_generics_inner;
-use convert_case::Casing;
+use crate::util_macro::ConstOrType;
 use convert_case::Case;
+use convert_case::Casing;
 use parse::discouraged::Speculative as _;
 use parse::{Parse, Parser};
 use proc_macro2::*;
 use quote::format_ident;
-use quote::ToTokens;
 use quote::quote;
+use quote::ToTokens;
 use syn::punctuated::Punctuated;
 use syn::*;
 
@@ -155,7 +155,8 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .filter_map(|(num, param)| match param {
             GenericParam::Const(param) => {
                 let ty = &param.ty;
-                let keeptype = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::keeptype::KeepType });
+                let keeptype = user_attrs
+                    .get_absolute_path_path(&parse_quote! { ::const_struct::keeptype::KeepType });
                 let mut keep_type_impl: ItemImpl = parse_quote! {
                     #[automatically_derived]
                     impl #keeptype<#num> for #datatype {
@@ -194,7 +195,8 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         quote::format_ident!("{}", field_name_upper_snake)
     }
 
-    let primitive_traits_path = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::PrimitiveTraits });
+    let primitive_traits_path =
+        user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::PrimitiveTraits });
 
     let const_field = field_names
         .zip(field_types)
@@ -229,7 +231,10 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         #[automatically_derived]
         impl<PrimitiveType: #primitive_traits_path<DATATYPE = #datatype>> #trait_name_with_generics for PrimitiveType {}
     };
-    trait_impl.generics.params.extend(generics_with_copy.params.clone());
+    trait_impl
+        .generics
+        .params
+        .extend(generics_with_copy.params.clone());
     trait_impl.generics.where_clause = generics_with_copy.where_clause.clone();
 
     // println!("### 1 ###");
@@ -251,24 +256,42 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             GenericParam::Lifetime(LifetimeParam { .. }) => {
                 eprintln!("error: lifetime is not allowed");
                 unreachable!()
-            },
+            }
         })
-        .map(|(ident, const_or_type)| (format_ident!("{}", ident.to_string().from_case(Case::UpperCamel).to_case(Case::Snake)), const_or_type))
+        .map(|(ident, const_or_type)| {
+            (
+                format_ident!(
+                    "{}",
+                    ident
+                        .to_string()
+                        .from_case(Case::UpperCamel)
+                        .to_case(Case::Snake)
+                ),
+                const_or_type,
+            )
+        })
         .collect::<Vec<_>>();
 
-    let mut macro_args = generics_snake.iter().map(|(ident, const_or_type)| {
-        let ident_with_dollar = add_dollar_mark(ident.clone());
-        match const_or_type {
-            ConstOrType::Const => quote! { #ident_with_dollar: tt },
-            ConstOrType::Type => quote! { #ident_with_dollar: path },
-        }
-    }).collect::<Punctuated<_, Token![,]>>();
+    let mut macro_args = generics_snake
+        .iter()
+        .map(|(ident, const_or_type)| {
+            let ident_with_dollar = add_dollar_mark(ident.clone());
+            match const_or_type {
+                ConstOrType::Const => quote! { #ident_with_dollar: tt },
+                ConstOrType::Type => quote! { #ident_with_dollar: path },
+            }
+        })
+        .collect::<Punctuated<_, Token![,]>>();
     macro_args.push(quote! { $value: expr });
 
-    let hash_bridge = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::HashBridge });
-    let hash_bridge_bridge = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::HashBridgeBridge });
-    let str_hash = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::str_hash });
-    let match_underscore_path = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::match_underscore });
+    let hash_bridge =
+        user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::HashBridge });
+    let hash_bridge_bridge = user_attrs
+        .get_absolute_path_path(&parse_quote! { ::const_struct::primitive::HashBridgeBridge });
+    let str_hash =
+        user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::str_hash });
+    let match_underscore_path =
+        user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::match_underscore });
 
     let gen_args = generics_snake
         .iter()
@@ -277,7 +300,8 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             let ident_with_dollar = add_dollar_mark(ident.clone());
             let arg = match const_or_type {
                 ConstOrType::Const => {
-                    let get_const_generics_fn_seed = gen_get_const_generics_inner(const_fn.clone(), num).unwrap();
+                    let get_const_generics_fn_seed =
+                        gen_get_const_generics_inner(const_fn.clone(), num).unwrap();
                     let fn_ident = get_const_generics_fn_seed.sig.ident.clone();
                     quote! { {
                         #match_underscore_path!(#ident_with_dollar, {
@@ -286,10 +310,10 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                             #fn_ident($value)
                         })
                     }}
-                },
+                }
                 ConstOrType::Type => {
                     quote! { #ident_with_dollar }
-                },
+                }
             };
             arg
         })
@@ -343,7 +367,8 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         let name_with_underscore = format_ident!("_{name}");
         let name_module = format_ident!("__{}", name.to_string().to_case(Case::Snake));
         let use_: ItemUse = parse_quote!(pub(crate) use #name as #name_with_underscore;);
-        let use_outer: ItemUse = parse_quote!(pub(crate) use #name_module::#name_with_underscore as #name;);
+        let use_outer: ItemUse =
+            parse_quote!(pub(crate) use #name_module::#name_with_underscore as #name;);
         quote! {
             pub mod #name_module {
                 #[macro_export]

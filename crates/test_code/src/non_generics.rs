@@ -1,6 +1,6 @@
+use const_struct::call_with_generics;
 use const_struct::{const_struct, ConstStruct};
 use core::fmt::Debug;
-use const_struct::call_with_generics;
 
 pub trait Float {}
 
@@ -22,5 +22,7 @@ pub fn tester_test_generics<U: TestNonGenericsTy>() {
 #[test]
 fn test_generics() {
     tester_test_generics::<TestNonGenerics!(TestNonGenerics { s: 0.0 })>();
-    call_with_generics!(tester_test_generics::<TestNonGenerics!(TestNonGenerics { s: 0.0 })>());
+    call_with_generics!(tester_test_generics::<
+        TestNonGenerics!(TestNonGenerics { s: 0.0 }),
+    >());
 }
