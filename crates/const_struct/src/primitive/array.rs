@@ -1,5 +1,3 @@
-use core::char;
-
 use super::ConstStructPrimEnd;
 
 pub trait ConstStructPrimQueue {
@@ -66,76 +64,4 @@ impl<const SIZE: usize, const LEN: usize, T: ConstStructPrimQueue<Data = [u8; SI
             unsafe { core::slice::from_raw_parts::<'static, u8>(T::__DATA.as_ptr(), SIZE) }
         }
     };
-}
-
-pub struct HashBridge<
-    const NAME_HASH: u64,
-    const FILE_NAME_HASH: u64,
-    const COLUMN: u32,
-    const LINE: u32,
->;
-
-pub struct Def {
-    str: &'static str,
-}
-
-// impl<const PTR: usize, const LEN: usize> ConstStructPrimQueue for StrPointerAndLength<PTR, LEN> {
-//     type Data = &'static str;
-//     const __DATA: Self::Data = unsafe {
-//         core::str::from_utf8_unchecked(core::slice::from_raw_parts(PTR as *const u8, LEN))
-//     };
-// }
-
-pub fn call_tester<T: ConstStructPrimQueue<Data = &'static str>>() -> &'static str {
-    T::__DATA
-}
-
-macro_rules! TestSettingManual {
-    ($value:expr) => {
-        HashBridge<{
-            const NAME_HASH: u64 = {
-                let str = stringify!($value);
-                let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
-                crc.checksum(str.as_bytes())
-            };
-
-            const FILE_HASH: u64 = {
-                let file_name = file!();
-                let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
-                crc.checksum(file_name.as_bytes())
-            };
-
-            impl ConstStructPrimQueue for HashBridge<NAME_HASH, FILE_HASH, {column!()}, {line!()}> {
-                type Data = &'static str;
-                const __DATA: Self::Data = $value;
-            }
-
-            NAME_HASH
-        }, {
-            const FILE_HASH: u64 = {
-                let file_name = file!();
-                let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
-                crc.checksum(file_name.as_bytes())
-            };
-
-            FILE_HASH
-        }, {
-            column!()
-        }, {
-            line!()
-        }>
-    }
-}
-
-#[test]
-pub fn tester() {
-    type B = TestSettingManual!("Hello, World!");
-
-    let b = call_tester::<B>();
-
-    // let a_struct = AStruct {
-    //     str: "Hello, World!",
-    // };
-
-    assert_eq!(b, "Hello, World!");
 }

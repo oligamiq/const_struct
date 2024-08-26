@@ -35,7 +35,7 @@ TupleTyByNum!(A, B, C, D, E, F, G, H, I, J);
 
 #[cfg(test)]
 mod tests {
-    use crate::primitive::{_F32 as F32, _F64 as F64, _U32 as U32};
+    use crate::primitive::{F32, F64, U32};
     use core::mem;
 
     use super::TupleTy;

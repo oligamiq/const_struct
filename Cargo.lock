@@ -141,13 +141,14 @@ dependencies = [
 name = "test_trait_code"
 version = "0.3.1"
 dependencies = [
- "const_struct",
  "const_struct_derive",
+ "crc",
+ "no-std-compat",
  "paste",
 ]
 
 [[package]]
-name = "test_trait_code_old"
+name = "test_trait_code_old_old"
 version = "0.3.1"
 
 [[package]]

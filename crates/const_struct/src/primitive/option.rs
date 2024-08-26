@@ -1,4 +1,5 @@
-use super::{EnumQueuePlaneDataType, EnumQueuePlaneEnd, EnumQueuePlaneHead, PrimitiveTraits};
+// use super::{EnumQueuePlaneDataType, EnumQueuePlaneEnd, EnumQueuePlaneHead, PrimitiveTraits};
+use super::PrimitiveTraits;
 
 pub trait OptionTy<T> {
     const __DATA: Option<T>;
@@ -25,19 +26,19 @@ impl<T> OptionTy<T> for NoneImpl {
     const __DATA: Option<T> = None;
 }
 
-impl<T, U: PrimitiveTraits<DATATYPE = T>> PrimitiveTraits
-    for EnumQueuePlaneHead<Option<T>, EnumQueuePlaneDataType<U, EnumQueuePlaneEnd>, 0>
-{
-    type DATATYPE = Option<T>;
-    const __DATA: Self::DATATYPE = None;
-}
+// impl<T, U: PrimitiveTraits<DATATYPE = T>> PrimitiveTraits
+//     for EnumQueuePlaneHead<Option<T>, EnumQueuePlaneDataType<U, EnumQueuePlaneEnd>, 0>
+// {
+//     type DATATYPE = Option<T>;
+//     const __DATA: Self::DATATYPE = None;
+// }
 
-impl<T, U: PrimitiveTraits<DATATYPE = T>> PrimitiveTraits
-    for EnumQueuePlaneHead<Option<T>, EnumQueuePlaneDataType<U, EnumQueuePlaneEnd>, 1>
-{
-    type DATATYPE = Option<T>;
-    const __DATA: Self::DATATYPE = Some(<U as PrimitiveTraits>::__DATA);
-}
+// impl<T, U: PrimitiveTraits<DATATYPE = T>> PrimitiveTraits
+//     for EnumQueuePlaneHead<Option<T>, EnumQueuePlaneDataType<U, EnumQueuePlaneEnd>, 1>
+// {
+//     type DATATYPE = Option<T>;
+//     const __DATA: Self::DATATYPE = Some(<U as PrimitiveTraits>::__DATA);
+// }
 
 #[macro_export]
 macro_rules! Some {
@@ -55,7 +56,7 @@ macro_rules! None {
 
 #[cfg(test)]
 mod tests {
-    use crate::primitive::{F32Ty, U32Ty, _F32 as F32, _U32 as U32};
+    use crate::primitive::{F32Ty, U32Ty, F32, U32};
     use core::mem;
 
     use super::OptionTy;

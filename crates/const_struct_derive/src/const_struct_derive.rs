@@ -1,10 +1,19 @@
 use crate::ident::get_absolute_ident_path_from_ident;
 use crate::ident::AbsolutePathOrType;
-use convert_case::{Case, Casing as _};
+use crate::parse_value::AdditionData;
+use crate::util::add_at_mark;
+use crate::util::add_dollar_mark;
+use crate::util::add_dollar_mark_inner;
+use crate::util::gen_get_const_generics_inner;
+use crate::util_macro::ConstOrType;
+use convert_case::Case;
+use convert_case::Casing;
 use parse::discouraged::Speculative as _;
 use parse::{Parse, Parser};
 use proc_macro2::*;
-use quote::{quote, ToTokens as _};
+use quote::format_ident;
+use quote::quote;
+use quote::ToTokens;
 use syn::punctuated::Punctuated;
 use syn::*;
 
@@ -50,6 +59,8 @@ pub fn generics_into_where_clause(generics: Generics) -> Generics {
 
 pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     let user_attrs = get_const_struct_derive_attr(&input)?;
+
+    let vis = &input.vis;
 
     let generics: Generics = generics_into_where_clause(input.generics.clone());
 
@@ -127,7 +138,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                 .iter()
                 .map::<GenericArgument, _>(|param| match param {
                     GenericParam::Const(ConstParam { ident, .. }) => {
-                        GenericArgument::Const(parse_quote! { #ident })
+                        GenericArgument::Const(parse_quote! { { #ident } })
                     }
                     _ => GenericArgument::Type(parse_quote! { #param }),
                 })
@@ -145,9 +156,11 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .filter_map(|(num, param)| match param {
             GenericParam::Const(param) => {
                 let ty = &param.ty;
+                let keeptype = user_attrs
+                    .get_absolute_path_path(&parse_quote! { ::const_struct::keeptype::KeepType });
                 let mut keep_type_impl: ItemImpl = parse_quote! {
                     #[automatically_derived]
-                    impl ::const_struct::keeptype::KeepType<#num> for #datatype {
+                    impl #keeptype<#num> for #datatype {
                         type Type = #ty;
                     }
                 };
@@ -183,20 +196,23 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         quote::format_ident!("{}", field_name_upper_snake)
     }
 
+    let primitive_traits_path =
+        user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::PrimitiveTraits });
+
     let const_field = field_names
         .zip(field_types)
         .map(|(field, ty)| {
             let field = field.as_ref().unwrap();
             let upper_field = get_upper_filed_name(field);
             quote! {
-                const #upper_field: #ty = <Self as ::const_struct::PrimitiveTraits>::__DATA.#field;
+                const #upper_field: #ty = <Self as #primitive_traits_path>::__DATA.#field;
             }
         })
         .collect::<Vec<_>>();
 
     let mut new_trait_impl: ItemTrait = parse_quote! {
         #[automatically_derived]
-        pub trait #trait_name: ::const_struct::PrimitiveTraits<DATATYPE = #datatype> {
+        pub trait #trait_name: #primitive_traits_path<DATATYPE = #datatype> {
             #(#const_field)*
         }
     };
@@ -214,29 +230,209 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     };
     let mut trait_impl: ItemImpl = parse_quote! {
         #[automatically_derived]
-        impl<PrimitiveType: ::const_struct::PrimitiveTraits<DATATYPE = #datatype>> #trait_name_with_generics for PrimitiveType {}
+        impl<PrimitiveType: #primitive_traits_path<DATATYPE = #datatype>> #trait_name_with_generics for PrimitiveType {}
     };
-    trait_impl.generics.params.extend(generics_with_copy.params);
+    trait_impl
+        .generics
+        .params
+        .extend(generics_with_copy.params.clone());
     trait_impl.generics.where_clause = generics_with_copy.where_clause.clone();
 
-    // println!("trait_impl: {}", trait_impl);
+    // println!("### 1 ###");
+
+    let name_with_get_generics_data = add_at_mark(format_ident!("{}GetGenericsData", name));
+    let addition_data = &user_attrs.addition_data;
+    let mut const_fn: ItemFn = parse_quote!(
+        const fn get_const_generics(_: #datatype) {}
+    );
+    const_fn.vis = vis.clone();
+    const_fn.sig.generics = generics_with_copy.clone();
+
+    let generics_snake = generics
+        .params
+        .iter()
+        .map(|param| match param {
+            GenericParam::Const(ConstParam { ident, .. }) => (ident, ConstOrType::Const),
+            GenericParam::Type(TypeParam { ident, .. }) => (ident, ConstOrType::Type),
+            GenericParam::Lifetime(LifetimeParam { .. }) => {
+                eprintln!("error: lifetime is not allowed");
+                unreachable!()
+            }
+        })
+        .map(|(ident, const_or_type)| {
+            (
+                format_ident!(
+                    "{}",
+                    ident
+                        .to_string()
+                        .from_case(Case::UpperCamel)
+                        .to_case(Case::Snake)
+                ),
+                const_or_type,
+            )
+        })
+        .collect::<Vec<_>>();
+
+    let mut macro_args = generics_snake
+        .iter()
+        .map(|(ident, const_or_type)| {
+            let ident_with_dollar = add_dollar_mark(ident.clone());
+            match const_or_type {
+                ConstOrType::Const => quote! { #ident_with_dollar: tt },
+                ConstOrType::Type => quote! { #ident_with_dollar: path },
+            }
+        })
+        .collect::<Punctuated<_, Token![,]>>();
+    macro_args.push(quote! { $value: expr });
+
+    let hash_bridge =
+        user_attrs.get_absolute_path_meta_path(&parse_quote! { ::const_struct::primitive::HashBridge });
+    let hash_bridge_bridge = user_attrs
+        .get_absolute_path_meta_path(&parse_quote! { ::const_struct::primitive::HashBridgeBridge });
+    let str_hash =
+        user_attrs.get_absolute_path_meta_path(&parse_quote! { ::const_struct::primitive::str_hash });
+    let match_underscore_path =
+        user_attrs.get_absolute_path_meta_path(&parse_quote! { ::const_struct::match_underscore });
+
+    let gen_args = generics_snake
+        .iter()
+        .enumerate()
+        .map(|(num, (ident, const_or_type))| {
+            let ident_with_dollar = add_dollar_mark(ident.clone());
+            let arg = match const_or_type {
+                ConstOrType::Const => {
+                    let get_const_generics_fn_seed =
+                        gen_get_const_generics_inner(const_fn.clone(), num).unwrap();
+                    let fn_ident = get_const_generics_fn_seed.sig.ident.clone();
+                    quote! { {
+                        #match_underscore_path!(#ident_with_dollar, {
+                            #get_const_generics_fn_seed
+
+                            #fn_ident($value)
+                        })
+                    }}
+                }
+                ConstOrType::Type => {
+                    quote! { #ident_with_dollar }
+                }
+            };
+            arg
+        })
+        .collect::<Punctuated<TokenStream, Token![,]>>();
+
+    // println!("gen_args: {}", gen_args.to_token_stream());
+
+    let macro_export = quote! {
+        macro_rules! #name {
+            (#name_with_get_generics_data, $macro_path: path, $($arg:tt)*) => {
+                {
+                    $macro_path!(
+                        @AdditionData(
+                            #addition_data
+                        ),
+                        #name_with_get_generics_data(
+                            struct,
+                            #const_fn
+                        ),
+                        $($arg)*
+                    )
+                }
+            };
+            (#macro_args) => {
+                #hash_bridge<{
+                    const NAME_HASH: u64 = #str_hash(stringify!($value));
+
+                    type T = #name<#gen_args>;
+
+                    impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for T {
+                        type DATATYPE = T;
+                        const DATA: Self::DATATYPE = {
+                            $value
+                        };
+                    }
+
+                    NAME_HASH
+                }, {
+                    #str_hash(file!())
+                }, {
+                    column!()
+                }, {
+                    line!()
+                },
+                #name<#gen_args>
+                >
+            };
+        }
+    };
+    let macro_export = if user_attrs.macro_export {
+        let name_with_underscore = format_ident!("_{name}");
+        let name_module = format_ident!("__{}", name.to_string().to_case(Case::Snake));
+        let use_: ItemUse = parse_quote!(pub(crate) use #name as #name_with_underscore;);
+        let use_outer: ItemUse =
+            parse_quote!(pub(crate) use #name_module::#name_with_underscore as #name;);
+        quote! {
+            pub mod #name_module {
+                #[macro_export]
+                #[allow(unused_macros)]
+                #macro_export
+
+                #[doc(hidden)]
+                #[allow(unused_imports)]
+                #use_
+            }
+            #[doc(hidden)]
+            #[allow(unused_imports)]
+            #use_outer
+        }
+    } else {
+        quote! {
+            #[allow(unused_macros)]
+            #macro_export
+        }
+    };
+
+    // println!("macro_export: {}", macro_export.to_token_stream());
 
     Ok(quote! {
         #(#keep_type_impls)*
         #new_trait_impl
         #trait_impl
+        #macro_export
     })
 }
 
 #[derive(Debug)]
 pub struct ConstStructAttr {
     macro_export: bool,
-    path_and_ident: Vec<PathAndIdent>,
+    addition_data: AdditionData,
 }
 
 impl ConstStructAttr {
     pub fn get_absolute_path(&self, path: &Path) -> AbsolutePathOrType {
-        Self::get_absolute_path_inner(path, &self.path_and_ident)
+        Self::get_absolute_path_inner(path, &self.addition_data.data)
+    }
+
+    pub fn get_absolute_path_path(&self, path: &Path) -> Path {
+        match self.get_absolute_path(path) {
+            AbsolutePathOrType::Path(path) => path.path(),
+            AbsolutePathOrType::Type(_) => {
+                eprintln!("error: expected path, found type");
+                unreachable!()
+            }
+        }
+    }
+
+    pub fn get_absolute_path_meta_path(&self, path: &Path) -> TokenStream {
+        let path = self.get_absolute_path_path(path);
+        if let (None, Some(PathSegment { ident, arguments: PathArguments::None })) = (path.leading_colon, path.segments.first()) {
+            if ident == "crate" {
+                add_dollar_mark_inner(path.to_token_stream())
+            } else {
+                path.to_token_stream()
+            }
+        } else {
+            path.to_token_stream()
+        }
     }
 
     pub fn get_absolute_path_inner(
@@ -252,7 +448,7 @@ impl Default for ConstStructAttr {
     fn default() -> Self {
         Self {
             macro_export: false,
-            path_and_ident: vec![],
+            addition_data: Default::default(),
         }
     }
 }
@@ -270,9 +466,13 @@ pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<ConstStructAt
         .flat_map(|attr| register_ident_path(attr).unwrap_or_default())
         .collect::<Vec<_>>();
 
+    let addition_data = AdditionData {
+        data: path_and_ident,
+    };
+
     let attr = ConstStructAttr {
         macro_export: is_macro_export,
-        path_and_ident,
+        addition_data,
     };
 
     Ok(attr)
@@ -343,10 +543,25 @@ impl Parse for PathAndIdent {
     }
 }
 
+impl ToTokens for PathAndIdent {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let ident = &self.ident;
+        let path = &self.path;
+        tokens.extend(quote! { #ident: #path });
+    }
+}
+
 impl Parse for AbsolutePath {
     fn parse(input: parse::ParseStream) -> Result<Self> {
         let path = input.parse()?;
         Ok(Self { path })
+    }
+}
+
+impl ToTokens for AbsolutePath {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let path = &self.path;
+        tokens.extend(quote! { #path });
     }
 }
 

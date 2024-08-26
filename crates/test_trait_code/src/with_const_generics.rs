@@ -1,43 +1,33 @@
-use crate::hash_bridge::{HashBridge, HashBridgeBridge};
 use crate::match_underscore;
 use crate::pre::{str_hash, PrimitiveTraits};
 
-pub trait Float {}
-
-impl Float for f32 {}
-
 #[derive(Debug)]
-pub struct TestStructWithFloatGenerics<const T: usize, S: Float> {
+pub struct TestStructWithGenerics<const T: usize> {
     test_data: Option<u32>,
     test_data2: Option<Option<u32>>,
     test_data3: u32,
     test_data4: [u8; T],
     str: &'static str,
-    float: S,
 }
 
-pub trait TestStructWithFloatGenericsTy<const T: usize, S: Float + Copy>:
-    PrimitiveTraits<DATATYPE = TestStructWithFloatGenerics<T, S>>
+pub trait TestStructWithGenericsTy<const T: usize>:
+    PrimitiveTraits<DATATYPE = TestStructWithGenerics<{ T }>>
 {
     const TEST_DATA: Option<u32> = <Self as PrimitiveTraits>::__DATA.test_data;
     const TEST_DATA2: Option<Option<u32>> = <Self as PrimitiveTraits>::__DATA.test_data2;
     const TEST_DATA3: u32 = <Self as PrimitiveTraits>::__DATA.test_data3;
     const TEST_DATA4: [u8; T] = <Self as PrimitiveTraits>::__DATA.test_data4;
     const STR: &'static str = <Self as PrimitiveTraits>::__DATA.str;
-    const FLOAT: S = <Self as PrimitiveTraits>::__DATA.float;
 }
 
-impl<
-        U: PrimitiveTraits<DATATYPE = TestStructWithFloatGenerics<T, S>>,
-        const T: usize,
-        S: Float + Copy,
-    > TestStructWithFloatGenericsTy<T, S> for U
+impl<U: PrimitiveTraits<DATATYPE = TestStructWithGenerics<{ T }>>, const T: usize>
+    TestStructWithGenericsTy<{ T }> for U
 {
 }
 
 #[macro_export]
-macro_rules! TestStructWithFloatGenerics {
-    (@TestStructWithFloatGenericsGetGenericsData, $macro_path: path, $($arg:tt)*) => {
+macro_rules! TestStructWithGenerics {
+    (@TestStructWithGenericsGetGenericsData, $macro_path: path, $($arg:tt)*) => {
         {
             $macro_path!(
                 @AdditionData(
@@ -51,28 +41,28 @@ macro_rules! TestStructWithFloatGenerics {
                     ::const_struct::primitive::HashBridgeBridge: HashBridgeBridge,
                     F32: F32
                 ),
-                @TestStructWithFloatGenericsGetGenericsData(
+                @TestStructWithGenericsGetGenericsData(
                     struct,
-                    const fn get_const_generics<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) {}
+                    const fn get_const_generics<const T: usize>(_: TestStructWithGenerics<{ T }>) {}
                 ),
                 $($arg)*
             )
         }
     };
 
-    ($t:tt, $s:path, $value:expr) => {
+    ($t:tt, $value:expr) => {
         HashBridge<{
             const NAME_HASH: u64 = str_hash(stringify!($value));
 
-            type T = TestStructWithFloatGenerics<{
+            type T = TestStructWithGenerics<{
                 match_underscore!($t, {
-                    const fn get_generic<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) -> usize {
+                    const fn get_generic<const T: usize>(_: TestStructWithGenerics<{ T }>) -> usize {
                         T
                     }
 
                     get_generic($value)
                 })
-            }, $s>;
+            }>;
 
             impl HashBridgeBridge<NAME_HASH, {str_hash(file!())}, {column!()}, {line!()}> for T {
                 type DATATYPE = T;
@@ -87,12 +77,15 @@ macro_rules! TestStructWithFloatGenerics {
         }, {
             line!()
         },
-        TestStructWithFloatGenerics<{
+        TestStructWithGenerics<{
             match_underscore!($t, {
-                const fn get_generic<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) -> usize { T }
+                const fn get_generic<const T: usize>(_: TestStructWithGenerics<{ T }>) -> usize {
+                    T
+                }
+
                 get_generic($value)
             })
-        }, $s>
+        }>
         >
     };
 }
@@ -105,23 +98,23 @@ mod tests {
 
     use super::*;
 
-    fn caller<const T: usize, F: Float + Copy, U: TestStructWithFloatGenericsTy<T, F> + Debug>(
-    ) -> TestStructWithFloatGenerics<T, F> {
+    use crate::hash_bridge::{HashBridge, HashBridgeBridge};
+
+    fn caller<const T: usize, U: TestStructWithGenericsTy<T> + Debug>() -> TestStructWithGenerics<T>
+    {
         U::__DATA
     }
 
     #[test]
     fn test() {
-        type T = TestStructWithFloatGenerics!(
+        type T = TestStructWithGenerics!(
             _,
-            f32,
-            TestStructWithFloatGenerics {
+            TestStructWithGenerics {
                 test_data: Some(1),
                 test_data2: Some(Some(2)),
                 test_data3: 3,
                 test_data4: [0; 8],
                 str: "test",
-                float: 0.0,
             }
         );
 
@@ -136,17 +129,14 @@ mod tests {
 
         caller::<
             8,
-            f32,
-            TestStructWithFloatGenerics!(
+            TestStructWithGenerics!(
                 _,
-                f32,
-                TestStructWithFloatGenerics {
+                TestStructWithGenerics {
                     test_data: Some(1),
                     test_data2: Some(Some(2)),
                     test_data3: 3,
                     test_data4: [0; 8],
                     str: "test",
-                    float: 0.0,
                 }
             ),
         >();
@@ -156,17 +146,13 @@ mod tests {
                 ::const_struct::call_with_generics: call_with_generics
             ),
             caller::<
-            TestStructWithFloatGenerics!(
-                f32,
-                TestStructWithFloatGenerics {
-                    test_data: Some(1),
-                    test_data2: Some(Some(2)),
-                    test_data3: 3,
-                    test_data4: [0; 8],
-                    str: "test",
-                    float: 0.0,
-                }
-            ),
+            TestStructWithGenerics!(TestStructWithGenerics {
+                test_data: Some(1),
+                test_data2: Some(Some(2)),
+                test_data3: 3,
+                test_data4: [0; 8],
+                str: "test",
+            }),
         >());
     }
 }

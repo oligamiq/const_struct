@@ -2,15 +2,16 @@ use crate::{
     const_struct_derive::PathAndIdent, ident::AbsolutePathOrType, macro_alt::match_underscore_alt,
     rewriter::change_macro::Switcher,
 };
-use array::parse_value_array;
+// use array::parse_value_array;
 use parse::{discouraged::Speculative as _, Parse, ParseStream};
 use path::parse_value_path;
 use proc_macro2::{Span, TokenStream};
 use punctuated::Punctuated;
+use quote::ToTokens;
 use syn::*;
 use tuple::parse_value_tuple;
 
-mod array;
+// mod array;
 mod path;
 pub mod struct_ty;
 mod tuple;
@@ -48,6 +49,7 @@ impl AdditionData {
         self.get_changed_path(&path)
     }
 
+    #[allow(dead_code)]
     pub fn check_addition_data(&self, path: &Path) -> bool {
         self.data
             .iter()
@@ -62,6 +64,13 @@ impl AdditionData {
                 let path = path.path.path();
                 path
             })
+    }
+}
+
+impl ToTokens for AdditionData {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let data = &self.data;
+        tokens.extend(quote::quote! { #(#data),* });
     }
 }
 
@@ -173,7 +182,7 @@ pub fn parse_value(input: Type, expr: Expr, additional_data: &AdditionData) -> R
     match input {
         Type::Tuple(tuple) => parse_value_tuple(tuple, expr, additional_data),
         Type::Path(path) => parse_value_path(path, expr, additional_data),
-        Type::Array(array) => parse_value_array(array, expr, additional_data),
+        // Type::Array(array) => parse_value_array(array, expr, additional_data),
         _ => Err(Error::new_spanned(input, "unsupported type")),
     }
 }

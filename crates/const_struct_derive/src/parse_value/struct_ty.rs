@@ -1,4 +1,7 @@
-use crate::util_macro::{GenericInfo, GenericsData, Label, TypeOrExpr};
+use crate::{
+    util::gen_get_const_generics,
+    util_macro::{GenericInfo, GenericsData, Label, TypeOrExpr},
+};
 use syn::*;
 
 use super::AdditionData;
@@ -18,15 +21,21 @@ pub fn parse_value_struct_ty(
 
     // println!("struct_ident: {:?}", struct_ident);
 
-    let parsed_values = struct_data.get_parsed_values(expr, &info)?;
+    // let parsed_values = struct_data.get_parsed_values(expr.clone(), &info)?;
 
     // println!("parsed_values: {:?}", parsed_values);
 
     let gen_tys = struct_data.get_generics_types();
 
-    // println!("gen_tys: {:?}", gen_tys);
+    // println!("gen_tys: {}", quote::quote! { #(#gen_tys),* });
 
-    // println!("info: {:?}", info);
+    // {
+    //     println!("info: ");
+    //     let info = &info.correspondence;
+    //     for (ident, type_or_expr) in info.iter() {
+    //         println!("{}: {}", ident, quote::quote! { #type_or_expr });
+    //     }
+    // };
 
     let gen_tys = gen_tys
         .iter()
@@ -40,7 +49,8 @@ pub fn parse_value_struct_ty(
                     GenericParam::Const(const_param) => {
                         if const_param.ident == *ident {
                             if let TypeOrExpr::Expr(_) = type_or_expr {
-                                // println!("const_param: {:?}", type_or_expr);
+                                // println!("const_param: {}", quote::quote! { #const_param });
+                                // println!("type_or_expr: {}", quote::quote! { #type_or_expr });
                                 Some(type_or_expr)
                             } else {
                                 None
@@ -64,9 +74,10 @@ pub fn parse_value_struct_ty(
                     }
                     _ => unimplemented!(),
                 });
-            ty.expect("ty not found")
+            ty.unwrap_or(&TypeOrExpr::Expr(parse_quote! { _ })).clone()
         })
-        .map(|ty_or_expr| match ty_or_expr {
+        .enumerate()
+        .map(|(num, ty_or_expr)| match ty_or_expr {
             TypeOrExpr::Type(ty) => {
                 if let Type::Infer(_) = ty {
                     eprintln!("error: This function does not support Type::Infer");
@@ -75,43 +86,64 @@ pub fn parse_value_struct_ty(
 
                 GenericArgument::Type(ty.clone())
             }
-            TypeOrExpr::Expr(expr) => {
-                if let Expr::Infer(_) = expr {
-                    eprintln!("error: This function does not support Expr::Infer");
-                    unimplemented!()
+            TypeOrExpr::Expr(inner_expr) => {
+                if let Expr::Infer(_) = inner_expr {
+                    // println!("num: {}", num);
+
+                    let expr =
+                        gen_get_const_generics(struct_data.const_fn.clone(), expr.clone(), num);
+
+                    if let Some(expr) = expr {
+                        return GenericArgument::Const(expr);
+                    } else {
+                        eprintln!("error: This function does not support Expr::Infer");
+                        unimplemented!()
+                    }
                 }
 
-                GenericArgument::Const(expr.clone())
+                GenericArgument::Const(inner_expr.clone())
             }
         })
         .collect::<Vec<GenericArgument>>();
+
+    // println!("gen_tys: {}", quote::quote! { #(#gen_tys),* });
 
     let head_ty: Type = parse_quote! {
         #struct_ident<#(#gen_tys),*>
     };
 
-    let ty = gen_value_struct_ty(addition_data, head_ty, parsed_values);
+    // println!("head_ty: {}", head_ty.to_token_stream());
+
+    let str_hash = addition_data
+        .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::str_hash });
+    // let primitive_traits = addition_data
+    //     .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::PrimitiveTraits });
+    let hash_bridge = addition_data
+        .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridge });
+    let hash_bridge_bridge = addition_data
+        .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridgeBridge });
+    let ty: Type = parse_quote! {
+        #hash_bridge<{
+            const NAME_HASH: u64 = #str_hash(stringify!(#expr));
+
+            type T = #head_ty;
+
+            impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for T {
+                type DATATYPE = T;
+                const DATA: Self::DATATYPE = #expr;
+            }
+
+            NAME_HASH
+        }, {
+            #str_hash(file!())
+        }, {
+            column!()
+        }, {
+            line!()
+        },
+        #head_ty
+        >
+    };
 
     Ok(ty)
-}
-
-pub fn gen_value_struct_ty(
-    addition_data: AdditionData,
-    head_ty: Type,
-    queue_ty: Vec<Type>,
-) -> Type {
-    let queue_ty_rev = queue_ty.iter().rev();
-    let const_struct_prim_end_path = addition_data
-        .get_changed_path_from_quote(quote::quote!(::const_struct::primitive::ConstStructPrimEnd));
-    let mut ty: Type = parse_quote!( #const_struct_prim_end_path );
-    let const_struct_prim_queue_path = addition_data.get_changed_path_from_quote(quote::quote!(
-        ::const_struct::primitive::ConstStructPrimQueue
-    ));
-    for queue_ty in queue_ty_rev {
-        ty = parse_quote!(#const_struct_prim_queue_path<#queue_ty, #ty>);
-    }
-    let ty: Type = parse_quote! {
-        #const_struct_prim_queue_path<#head_ty, #ty>
-    };
-    ty
 }
