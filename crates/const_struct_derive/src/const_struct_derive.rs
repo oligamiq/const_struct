@@ -6,13 +6,13 @@ use crate::util::add_dollar_mark;
 use crate::util_macro::ConstOrType;
 use crate::util::gen_get_const_generics_inner;
 use convert_case::Casing;
-use convert_case::{Case, Casing as _};
+use convert_case::Case;
 use parse::discouraged::Speculative as _;
 use parse::{Parse, Parser};
 use proc_macro2::*;
 use quote::format_ident;
 use quote::ToTokens;
-use quote::{quote, ToTokens as _};
+use quote::quote;
 use syn::punctuated::Punctuated;
 use syn::*;
 

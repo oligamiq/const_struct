@@ -1,5 +1,3 @@
-use core::char;
-
 use super::ConstStructPrimEnd;
 
 pub trait ConstStructPrimQueue {
