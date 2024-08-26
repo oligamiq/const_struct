@@ -266,6 +266,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     macro_args.push(quote! { $value: expr });
 
     let hash_bridge = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::HashBridge });
+    let hash_bridge_bridge = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::HashBridgeBridge });
     let str_hash = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::primitive::str_hash });
     let match_underscore_path = user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::match_underscore });
 
@@ -316,9 +317,11 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                 #hash_bridge<{
                     const NAME_HASH: u64 = #str_hash(stringify!($value));
 
-                    impl #primitive_traits_path for #hash_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> {
-                        type DATATYPE = #name<#gen_args>;
-                        const __DATA: Self::DATATYPE = {
+                    type T = #name<#gen_args>;
+
+                    impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for T {
+                        type DATATYPE = T;
+                        const DATA: Self::DATATYPE = {
                             $value
                         };
                     }
@@ -330,7 +333,9 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                     column!()
                 }, {
                     line!()
-                }>
+                },
+                #name<#gen_args>
+                >
             };
         }
     };
