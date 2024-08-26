@@ -116,9 +116,9 @@ pub fn parse_value_struct_ty(
     println!("head_ty: {}", head_ty.to_token_stream());
 
     let str_hash =
-        addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::str_hash; });
-    let primitive_traits = addition_data
-        .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::PrimitiveTraits });
+        addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::str_hash });
+    // let primitive_traits = addition_data
+    //     .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::PrimitiveTraits });
     let hash_bridge =
         addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridge });
     let hash_bridge_bridge = addition_data
