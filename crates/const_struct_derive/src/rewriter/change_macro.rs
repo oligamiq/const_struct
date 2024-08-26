@@ -412,7 +412,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                 return Expr::If(ExprIf {
                     attrs,
                     if_token,
-                    cond: cond,
+                    cond,
                     then_branch,
                     else_branch,
                 });

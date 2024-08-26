@@ -409,7 +409,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
                 let type_num = const_or_type
                     .iter()
-                    .filter(|const_or_type| matchs!(const_or_type, ConstOrType::Type))
+                    .filter(|const_or_type| matches!(const_or_type, ConstOrType::Type))
                     .count();
                 let args_len = args.len();
                 let mut new_generic = if args_len == const_or_type.len() + 1 {

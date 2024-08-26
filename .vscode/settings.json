@@ -12,8 +12,7 @@
         "struct",
         "structs",
         "turbofish",
-        "usize",
-        "matchs"
+        "usize"
     ],
     "rust-analyzer.checkOnSave": true,
     "editor.formatOnSave": false
