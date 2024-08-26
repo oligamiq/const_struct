@@ -161,6 +161,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                     .get_absolute_path_path(&parse_quote! { ::const_struct::keeptype::KeepType });
                 let mut keep_type_impl: ItemImpl = parse_quote! {
                     #[automatically_derived]
+                    #[doc(hidden)]
                     impl #keeptype<#num> for #datatype {
                         type Type = #ty;
                     }
@@ -301,7 +302,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .enumerate()
         .map(|(num, (ident, const_or_type))| {
             let ident_with_dollar = add_dollar_mark(ident.clone());
-            
+
             match const_or_type {
                 ConstOrType::Const => {
                     let get_const_generics_fn_seed =
@@ -373,6 +374,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         let use_outer: ItemUse =
             parse_quote!(pub(crate) use #name_module::#name_with_underscore as #name;);
         quote! {
+            #[doc(hidden)]
             pub mod #name_module {
                 #[macro_export]
                 #[allow(unused_macros)]
