@@ -48,7 +48,7 @@ pub fn get_absolute_ident_path_from_ident(
         }
     }
     if let Some(ident) = ident.get_ident() {
-        if let Some(_) = get_primitive_ident_path(&ident.to_string()) {
+        if get_primitive_ident_path(&ident.to_string()).is_some() {
             return Some(AbsolutePathOrType::Type(Box::new(
                 gen_primitive_ty(ident).unwrap(),
             )));

@@ -26,8 +26,8 @@ pub fn parse_value_tuple(
                 }),
             });
             let expr: Expr = parse_quote!({ #expr });
-            let parsed_ty = parse_value(ty, expr, additional_data);
-            parsed_ty
+            
+            parse_value(ty, expr, additional_data)
         })
         .collect::<Result<Punctuated<Type, Token![,]>>>()?;
 

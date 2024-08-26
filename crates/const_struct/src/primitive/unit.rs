@@ -19,7 +19,7 @@ mod tests {
     use super::UnitTy;
     use core::mem;
 
-    pub const fn tester_inner<T: UnitTy>() -> () {
+    pub const fn tester_inner<T: UnitTy>() {
         T::VALUE
     }
 

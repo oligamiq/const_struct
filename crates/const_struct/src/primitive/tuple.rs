@@ -40,7 +40,7 @@ mod tests {
 
     use super::TupleTy;
 
-    pub const fn tester_inner0<T: TupleTy<()>>() -> () {
+    pub const fn tester_inner0<T: TupleTy<()>>() {
         T::VALUE
     }
 

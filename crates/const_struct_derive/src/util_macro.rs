@@ -21,10 +21,10 @@ pub enum Label {
 
 impl Parse for Label {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        if let Ok(_) = input.parse::<Token![enum]>() {
+        if input.parse::<Token![enum]>().is_ok() {
             return Ok(Self::Enum);
         }
-        if let Ok(_) = input.parse::<Token![struct]>() {
+        if input.parse::<Token![struct]>().is_ok() {
             return Ok(Self::Struct);
         }
         let ident = input.parse::<Ident>()?;
@@ -95,7 +95,7 @@ impl GenericsData {
     pub fn get_generics_types(&self) -> Vec<GenericParam> {
         let const_fn = &self.const_fn;
         let gen = &const_fn.sig.generics;
-        gen.params.iter().map(|f| f.clone()).collect()
+        gen.params.iter().cloned().collect()
     }
 
     pub fn const_or_type(&self) -> Vec<ConstOrType> {
@@ -162,7 +162,7 @@ impl Parse for ExpandCallFnWithGenericsArgs {
         // println!("ExpandCallFnWithGenericsArgs: input: {}", input);
         let addition_data = input.parse::<AdditionDataArgs>().ok();
         let addition_data = addition_data.map(|data| data.into());
-        if let Some(_) = addition_data {
+        if addition_data.is_some() {
             // println!("success to parse AdditionDataArgs");
             let _comma = input.parse::<Token![,]>()?;
         }
@@ -313,7 +313,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
                 let mut exist_define_data = false;
                 if let Some(define_data) = define_data.clone() {
-                    if define_data.ident.to_string() == format!("{macro_name}GetGenericsData") {
+                    if define_data.ident == format!("{macro_name}GetGenericsData") {
                         exist_define_data = true;
                     }
                 }
@@ -323,14 +323,14 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         add_at_mark(format_ident!("{macro_name}GetGenericsData"));
                     // println!("q1: {:#?}", get_generics_data);
                     let self_macro = mac.path.clone();
-                    let call_with_generics_path = addition_data
-                        .get_changed_path_from_quote(quote! {
+                    let call_with_generics_path =
+                        addition_data.get_changed_path_from_quote(quote! {
                             ::const_struct::call_with_generics
                         });
                     // println!("addition_data: {:#?}", addition_data);
                     // println!("q: {}", quote! { #self_macro!(#get_generics_data, #call_with_generics_path, #input) });
                     return Ok(
-                        quote! { #self_macro!(#get_generics_data, #call_with_generics_path, #input) }.into(),
+                        quote! { #self_macro!(#get_generics_data, #call_with_generics_path, #input) },
                     );
                 }
                 let define_data = define_data.as_ref().unwrap();
@@ -402,20 +402,13 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         }
                     } else {
                         let expr = get_generics(num, args_last.clone());
-                        let mac = GenericArgument::Const(expr.expect("failed to get_generics"));
-                        mac
+                        GenericArgument::Const(expr.expect("failed to get_generics"))
                     }
                 };
 
                 let type_num = const_or_type
                     .iter()
-                    .filter(|const_or_type| {
-                        if let ConstOrType::Type = const_or_type {
-                            true
-                        } else {
-                            false
-                        }
-                    })
+                    .filter(|const_or_type| matches!(const_or_type, ConstOrType::Type))
                     .count();
                 let args_len = args.len();
                 let mut new_generic = if args_len == const_or_type.len() + 1 {
@@ -427,12 +420,10 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                             _ => {
                                 let str = arg.to_token_stream().to_string();
                                 // println!("str: {}", str);
-                                let generics = match parse_str::<GenericArgument>(&str) {
+                                match parse_str::<GenericArgument>(&str) {
                                     Ok(generics) => generics,
                                     Err(_) => panic!("failed to parse Argument"),
-                                };
-                                // println!("success: str");
-                                generics
+                                }
                             }
                         })
                         .collect::<Vec<GenericArgument>>()
@@ -451,11 +442,10 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                             if let ConstOrType::Type = const_or_type {
                                 let arg = args.next().unwrap();
                                 let str = arg.to_token_stream().to_string();
-                                let generics = match parse_str::<GenericArgument>(&str) {
+                                match parse_str::<GenericArgument>(&str) {
                                     Ok(generics) => generics,
                                     Err(_) => panic!("failed to parse Argument"),
-                                };
-                                generics
+                                }
                             } else {
                                 infer_process(num)
                             }
@@ -494,11 +484,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     }
                 };
 
-                let new_generic = new_generic.switcher(&switcher);
-
-                // println!("new_generic_switcher: {}", quote! { #(#new_generic),* });
-
-                new_generic
+                new_generic.switcher(&switcher)
             }
             _ => vec![arg.clone()],
         };

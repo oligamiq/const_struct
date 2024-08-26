@@ -1,5 +1,6 @@
 use proc_macro2::{Spacing, TokenStream};
-use quote::{quote, TokenStreamExt as _};
+use punctuated::Punctuated;
+use quote::{quote, ToTokens as _, TokenStreamExt as _};
 use syn::*;
 
 pub fn add_at_mark(ident: Ident) -> TokenStream {
@@ -28,6 +29,92 @@ pub fn add_dollar_mark_inner(stream: TokenStream) -> TokenStream {
 
 pub fn add_dollar_mark(ident: Ident) -> TokenStream {
     add_dollar_mark_inner(quote! { #ident })
+}
+
+pub fn check_meta_path(path: &Path) -> TokenStream {
+    if let (
+        None,
+        Some(PathSegment {
+            ident,
+            arguments: PathArguments::None,
+        }),
+    ) = (path.leading_colon, path.segments.first())
+    {
+        if ident == "crate" {
+            add_dollar_mark_inner(path.to_token_stream())
+        } else {
+            path.to_token_stream()
+        }
+    } else {
+        path.to_token_stream()
+    }
+}
+
+pub fn item_fn_with_meta(mut item_fn: ItemFn) -> ItemFn {
+    let predicates = &mut item_fn
+        .sig
+        .generics
+        .where_clause
+        .as_mut()
+        .unwrap()
+        .predicates;
+    *predicates = predicates
+        .iter()
+        .cloned()
+        .map(|pred| {
+            match pred {
+                WherePredicate::Type(PredicateType {
+                    bounded_ty,
+                    bounds,
+                    lifetimes,
+                    colon_token,
+                }) => {
+                    let new_bounds = bounds
+                        .iter()
+                        .cloned()
+                        .map(|bound| {
+                            if let TypeParamBound::Trait(TraitBound {
+                                paren_token,
+                                modifier,
+                                lifetimes,
+                                path,
+                            }) = bound
+                            {
+                                let path = check_meta_path(&path);
+
+                                // オリジナルのToTokensの実装を参考
+                                let mut tokens = TokenStream::new();
+                                let to_tokens = |tokens: &mut TokenStream| {
+                                    modifier.to_tokens(tokens);
+                                    lifetimes.to_tokens(tokens);
+                                    path.to_tokens(tokens);
+                                };
+                                match &paren_token {
+                                    Some(paren) => paren.surround(&mut tokens, to_tokens),
+                                    None => to_tokens(&mut tokens),
+                                }
+
+                                TypeParamBound::Verbatim(tokens)
+                            } else {
+                                bound
+                            }
+                        })
+                        .collect::<Punctuated<_, Token![+]>>();
+
+                    WherePredicate::Type(PredicateType {
+                        bounded_ty,
+                        colon_token,
+                        bounds: new_bounds,
+                        lifetimes,
+                    })
+                }
+                WherePredicate::Lifetime(_) => pred,
+                _ => unreachable!(),
+            }
+        })
+        .collect::<Punctuated<_, Token![,]>>();
+
+    item_fn
 }
 
 // pub struct TestGenerics<const T: usize, S: Float> {

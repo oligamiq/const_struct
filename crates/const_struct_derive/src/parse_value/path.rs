@@ -17,7 +17,7 @@ pub fn parse_value_path(
     // Option
     if path.leading_colon.is_none()
         && path.segments.len() == 1
-        && path.segments.first().unwrap().ident.to_string() == "Option"
+        && path.segments.first().unwrap().ident == "Option"
     {
         let args = &path.segments.first().unwrap().arguments;
         let args = match args {

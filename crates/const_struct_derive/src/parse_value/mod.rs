@@ -25,6 +25,7 @@ pub struct AdditionDataArgs {
 }
 
 #[derive(Debug, Clone)]
+#[derive(Default)]
 pub struct AdditionData {
     pub data: Vec<PathAndIdent>,
 }
@@ -61,8 +62,8 @@ impl AdditionData {
             .iter()
             .find(|path_and_ident| &path_and_ident.ident == path)
             .map(|path| {
-                let path = path.path.path();
-                path
+                
+                path.path.path()
             })
     }
 }
@@ -74,10 +75,10 @@ impl ToTokens for AdditionData {
     }
 }
 
-impl Into<AdditionData> for AdditionDataArgs {
-    fn into(self) -> AdditionData {
+impl From<AdditionDataArgs> for AdditionData {
+    fn from(val: AdditionDataArgs) -> Self {
         AdditionData {
-            data: self.data.into_iter().collect(),
+            data: val.data.into_iter().collect(),
         }
     }
 }
@@ -93,13 +94,6 @@ impl Default for AdditionDataArgs {
     }
 }
 
-impl Default for AdditionData {
-    fn default() -> Self {
-        Self {
-            data: Default::default(),
-        }
-    }
-}
 
 impl Parse for AdditionDataArgs {
     fn parse(input: ParseStream) -> Result<Self> {
