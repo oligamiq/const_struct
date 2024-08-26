@@ -8,7 +8,7 @@ mod setting;
 
 mod generics;
 mod non_generics;
-mod parse_value;
+// mod parse_value;
 
 #[const_struct]
 const WINDOW_SETTING: TestSetting = {
