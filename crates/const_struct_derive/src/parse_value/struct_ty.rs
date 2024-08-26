@@ -120,14 +120,18 @@ pub fn parse_value_struct_ty(
     let primitive_traits = addition_data
         .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::PrimitiveTraits });
     let hash_bridge =
-        addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::HashBridge });
+        addition_data.get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridge });
+    let hash_bridge_bridge = addition_data
+        .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridgeBridge });
     let ty: Type = parse_quote! {
         HashBridge<{
             const NAME_HASH: u64 = #str_hash(stringify!(#expr));
 
-            impl #primitive_traits for #hash_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> {
-                type DATATYPE = #head_ty;
-                const __DATA: Self::DATATYPE = #expr;
+            type T = #head_ty;
+
+            impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for T {
+                type DATATYPE = T;
+                const DATA: Self::DATATYPE = #expr;
             }
 
             NAME_HASH
@@ -137,7 +141,9 @@ pub fn parse_value_struct_ty(
             column!()
         }, {
             line!()
-        }>
+        },
+        #head_ty
+        >
     };
 
     Ok(ty)

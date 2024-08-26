@@ -47,7 +47,7 @@ macro_rules! TestStructWithFloatGenerics {
                     ::const_struct::keeptype::KeepTypeConst: KeepTypeConst,
                     ::const_struct::primitive::PrimitiveTraits: PrimitiveTraits,
                     ::const_struct::str_hash: str_hash,
-                    ::const_struct::HashBridge: HashBridge,
+                    ::const_struct::primitive::HashBridge: HashBridge,
                     F32: F32
                 ),
                 @TestStructWithFloatGenericsGetGenericsData(
@@ -150,18 +150,18 @@ mod tests {
             ),
         >();
 
-        // let c = call_with_generics!(caller::<
-        //     TestStructWithFloatGenerics!(
-        //         f32,
-        //         TestStructWithFloatGenerics {
-        //             test_data: Some(1),
-        //             test_data2: Some(Some(2)),
-        //             test_data3: 3,
-        //             test_data4: [0; 8],
-        //             str: "test",
-        //             float: 0.0,
-        //         }
-        //     ),
-        // >());
+        let c = call_with_generics!(caller::<
+            TestStructWithFloatGenerics!(
+                f32,
+                TestStructWithFloatGenerics {
+                    test_data: Some(1),
+                    test_data2: Some(Some(2)),
+                    test_data3: 3,
+                    test_data4: [0; 8],
+                    str: "test",
+                    float: 0.0,
+                }
+            ),
+        >());
     }
 }
