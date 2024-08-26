@@ -137,7 +137,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                 .iter()
                 .map::<GenericArgument, _>(|param| match param {
                     GenericParam::Const(ConstParam { ident, .. }) => {
-                        GenericArgument::Const(parse_quote! { #ident })
+                        GenericArgument::Const(parse_quote! { { #ident } })
                     }
                     _ => GenericArgument::Type(parse_quote! { #param }),
                 })
@@ -229,7 +229,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         #[automatically_derived]
         impl<PrimitiveType: #primitive_traits_path<DATATYPE = #datatype>> #trait_name_with_generics for PrimitiveType {}
     };
-    trait_impl.generics.params.extend(generics_with_copy.params);
+    trait_impl.generics.params.extend(generics_with_copy.params.clone());
     trait_impl.generics.where_clause = generics_with_copy.where_clause.clone();
 
     println!("### 1 ###");
@@ -240,7 +240,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         const fn get_const_generics(_: #datatype) {}
     );
     const_fn.vis = vis.clone();
-    const_fn.sig.generics = generics.clone();
+    const_fn.sig.generics = generics_with_copy.clone();
 
     let generics_snake = generics
         .params

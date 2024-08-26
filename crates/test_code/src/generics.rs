@@ -25,4 +25,5 @@ pub fn tester_test_generics<const T: usize, S: Float + Copy + Debug, U: TestGene
 fn test_generics() {
     tester_test_generics::<7, f32, TestGenerics!(7, f32, TestGenerics { s: 0.0 })>();
     call_with_generics!(tester_test_generics::<TestGenerics!(7, f32, TestGenerics { s: 0.0 })>());
+    call_with_generics!(tester_test_generics::<TestGenerics!(_, f32, TestGenerics::<7, f32> { s: 0.0 })>());
 }
