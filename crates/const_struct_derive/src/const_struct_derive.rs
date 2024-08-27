@@ -448,7 +448,6 @@ pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<ConstStructAt
         .filter(|attr| {
             let path = attr.path();
             let path = path.to_token_stream().to_string();
-            eprintln!("path: {}", path);
             path == "const_struct" || path == "const_struct :: const_struct" || path == ":: const_struct :: const_struct"
         })
         .collect::<Vec<_>>();

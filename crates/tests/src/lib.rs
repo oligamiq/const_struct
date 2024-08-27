@@ -109,10 +109,11 @@ mod tests6 {
 mod test7 {
     // use const_struct::const_struct;
 
+    #[allow(unused)]
     #[const_struct::const_struct(macro_export)]
     #[derive(const_struct::ConstStruct, Debug)]
     pub struct TestSetting {
-        pub a: Option<u32>,
+        a: Option<u32>,
         abc_def: &'static str,
     }
 
