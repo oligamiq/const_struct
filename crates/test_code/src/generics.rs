@@ -79,3 +79,32 @@ pub mod test2 {
         tester_test_generics::<7, f32, super::BTy>();
     }
 }
+
+#[cfg(test)]
+pub mod test3 {
+    use const_struct::{call_with_generics, const_struct, primitive::TupleTy, ConstStruct, F32};
+
+    #[derive(ConstStruct)]
+    pub struct TestSetting<const N: usize>;
+
+    impl<const N: usize> core::fmt::Debug for TestSetting<N> {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            f.debug_struct("TestSetting")
+                .field("N", &N)
+                .finish()
+        }
+    }
+
+    pub fn tester<const N: usize, const N2: usize, A: TupleTy<(TestSetting<N>, TestSetting<N2>)>, const N3: usize, B: TupleTy<(f32, TestSetting<N3>)>>() {
+        no_std_compat::println!("a: {:?}", A::__DATA);
+        no_std_compat::println!("b: {:?}", B::__DATA);
+    }
+
+    #[const_struct]
+    const B: TestSetting<0> = TestSetting;
+
+    #[test]
+    fn main() {
+        call_with_generics!(tester::<(TestSetting!(BTy), TestSetting!(TestSetting::<2>)), (F32!(0.5), TestSetting!(8, TestSetting))>());
+    }
+}

@@ -263,11 +263,11 @@ impl MyExprCalls {
 }
 
 pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
-    println!("input_with_data: {}", input.to_token_stream());
+    // println!("input_with_data: {}", input.to_token_stream());
 
     let input_with_data = parse2::<ExpandCallFnWithGenericsArgs>(input)?;
 
-    println!("input_with_data success");
+    // println!("input_with_data success");
 
     // dbg!(&input_with_data);
 
@@ -302,18 +302,18 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
         let switched_arg = Arc::new(Mutex::new(arg.clone()));
         let return_data = Arc::new(Mutex::new(None));
 
-        println!("arg: {}", arg.to_token_stream());
+        // println!("arg: {}", arg.to_token_stream());
 
         arg.clone().switcher(&|mac| {
             // check about the macro: F32, F64, etc.
-            println!("mac: {}", mac.to_token_stream());
+            // println!("mac: {}", mac.to_token_stream());
 
             if let Some(ty) = crate::ident::gen_primitive_ty(&mac.path.segments.last().unwrap().ident) {
                 let ty = ty(parse2::<Expr>(mac.tokens.clone()).unwrap());
-                println!("ty: {}", ty.to_token_stream());
+                // println!("ty: {}", ty.to_token_stream());
 
                 let switcher = |inner_mac: Macro| -> TokenStream {
-                    if inner_mac.path == mac.path {
+                    if inner_mac == mac {
                         ty.to_token_stream()
                     } else {
                         inner_mac.to_token_stream()
