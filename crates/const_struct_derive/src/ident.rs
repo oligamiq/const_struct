@@ -24,6 +24,8 @@ pub enum PrimitiveIdent {
     I128,
     Usize,
     Isize,
+    Some,
+    None,
 }
 
 pub enum AbsolutePathOrType {
@@ -59,6 +61,8 @@ pub fn get_absolute_ident_path_from_ident(
 
 pub fn gen_primitive_ty(ident: &Ident) -> Option<impl Fn(Expr) -> Type> {
     // println!("ident: {:?}", ident);
+    let mut is_some = false;
+    let mut is_none = false;
     let base = match ident.to_string().as_str() {
         "U8" | "I8" | "Bool" => String::from("u8"),
         "U16" | "I16" => String::from("u16"),
@@ -66,6 +70,14 @@ pub fn gen_primitive_ty(ident: &Ident) -> Option<impl Fn(Expr) -> Type> {
         "U64" | "I64" | "F64" => String::from("u64"),
         "U128" | "I128" => String::from("u128"),
         "Usize" | "Isize" => String::from("usize"),
+        "Some" => {
+            is_some = true;
+            String::from("Option")
+        }
+        "None" => {
+            is_none = true;
+            String::from("Option")
+        }
         _ => return None,
     };
     let base: Ident = format_ident!("{}", base);
@@ -73,6 +85,18 @@ pub fn gen_primitive_ty(ident: &Ident) -> Option<impl Fn(Expr) -> Type> {
     let name: Ident = format_ident!("{}", name);
     let camel_name = format_ident!("{}Impl", ident);
     let expr_fn = move |expr: Expr| {
+        if is_some {
+            let ty: Type = parse_quote! {
+                ::const_struct::primitive::SomeImpl<#expr>
+            };
+            return ty;
+        }
+        if is_none {
+            let ty: Type = parse_quote! {
+                ::const_struct::primitive::NoneImpl
+            };
+            return ty;
+        }
         let ty: Type = parse_quote! {
             ::const_struct::primitive::#camel_name::<{ unsafe { core::mem::transmute::<#name, #base>(#expr) } }>
         };
