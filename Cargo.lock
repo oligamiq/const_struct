@@ -134,7 +134,6 @@ name = "test_gen_code"
 version = "0.4.2"
 dependencies = [
  "const_struct",
- "const_struct_derive",
  "paste",
 ]
 
