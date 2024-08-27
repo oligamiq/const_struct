@@ -82,7 +82,7 @@ pub mod test2 {
 
 #[cfg(test)]
 pub mod test3 {
-    use const_struct::{call_with_generics, const_struct, primitive::TupleTy, ConstStruct, F32};
+    use const_struct::{call_with_generics, const_struct, primitive::TupleTy, ConstStruct};
 
     #[derive(ConstStruct)]
     pub struct TestSetting<const N: usize>;

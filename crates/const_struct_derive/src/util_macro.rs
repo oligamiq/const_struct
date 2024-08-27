@@ -263,7 +263,7 @@ impl MyExprCalls {
 }
 
 pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
-    // println!("input_with_data: {}", input.to_token_stream());
+    println!("input_with_data: {}", input.to_token_stream());
 
     let input_with_data = parse2::<ExpandCallFnWithGenericsArgs>(input)?;
 
@@ -506,8 +506,8 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
         let extend = extend.lock().unwrap().clone();
 
-        println!("extend: {}", quote! { #( #extend )* });
-        println!("switched_arg: {}", switched_arg.lock().unwrap().clone().to_token_stream());
+        // println!("extend: {}", quote! { #( #extend )* });
+        // println!("switched_arg: {}", switched_arg.lock().unwrap().clone().to_token_stream());
 
         if let Some(return_data) = return_data.lock().unwrap().clone() {
             return Ok(return_data);

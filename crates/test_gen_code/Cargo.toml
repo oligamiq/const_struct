@@ -10,5 +10,6 @@ publish = false
 release = false
 
 [dependencies]
-const_struct_derive.workspace = true
+# const_struct_derive.workspace = true
+const_struct.workspace = true
 paste = "1.0"
