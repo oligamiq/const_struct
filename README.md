@@ -99,9 +99,36 @@ fn main() {
 ```
 
 ## Structs (inside declaration const)
-Here, it may be referred to as the inside macro.<br>
-The basic theory is established, but there are limitations.<br>
-Since it expands a lot and there are many trait interactions, it is believed to affect compile time if used extensively.<br>
+Note: Sometimes referred to as the "inside macro."
+When the derive macro is applied, a macro with the same name is generated.
+When using this macro, it is necessary to import the corresponding struct at the same time.
+The member variables of the struct to which this macro is applied must implement the Copy trait. (As indicated by the third error to watch out for.)
+By using #[const_struct(macro_export)], the macro can be made publicly available.
+```rust
+#[allow(unused)]
+#[const_struct::const_struct(macro_export)]
+#[derive(const_struct::ConstStruct, Debug)]
+pub struct TestSetting {
+    a: Option<u32>,
+    abc_def: &'static str,
+}
+
+pub fn tester<A: TestSettingTy>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+pub const fn default() -> TestSetting {
+    TestSetting {
+        a: None,
+        abc_def: "hello world",
+    }
+}
+
+#[test]
+fn main() {
+    tester::<TestSetting!(default())>();
+}
+```
 
 ## Structs (inside declaration const/generics)
 The basic theory is established, but there are limitations.<br>
