@@ -450,7 +450,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
                 let new_generic_only_type = new_generic.clone();
 
-                new_generic.push(if is_outer_declaration {
+                let extended_arg = if is_outer_declaration {
                     GenericArgument::Type(Type::Path(TypePath {
                         qself: None,
                         path: ty_path.unwrap(),
@@ -459,9 +459,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     // println!("arg: {}", args_last.to_token_stream());
 
                     arg.clone()
-                });
-
-                // println!("new_generic: {}", quote! { #(#new_generic),* });
+                };
 
                 let switcher = |inner_mac: Macro| -> TokenStream {
                     if inner_mac.path == mac.path {
@@ -477,7 +475,11 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     }
                 };
 
-                new_generic.switcher(&switcher)
+                let extended_arg = extended_arg.switcher(&switcher);
+
+                new_generic.push(extended_arg);
+
+                new_generic
             }
             _ => vec![arg.clone()],
         };
