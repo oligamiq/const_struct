@@ -261,11 +261,11 @@ impl MyExprCalls {
 }
 
 pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
-    // println!("input_with_data: {}", input.to_token_stream());
+    println!("input_with_data: {}", input.to_token_stream());
 
     let input_with_data = parse2::<ExpandCallFnWithGenericsArgs>(input)?;
 
-    // println!("input_with_data success");
+    println!("input_with_data success");
 
     // dbg!(&input_with_data);
 
