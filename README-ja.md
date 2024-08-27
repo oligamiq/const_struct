@@ -135,35 +135,37 @@ fn main() {
 ジェネリクスが存在する場合、構造体名のマクロを呼び出す際に、定義順で型を指定します。<br>
 const genericsの場合は、渡した値から推定可能な場合は、`_`を使うことができます。<br>
 全てのconst genericsを省略する場合、書かないことができます。<br>
+`call_with_generics!`マクロを使うことで、推論可能な場合、const genericsを省略することができます。<br>
+定義順に型は展開されるため、`call_with_generics!`マクロを使う場合、受け取る側では定義順に型を指定する必要があります。<br>
+const genericsでない型は、省略することはできません。<br>
+`#[const_struct]`で定義した`???Ty`を引数に用いた場合、const genericsでない型も省略することができます。<br>
+例は以下の通りです。<br>
 ```rust
-use const_struct::{call_with_generics, ConstStruct};
-use core::fmt::Debug;
+use const_struct::{call_with_generics, const_struct, ConstStruct};
 
-pub trait Float {}
-
-impl Float for f32 {}
-impl Float for f64 {}
-
-#[const_struct::const_struct(Float: crate::test8::Float)]
 #[derive(ConstStruct, Debug)]
-pub struct TestSetting<S: Float> {
-    pub a: Option<S>,
-    abc_def: &'static str,
-}
+pub struct TestSetting<const N: usize>;
 
-pub fn tester<A: TestSettingTy<f32>>() {
+pub fn tester<const N: usize, A: TestSettingTy<N>>() {
     println!("a: {:?}", A::__DATA);
 }
 
-pub fn tester2<S: Float + Debug + Copy, A: TestSettingTy<S>>() {
-    println!("a: {:?}", A::__DATA);
-}
+#[const_struct]
+const B: TestSetting<5> = TestSetting;
 
 #[test]
 fn main() {
-    tester::<TestSetting!(f32, TestSetting { a: None, abc_def: "hello world" })>();
-    tester2::<f32, TestSetting!(f32, TestSetting { a: None, abc_def: "hello world" })>();
-    call_with_generics!(tester2::<TestSetting!(f64, TestSetting { a: None, abc_def: "hello world" })>());
+    tester::<5, TestSetting!(5, TestSetting::<5>)>();
+    tester::<5, TestSetting!(_, TestSetting::<5>)>();
+    tester::<4, TestSetting!(4, TestSetting)>();
+    tester::<9, TestSetting!(TestSetting::<9>)>();
+
+    tester::<5, TestSetting!(B)>();
+    tester::<5, BTy>();
+    call_with_generics!(tester::<TestSetting!(B)>());
+    call_with_generics!(tester::<5, BTy>());
+    call_with_generics!(tester::<TestSetting!(_, BTy)>());
+    call_with_generics!(tester::<TestSetting!(BTy)>());
 }
 ```
 

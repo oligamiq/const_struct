@@ -192,7 +192,7 @@ pub mod test8 {
 
 #[cfg(test)]
 mod test9 {
-    use const_struct::ConstStruct;
+    use const_struct::{call_with_generics, const_struct, ConstStruct};
 
     #[derive(ConstStruct, Debug)]
     pub struct TestSetting<const N: usize>;
@@ -201,11 +201,21 @@ mod test9 {
         println!("a: {:?}", A::__DATA);
     }
 
+    #[const_struct]
+    const B: TestSetting<5> = TestSetting;
+
     #[test]
     fn main() {
         tester::<5, TestSetting!(5, TestSetting::<5>)>();
         tester::<5, TestSetting!(_, TestSetting::<5>)>();
         tester::<4, TestSetting!(4, TestSetting)>();
         tester::<9, TestSetting!(TestSetting::<9>)>();
+
+        tester::<5, TestSetting!(B)>();
+        tester::<5, BTy>();
+        call_with_generics!(tester::<TestSetting!(B)>());
+        call_with_generics!(tester::<5, BTy>());
+        call_with_generics!(tester::<TestSetting!(_, BTy)>());
+        call_with_generics!(tester::<TestSetting!(BTy)>());
     }
 }
