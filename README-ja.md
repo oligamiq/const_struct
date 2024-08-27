@@ -216,6 +216,27 @@ fn main() {
 }
 ```
 
+## 複合型(Outside into Inside/derive)
+deriveで生成された構造体も受け取ることができます。<br>
+```rust
+use const_struct::{primitive::TupleTy, ConstStruct, F32};
+
+#[derive(ConstStruct, Debug)]
+pub struct TestSetting;
+
+pub fn tester<A: TupleTy<(f32, TestSetting)>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[test]
+fn main() {
+    tester::<(F32!(0.5), TestSetting!(TestSetting))>();
+}
+```
+
+## 複合型(Outside into Inside/derive/generics)
+
+
 ## ConstCompat
 通常の関数などをcfgフラグに基づいて、ジェネリクス受け取りに変更する属性マクロです。
 <br>

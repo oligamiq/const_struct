@@ -219,3 +219,41 @@ mod test9 {
         call_with_generics!(tester::<TestSetting!(BTy)>());
     }
 }
+
+#[cfg(test)]
+mod test10 {
+    use const_struct::{primitive::TupleTy, ConstStruct, F32};
+
+    #[derive(ConstStruct, Debug)]
+    pub struct TestSetting;
+
+    pub fn tester<A: TupleTy<(f32, TestSetting)>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    #[test]
+    fn main() {
+        tester::<(F32!(0.5), TestSetting!(TestSetting))>();
+    }
+}
+
+#[cfg(test)]
+mod test11 {
+    use const_struct::{call_with_generics, const_struct, primitive::TupleTy, ConstStruct, F32};
+
+    #[derive(ConstStruct, Debug)]
+    pub struct TestSetting<const N: usize>;
+
+    pub fn tester<const N: usize, A: TupleTy<(f32, TestSetting<N>)>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    #[const_struct]
+    const B: TestSetting<0> = TestSetting;
+
+    #[test]
+    fn main() {
+        tester::<0, (F32!(0.5), BTy)>();
+        call_with_generics!(tester::<(F32!(0.5), TestSetting!(BTy))>());
+    }
+}
