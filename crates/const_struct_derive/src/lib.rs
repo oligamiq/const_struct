@@ -6,8 +6,7 @@ use proc_macro::TokenStream as RawTokenStream;
 use proc_macro2::TokenStream;
 use quote::ToTokens as _;
 use syn::{
-    parse, parse_macro_input, parse_quote, Attribute, DeriveInput, ItemConst, ItemFn, ItemStruct,
-    Meta, MetaList,
+    parse::Parser as _, parse_macro_input, parse_quote, punctuated::Punctuated, Attribute, DeriveInput, ItemConst, ItemFn, ItemStruct, Meta, MetaList
 };
 
 mod const_compat;
@@ -36,27 +35,30 @@ pub fn const_struct(attr: RawTokenStream, item: RawTokenStream) -> RawTokenStrea
         attr.path().is_ident("derive")
             || match attr.meta {
                 Meta::List(MetaList { ref tokens, .. }) => {
-                    tokens.clone().into_iter().any(|token| match token {
-                        proc_macro2::TokenTree::Ident(ident) => ident == "ConstStruct",
-                        _ => false,
+                    let path = match Punctuated::<syn::Path, syn::Token![::]>::parse_terminated.parse2(tokens.clone()) {
+                        Ok(path) => path,
+                        _ => return false,
+                    };
+                    path.iter().any(|path| {
+                        let path = path.to_token_stream().to_string();
+                        path == "const_struct" || path == "const_struct :: const_struct" || path == ":: const_struct :: const_struct"
                     })
                 }
                 _ => false,
             }
     }
 
-    let output = match parse::<ItemConst>(item.clone()) {
+    let output = match syn::parse::<ItemConst>(item.clone()) {
         Ok(input) => generate_const_struct(input),
-        Err(err) => match parse::<ItemStruct>(item.clone()) {
+        Err(err) => match syn::parse::<ItemStruct>(item.clone()) {
             Ok(st) => {
-                // dbg!(&st);
                 let index = st.attrs.iter().position(check_derive_attr);
                 if let Some(index) = index {
                     let mut st = st;
                     let old_attr = &mut st.attrs;
                     let attr: TokenStream = attr.into();
                     let self_attr: Attribute = parse_quote! {
-                        #[const_struct(#attr)]
+                        #[::const_struct::const_struct(#attr)]
                     };
                     old_attr.insert(index + 1, self_attr);
                     Ok(st.to_token_stream())

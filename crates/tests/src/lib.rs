@@ -104,3 +104,31 @@ mod tests6 {
         tester::<PiTy>();
     }
 }
+
+#[cfg(test)]
+mod test7 {
+    // use const_struct::const_struct;
+
+    #[const_struct::const_struct(macro_export)]
+    #[derive(const_struct::ConstStruct, Debug)]
+    pub struct TestSetting {
+        pub a: Option<u32>,
+        abc_def: &'static str,
+    }
+
+    pub fn tester<A: TestSettingTy>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    pub const fn default() -> TestSetting {
+        TestSetting {
+            a: None,
+            abc_def: "hello world",
+        }
+    }
+
+    #[test]
+    fn main() {
+        tester::<TestSetting!(default())>();
+    }
+}

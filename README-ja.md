@@ -101,9 +101,9 @@ fn main() {
 
 ## 構造体(inside declaration const)
 ※ここではインサイドマクロと呼ぶことがあります。<br>
-基礎理論は出来上がっていますが、制限が存在します。<br>
-配列は80bytesまでしか渡されません。文字列は80bytesで途切れ、配列の場合は0埋めされます。<br>
-また、かなり展開する上、traitの相互作用が多く存在するため、多く使うとコンパイル時間に影響が出ると思われます。<br>
+deriveマクロを適用すると、同名のマクロが生成されます。<br>
+このマクロを使用する際には、構造体も同時にインポートする必要があります。<br>
+適用する構造体のメンバ変数は、`Copy`可能である必要があります。（気を付けるべきエラー3つ目より）<br>
 ```rust
 ```
 
@@ -207,4 +207,8 @@ avoiding this restriction via `transmute`, `union`, or raw pointers leads to com
 
 ```rust
 constructing invalid value: encountered a dangling reference (0x48[noalloc] has no provenance)
+```
+
+```rust
+destructor of `generics::TestStructWithFloatGenerics<T, S>` cannot be evaluated at compile-time
 ```

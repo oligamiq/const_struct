@@ -445,7 +445,12 @@ pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<ConstStructAt
     let attr = input
         .attrs
         .iter()
-        .filter(|attr| attr.path().segments.last().unwrap().ident == "const_struct")
+        .filter(|attr| {
+            let path = attr.path();
+            let path = path.to_token_stream().to_string();
+            eprintln!("path: {}", path);
+            path == "const_struct" || path == "const_struct :: const_struct" || path == ":: const_struct :: const_struct"
+        })
         .collect::<Vec<_>>();
 
     let is_macro_export = attr.iter().any(|attr| check_macro_export(attr));
