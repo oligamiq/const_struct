@@ -320,9 +320,10 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     }
                 };
 
-                *switched_arg.lock().unwrap() = switched_arg.lock().unwrap().clone().switcher(&switcher);
+                let switched_arg_clone = switched_arg.clone().lock().unwrap().clone();
+                *switched_arg.lock().unwrap() = switched_arg_clone.switcher(&switcher);
 
-                return TokenStream::new();
+                return mac.to_token_stream();
             }
 
             let mac = mac.clone();
@@ -357,7 +358,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                 // println!("addition_data: {:#?}", addition_data);
                 // println!("q: {}", quote! { #self_macro!(#get_generics_data, #call_with_generics_path, #input) });
                 *return_data.lock().unwrap() = Some(quote! { #self_macro!(#get_generics_data, #call_with_generics_path, #input_clone) });
-                return TokenStream::new();
+                return mac.to_token_stream();
             }
             let define_data = define_data.as_ref().unwrap();
 
@@ -475,7 +476,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
             };
 
             let switcher = |inner_mac: Macro| -> TokenStream {
-                if inner_mac.path == mac.path {
+                if inner_mac == mac {
                     if is_outer_declaration {
                         return GenericArgument::Type(Type::Path(TypePath {
                             qself: None,
@@ -500,7 +501,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
 
             extend.lock().unwrap().extend(new_generic);
 
-            TokenStream::new()
+            mac.to_token_stream()
         });
 
         let extend = extend.lock().unwrap().clone();

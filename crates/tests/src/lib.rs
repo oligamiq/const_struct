@@ -254,6 +254,6 @@ mod test11 {
     #[test]
     fn main() {
         tester::<0, (F32!(0.5), BTy)>();
-        // call_with_generics!(tester::<(F32!(0.5), TestSetting!(BTy))>());
+        call_with_generics!(tester::<(F32!(0.5), TestSetting!(BTy))>());
     }
 }
