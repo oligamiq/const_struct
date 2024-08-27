@@ -104,7 +104,31 @@ fn main() {
 deriveマクロを適用すると、同名のマクロが生成されます。<br>
 このマクロを使用する際には、構造体も同時にインポートする必要があります。<br>
 適用する構造体のメンバ変数は、`Copy`可能である必要があります。（気を付けるべきエラー3つ目より）<br>
+`#[const_struct(macro_export)]`とすることで、マクロを外部に公開することができます。<br>
 ```rust
+#[allow(unused)]
+#[const_struct::const_struct(macro_export)]
+#[derive(const_struct::ConstStruct, Debug)]
+pub struct TestSetting {
+    a: Option<u32>,
+    abc_def: &'static str,
+}
+
+pub fn tester<A: TestSettingTy>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+pub const fn default() -> TestSetting {
+    TestSetting {
+        a: None,
+        abc_def: "hello world",
+    }
+}
+
+#[test]
+fn main() {
+    tester::<TestSetting!(default())>();
+}
 ```
 
 ## 構造体(inside declaration const/generics)
