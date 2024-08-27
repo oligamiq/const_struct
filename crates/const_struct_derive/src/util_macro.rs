@@ -8,7 +8,7 @@ use crate::{
     macro_alt::{default_primitive_macro_alt, struct_macro_alt},
     parse_value::{AdditionData, AdditionDataArgs},
     rewriter::change_macro::Switcher,
-    util::{add_at_mark, gen_get_const_generics},
+    util::{add_at_mark, gen_get_const_generics, is_end_with_ty},
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -85,7 +85,7 @@ pub struct GenericInfo {
     pub correspondence: Vec<(Ident, TypeOrExpr)>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ConstOrType {
     Const,
     Type,
@@ -353,14 +353,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     let last = args.last().unwrap();
                     let last_token = last.to_token_stream().to_string();
                     if let Ok(path) = parse_str::<Path>(&last_token) {
-                        if path
-                            .segments
-                            .last()
-                            .unwrap()
-                            .ident
-                            .to_string()
-                            .ends_with("Ty")
-                        {
+                        if is_end_with_ty(&path) {
                             (true, Some(path))
                         } else {
                             (false, None)

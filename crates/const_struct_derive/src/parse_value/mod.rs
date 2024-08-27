@@ -24,8 +24,7 @@ pub struct AdditionDataArgs {
     pub data: Punctuated<PathAndIdent, Token![,]>,
 }
 
-#[derive(Debug, Clone)]
-#[derive(Default)]
+#[derive(Debug, Clone, Default)]
 pub struct AdditionData {
     pub data: Vec<PathAndIdent>,
 }
@@ -61,10 +60,7 @@ impl AdditionData {
         self.data
             .iter()
             .find(|path_and_ident| &path_and_ident.ident == path)
-            .map(|path| {
-                
-                path.path.path()
-            })
+            .map(|path| path.path.path())
     }
 }
 
@@ -93,7 +89,6 @@ impl Default for AdditionDataArgs {
         }
     }
 }
-
 
 impl Parse for AdditionDataArgs {
     fn parse(input: ParseStream) -> Result<Self> {

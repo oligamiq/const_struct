@@ -46,7 +46,6 @@ fn main() {
 }
 ```
 ## 構造体(outside declaration const)
-定義できる値に制限はありません。<br>
 構造体の場合は、`derive(ConstStruct)`で受け取ることができるようになります。<br>
 Constとして渡したい値は、`const_struct`マクロを使って定義します。<br>
 `const_struct`マクロは、名前をキャメルケースに変換し、Tyをつけた名前で定義します。<br>
@@ -132,12 +131,40 @@ fn main() {
 ```
 
 ## 構造体(inside declaration const/generics)
-基礎理論は出来上がっていますが、制限が存在します。<br>
-また、かなり展開する上、traitの相互作用が多く存在するため、多く使うとコンパイル時間に影響が出ると思われます。<br>
-ジェネリクスで渡す型は、インサイドマクロを実装している必要があり、また、内部で使うためインポートする必要があります。<br>
-constの都合上、ジェネリック引数はCopyを必要とします。<br>
-トレイト境界を用いることができますが、受け取った引数の型の確認のため、内部でトレイト境界を展開します。よって、トレイト境界を使う場合は、$crateなどを用いて絶対パスで指定することをお勧めします。インポートエラーが出ます<br>
+上記の条件に加え、トレイト境界にはCopyが勝手に追加されます。<br>
+ジェネリクスが存在する場合、構造体名のマクロを呼び出す際に、定義順で型を指定します。<br>
+const genericsの場合は、渡した値から推定可能な場合は、`_`を使うことができます。<br>
+全てのconst genericsを省略する場合、書かないことができます。<br>
 ```rust
+use const_struct::{call_with_generics, ConstStruct};
+use core::fmt::Debug;
+
+pub trait Float {}
+
+impl Float for f32 {}
+impl Float for f64 {}
+
+#[const_struct::const_struct(Float: crate::test8::Float)]
+#[derive(ConstStruct, Debug)]
+pub struct TestSetting<S: Float> {
+    pub a: Option<S>,
+    abc_def: &'static str,
+}
+
+pub fn tester<A: TestSettingTy<f32>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+pub fn tester2<S: Float + Debug + Copy, A: TestSettingTy<S>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[test]
+fn main() {
+    tester::<TestSetting!(f32, TestSetting { a: None, abc_def: "hello world" })>();
+    tester2::<f32, TestSetting!(f32, TestSetting { a: None, abc_def: "hello world" })>();
+    call_with_generics!(tester2::<TestSetting!(f64, TestSetting { a: None, abc_def: "hello world" })>());
+}
 ```
 
 ## 複合型(Option)

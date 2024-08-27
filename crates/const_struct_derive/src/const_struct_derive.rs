@@ -176,11 +176,19 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
     // println!("generics: {}", generics.to_token_stream());
 
+    // dbg!(&input.data);
+
     let fields = match &input.data {
-        Data::Struct(DataStruct {
-            fields: Fields::Named(FieldsNamed { named, .. }),
-            ..
-        }) => named,
+        Data::Struct(DataStruct { fields, .. }) => match fields {
+            Fields::Named(fields) => &fields.named,
+            Fields::Unnamed(_) => {
+                return Err(syn::Error::new_spanned(
+                    input,
+                    "Unnamed fields are not allowed yet",
+                ))
+            }
+            Fields::Unit => &Punctuated::new(),
+        },
         _ => return Err(syn::Error::new_spanned(input, "Must be struct type")),
     };
 
@@ -296,6 +304,8 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .get_absolute_path_meta_path(&parse_quote! { ::const_struct::primitive::str_hash });
     let match_underscore_path =
         user_attrs.get_absolute_path_meta_path(&parse_quote! { ::const_struct::match_underscore });
+    let match_end_with_path =
+        user_attrs.get_absolute_path_meta_path(&parse_quote! { ::const_struct::match_end_with });
 
     let gen_args = generics_snake
         .iter()
@@ -325,46 +335,141 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
     // println!("gen_args: {}", gen_args.to_token_stream());
 
+    let mut macro_matches = Vec::new();
+    macro_matches.push(quote! {
+        (#name_with_get_generics_data, $macro_path: path, $($arg:tt)*) => {
+            {
+                $macro_path!(
+                    @AdditionData(
+                        #addition_data
+                    ),
+                    #name_with_get_generics_data(
+                        struct,
+                        #const_fn
+                    ),
+                    $($arg)*
+                )
+            }
+        };
+    });
+
+    let generate_macro_match = |gen_args: &Punctuated<TokenStream, Token![,]>| {
+        quote! {
+            #hash_bridge<{
+                const NAME_HASH: u64 = #str_hash(stringify!($value));
+
+                type T = #name<#gen_args>;
+
+                impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for T {
+                    type DATATYPE = T;
+                    const DATA: Self::DATATYPE = {
+                        $value
+                    };
+                }
+
+                NAME_HASH
+            }, {
+                #str_hash(file!())
+            }, {
+                column!()
+            }, {
+                line!()
+            },
+            #name<#gen_args>
+            >
+        }
+    };
+
+    macro_matches.push({
+        let ty = generate_macro_match(&gen_args);
+        quote! {
+            (#macro_args) => {
+                #ty
+            };
+        }
+    });
+
+    if generics_snake
+        .iter()
+        .filter(|(_, const_or_type)| *const_or_type == ConstOrType::Const)
+        .count()
+        != 0
+    {
+        let gen_args = generics_snake
+            .iter()
+            .enumerate()
+            .map(|(num, (ident, const_or_type))| match const_or_type {
+                ConstOrType::Const => {
+                    let get_const_generics_fn_seed =
+                        gen_get_const_generics_inner(const_fn.clone(), num).unwrap();
+                    let fn_ident = get_const_generics_fn_seed.sig.ident.clone();
+                    quote! { {
+                        #get_const_generics_fn_seed
+
+                        #fn_ident($value)
+                    } }
+                }
+                ConstOrType::Type => {
+                    let ident_with_dollar = add_dollar_mark(ident.clone());
+                    quote! { #ident_with_dollar }
+                }
+            })
+            .collect::<Punctuated<TokenStream, Token![,]>>();
+
+        let ty = generate_macro_match(&gen_args);
+        macro_matches.push(
+            if generics_snake
+                .iter()
+                .filter(|(_, const_or_type)| *const_or_type == ConstOrType::Type)
+                .count()
+                == 0
+            {
+                quote! {
+                    ($value: expr) => {
+                        #match_end_with_path!($value, #ty)
+                    };
+                }
+            } else {
+                let mut macro_args = generics_snake
+                    .iter()
+                    .filter_map(|(ident, const_or_type)| {
+                        let ident_with_dollar = add_dollar_mark(ident.clone());
+                        match const_or_type {
+                            ConstOrType::Const => None,
+                            ConstOrType::Type => Some(quote! { #ident_with_dollar: path }),
+                        }
+                    })
+                    .collect::<Punctuated<_, Token![,]>>();
+                macro_args.push(quote! { $value: expr });
+
+                quote! {
+                    (#macro_args) => {
+                        #ty
+                    };
+                }
+            },
+        );
+    }
+    if generics_snake
+        .iter()
+        .filter(|(_, const_or_type)| *const_or_type == ConstOrType::Type)
+        .count()
+        != 0
+    {
+        let marker_path =
+            user_attrs.get_absolute_path_path(&parse_quote! { ::const_struct::keeptype::Marker });
+        macro_matches.push(quote! {
+            ($value: expr) => {
+                #match_end_with_path!($value, #marker_path<{
+                    compile_error!("Expected a ???Ty. If not ???Ty, you can only omission const generics")
+                }>)
+            };
+        });
+    }
+
     let macro_export = quote! {
         macro_rules! #name {
-            (#name_with_get_generics_data, $macro_path: path, $($arg:tt)*) => {
-                {
-                    $macro_path!(
-                        @AdditionData(
-                            #addition_data
-                        ),
-                        #name_with_get_generics_data(
-                            struct,
-                            #const_fn
-                        ),
-                        $($arg)*
-                    )
-                }
-            };
-            (#macro_args) => {
-                #hash_bridge<{
-                    const NAME_HASH: u64 = #str_hash(stringify!($value));
-
-                    type T = #name<#gen_args>;
-
-                    impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for T {
-                        type DATATYPE = T;
-                        const DATA: Self::DATATYPE = {
-                            $value
-                        };
-                    }
-
-                    NAME_HASH
-                }, {
-                    #str_hash(file!())
-                }, {
-                    column!()
-                }, {
-                    line!()
-                },
-                #name<#gen_args>
-                >
-            };
+            #(#macro_matches)*
         }
     };
     let macro_export = if user_attrs.macro_export {
@@ -405,8 +510,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     })
 }
 
-#[derive(Debug)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct ConstStructAttr {
     macro_export: bool,
     addition_data: AdditionData,
@@ -440,7 +544,6 @@ impl ConstStructAttr {
     }
 }
 
-
 pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<ConstStructAttr> {
     let attr = input
         .attrs
@@ -448,7 +551,9 @@ pub fn get_const_struct_derive_attr(input: &DeriveInput) -> Result<ConstStructAt
         .filter(|attr| {
             let path = attr.path();
             let path = path.to_token_stream().to_string();
-            path == "const_struct" || path == "const_struct :: const_struct" || path == ":: const_struct :: const_struct"
+            path == "const_struct"
+                || path == "const_struct :: const_struct"
+                || path == ":: const_struct :: const_struct"
         })
         .collect::<Vec<_>>();
 

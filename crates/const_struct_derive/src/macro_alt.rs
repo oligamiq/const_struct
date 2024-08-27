@@ -93,7 +93,6 @@ pub fn struct_macro_alt(
         panic!("Expected struct");
     }
     // let const_or_type = data.const_or_type();
-    
 
     move |input: TokenStream| {
         let StructMacroAltArgs { value, .. } = parse2::<StructMacroAltArgs>(input)?;
@@ -158,27 +157,24 @@ pub fn struct_macro_alt(
             .get_generics_types()
             .into_iter()
             .zip(new_generic.clone())
-            .map(|(ty, expr_or_type)| {
-                
-                match ty {
-                    GenericParam::Type(ty) => {
-                        if let GenericArgument::Type(ty_) = expr_or_type {
-                            Ok((ty.ident.clone(), TypeOrExpr::Type(ty_)))
-                        } else {
-                            eprintln!("_ is not allowed in type on inner declaration");
-                            unimplemented!()
-                        }
+            .map(|(ty, expr_or_type)| match ty {
+                GenericParam::Type(ty) => {
+                    if let GenericArgument::Type(ty_) = expr_or_type {
+                        Ok((ty.ident.clone(), TypeOrExpr::Type(ty_)))
+                    } else {
+                        eprintln!("_ is not allowed in type on inner declaration");
+                        unimplemented!()
                     }
-                    GenericParam::Const(const_param) => {
-                        if let GenericArgument::Const(expr) = expr_or_type {
-                            Ok((const_param.ident.clone(), TypeOrExpr::Expr(expr)))
-                        } else {
-                            eprintln!("_ is not allowed in type on inner declaration");
-                            unreachable!()
-                        }
-                    }
-                    _ => unimplemented!(),
                 }
+                GenericParam::Const(const_param) => {
+                    if let GenericArgument::Const(expr) = expr_or_type {
+                        Ok((const_param.ident.clone(), TypeOrExpr::Expr(expr)))
+                    } else {
+                        eprintln!("_ is not allowed in type on inner declaration");
+                        unreachable!()
+                    }
+                }
+                _ => unimplemented!(),
             })
             .collect::<Result<Vec<_>>>()?;
 

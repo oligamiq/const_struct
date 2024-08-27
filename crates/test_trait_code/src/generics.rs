@@ -1,4 +1,5 @@
 use crate::hash_bridge::{HashBridge, HashBridgeBridge};
+use crate::keeptype::KeepType;
 use crate::match_underscore;
 use crate::pre::{str_hash, PrimitiveTraits};
 
@@ -33,6 +34,10 @@ impl<
         S: Float + Copy,
     > TestStructWithFloatGenericsTy<T, S> for U
 {
+}
+
+impl<const T: usize, S: Float> KeepType<0> for TestStructWithFloatGenerics<T, S> {
+    type Type = usize;
 }
 
 #[macro_export]
@@ -95,19 +100,85 @@ macro_rules! TestStructWithFloatGenerics {
         }, $s>
         >
     };
+
+    ($s:path, $value:expr) => {
+        HashBridge<{
+            const NAME_HASH: u64 = str_hash(stringify!($value));
+
+            type T = TestStructWithFloatGenerics<{
+                const fn get_generic<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) -> usize {
+                    T
+                }
+
+                get_generic($value)
+            }, $s>;
+
+            impl HashBridgeBridge<NAME_HASH, {str_hash(file!())}, {column!()}, {line!()}> for T {
+                type DATATYPE = T;
+                const DATA: Self::DATATYPE = $value;
+            }
+
+            NAME_HASH
+        }, {
+            str_hash(file!())
+        }, {
+            column!()
+        }, {
+            line!()
+        },
+        TestStructWithFloatGenerics<{
+            const fn get_generic<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) -> usize { T }
+            get_generic($value)
+        }, $s>
+        >
+    };
+
+    ($value:expr) => {
+        match_end_with!($value, Marker<{
+            compile_error!("Expected a ???Ty")
+        }>)
+    };
 }
 
 #[cfg(test)]
 mod tests {
-    use std::fmt::Debug;
+    use crate::keeptype::Marker;
+    use const_struct_derive::{call_with_generics, match_end_with};
 
-    use const_struct_derive::call_with_generics;
+    use crate::keeptype::{KeepType, KeepTypeConst};
 
     use super::*;
 
-    fn caller<const T: usize, F: Float + Copy, U: TestStructWithFloatGenericsTy<T, F> + Debug>(
+    fn caller<const T: usize, F: Float + Copy, U: TestStructWithFloatGenericsTy<T, F>>(
     ) -> TestStructWithFloatGenerics<T, F> {
         U::__DATA
+    }
+
+    const B: TestStructWithFloatGenerics<8, f32> = TestStructWithFloatGenerics {
+        test_data: Some(1),
+        test_data2: Some(Some(2)),
+        test_data3: 3,
+        test_data4: [0; 8],
+        str: "test",
+        float: 0.0,
+    };
+
+    pub struct BTy;
+
+    impl PrimitiveTraits for BTy {
+        type DATATYPE = TestStructWithFloatGenerics<8, f32>;
+        const __DATA: <Self as PrimitiveTraits>::DATATYPE = B;
+    }
+    #[automatically_derived]
+    #[doc(hidden)]
+    impl KeepTypeConst<0> for BTy {
+        type DATATYPE = <TestStructWithFloatGenerics<8, f32> as KeepType<0>>::Type;
+        const N: Self::DATATYPE = { 8 };
+    }
+    #[automatically_derived]
+    #[doc(hidden)]
+    impl KeepType<1> for BTy {
+        type Type = f32;
     }
 
     #[test]
@@ -168,5 +239,23 @@ mod tests {
                 }
             ),
         >());
+
+        let d = caller::<
+            8,
+            f32,
+            TestStructWithFloatGenerics!(
+                f32,
+                TestStructWithFloatGenerics {
+                    test_data: Some(1),
+                    test_data2: Some(Some(2)),
+                    test_data3: 3,
+                    test_data4: [0; 8],
+                    str: "test",
+                    float: 0.0,
+                }
+            ),
+        >();
+
+        let e = caller::<8, f32, TestStructWithFloatGenerics!(BTy)>();
     }
 }

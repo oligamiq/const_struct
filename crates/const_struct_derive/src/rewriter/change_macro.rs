@@ -671,9 +671,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Expr {
                     block,
                 })
             }
-            Expr::Verbatim(tts) => {
-                Expr::Verbatim(tts)
-            }
+            Expr::Verbatim(tts) => Expr::Verbatim(tts),
             Expr::While(ExprWhile {
                 attrs,
                 label,
@@ -911,9 +909,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for Pat {
                 let attrs = attrs.switcher(u);
                 Pat::Rest(PatRest { attrs, dot2_token })
             }
-            Pat::Verbatim(tts) => {
-                Pat::Verbatim(tts)
-            }
+            Pat::Verbatim(tts) => Pat::Verbatim(tts),
             _ => unreachable!(),
         }
     }
@@ -1371,16 +1367,12 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ForeignItem {
 impl<U: Fn(Macro) -> TokenStream> Switcher<U> for UseTree {
     fn switcher(self, u: &U) -> Self {
         match self {
-            UseTree::Glob(UseGlob { star_token }) => {
-                UseTree::Glob(UseGlob { star_token })
-            }
+            UseTree::Glob(UseGlob { star_token }) => UseTree::Glob(UseGlob { star_token }),
             UseTree::Group(UseGroup { brace_token, items }) => {
                 let items = items.switcher(u);
                 UseTree::Group(UseGroup { brace_token, items })
             }
-            UseTree::Name(UseName { ident }) => {
-                UseTree::Name(UseName { ident })
-            }
+            UseTree::Name(UseName { ident }) => UseTree::Name(UseName { ident }),
             UseTree::Path(UsePath {
                 ident,
                 tree,
@@ -1397,13 +1389,11 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for UseTree {
                 ident,
                 as_token,
                 rename,
-            }) => {
-                UseTree::Rename(UseRename {
-                    ident,
-                    as_token,
-                    rename,
-                })
-            }
+            }) => UseTree::Rename(UseRename {
+                ident,
+                as_token,
+                rename,
+            }),
         }
     }
 }
@@ -1538,9 +1528,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for ImplItem {
                     semi_token,
                 })
             }
-            ImplItem::Verbatim(tts) => {
-                ImplItem::Verbatim(tts)
-            }
+            ImplItem::Verbatim(tts) => ImplItem::Verbatim(tts),
             ImplItem::Fn(ImplItemFn {
                 attrs,
                 vis,
@@ -2101,9 +2089,7 @@ impl<U: Fn(Macro) -> TokenStream> Switcher<U> for TraitItem {
                     semi_token,
                 })
             }
-            TraitItem::Verbatim(tts) => {
-                TraitItem::Verbatim(tts)
-            }
+            TraitItem::Verbatim(tts) => TraitItem::Verbatim(tts),
             TraitItem::Fn(TraitItemFn {
                 attrs,
                 sig,

@@ -26,7 +26,7 @@ pub fn parse_value_tuple(
                 }),
             });
             let expr: Expr = parse_quote!({ #expr });
-            
+
             parse_value(ty, expr, additional_data)
         })
         .collect::<Result<Punctuated<Type, Token![,]>>>()?;

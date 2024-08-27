@@ -131,3 +131,81 @@ mod test7 {
         tester::<TestSetting!(default())>();
     }
 }
+
+#[cfg(test)]
+pub mod test8 {
+    use const_struct::{call_with_generics, ConstStruct};
+    use core::fmt::Debug;
+
+    pub trait Float {}
+
+    impl Float for f32 {}
+    impl Float for f64 {}
+
+    #[const_struct::const_struct(Float: crate::test8::Float)]
+    #[derive(ConstStruct, Debug)]
+    pub struct TestSetting<S: Float> {
+        pub a: Option<S>,
+        abc_def: &'static str,
+    }
+
+    pub fn tester<A: TestSettingTy<f32>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    pub fn tester2<S: Float + Debug + Copy, A: TestSettingTy<S>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    #[test]
+    fn main() {
+        tester::<
+            TestSetting!(
+                f32,
+                TestSetting {
+                    a: None,
+                    abc_def: "hello world"
+                }
+            ),
+        >();
+        tester2::<
+            f32,
+            TestSetting!(
+                f32,
+                TestSetting {
+                    a: None,
+                    abc_def: "hello world"
+                }
+            ),
+        >();
+        call_with_generics!(tester2::<
+            TestSetting!(
+                f64,
+                TestSetting {
+                    a: None,
+                    abc_def: "hello world"
+                }
+            ),
+        >());
+    }
+}
+
+#[cfg(test)]
+mod test9 {
+    use const_struct::ConstStruct;
+
+    #[derive(ConstStruct, Debug)]
+    pub struct TestSetting<const N: usize>;
+
+    pub fn tester<const N: usize, A: TestSettingTy<N>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    #[test]
+    fn main() {
+        tester::<5, TestSetting!(5, TestSetting::<5>)>();
+        tester::<5, TestSetting!(_, TestSetting::<5>)>();
+        tester::<4, TestSetting!(4, TestSetting)>();
+        tester::<9, TestSetting!(TestSetting::<9>)>();
+    }
+}

@@ -117,6 +117,15 @@ pub fn item_fn_with_meta(mut item_fn: ItemFn) -> ItemFn {
     item_fn
 }
 
+pub fn is_end_with_ty(path: &Path) -> bool {
+    path.segments
+        .last()
+        .unwrap()
+        .ident
+        .to_string()
+        .ends_with("Ty")
+}
+
 // pub struct TestGenerics<const T: usize, S: Float> {
 //     s: S,
 // }

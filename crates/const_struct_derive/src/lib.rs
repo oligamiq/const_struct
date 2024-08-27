@@ -6,13 +6,15 @@ use proc_macro::TokenStream as RawTokenStream;
 use proc_macro2::TokenStream;
 use quote::ToTokens as _;
 use syn::{
-    parse::Parser as _, parse_macro_input, parse_quote, punctuated::Punctuated, Attribute, DeriveInput, ItemConst, ItemFn, ItemStruct, Meta, MetaList
+    parse::Parser as _, parse_macro_input, parse_quote, punctuated::Punctuated, Attribute,
+    DeriveInput, ItemConst, ItemFn, ItemStruct, Meta, MetaList,
 };
 
 mod const_compat;
 mod const_struct_derive;
 mod ident;
 mod macro_alt;
+mod match_end_with_ty;
 mod parse_value;
 mod rewriter;
 mod util;
@@ -35,13 +37,17 @@ pub fn const_struct(attr: RawTokenStream, item: RawTokenStream) -> RawTokenStrea
         attr.path().is_ident("derive")
             || match attr.meta {
                 Meta::List(MetaList { ref tokens, .. }) => {
-                    let path = match Punctuated::<syn::Path, syn::Token![::]>::parse_terminated.parse2(tokens.clone()) {
+                    let path = match Punctuated::<syn::Path, syn::Token![::]>::parse_terminated
+                        .parse2(tokens.clone())
+                    {
                         Ok(path) => path,
                         _ => return false,
                     };
                     path.iter().any(|path| {
                         let path = path.to_token_stream().to_string();
-                        path == "const_struct" || path == "const_struct :: const_struct" || path == ":: const_struct :: const_struct"
+                        path == "const_struct"
+                            || path == "const_struct :: const_struct"
+                            || path == ":: const_struct :: const_struct"
                     })
                 }
                 _ => false,
@@ -124,6 +130,20 @@ pub fn parse_value(input: RawTokenStream) -> RawTokenStream {
     match output {
         Ok(output) => {
             // println!("parse_value output: {}", output.to_token_stream());
+            output.to_token_stream().into()
+        }
+
+        Err(err) => err.to_compile_error().into(),
+    }
+}
+
+#[proc_macro]
+pub fn match_end_with(input: RawTokenStream) -> RawTokenStream {
+    // println!("match_end_with input: {}", input.to_string());
+    let output = match_end_with_ty::match_end_with_ty(input.into());
+    match output {
+        Ok(output) => {
+            // println!("match_end_with output: {}", output.to_token_stream());
             output.to_token_stream().into()
         }
 

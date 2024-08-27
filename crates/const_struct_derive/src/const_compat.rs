@@ -272,6 +272,13 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
         _ => None,
     }.unwrap_or_default();
 
+    // println!("quote: {}", quote! {
+    //     #input
+    //     #struct_define
+    //     #struct_impl
+    //     #(#keep_type)*
+    // });
+
     Ok(quote! {
         #input
         #struct_define
