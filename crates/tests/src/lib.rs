@@ -332,6 +332,7 @@ pub mod test14 {
 #[cfg(test)]
 pub mod test15 {
     use const_struct::{const_struct, ConstStruct};
+    use core::fmt::Debug;
 
     #[derive(Debug, Copy, Clone)]
     pub struct Float32;
@@ -348,7 +349,7 @@ pub mod test15 {
         _a: F,
     }
 
-    pub fn tester<const N: usize, F: Float + Copy + core::fmt::Debug, A: TestSettingCTy<N, F>>() {
+    pub fn tester<const N: usize, F: Float + Copy + Debug, A: TestSettingCTy<N, F>>() {
         println!("a: {:?}", A::__DATA);
     }
 
