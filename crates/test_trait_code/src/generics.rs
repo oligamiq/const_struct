@@ -40,9 +40,15 @@ impl<const T: usize, S: Float> KeepType<0> for TestStructWithFloatGenerics<T, S>
     type Type = usize;
 }
 
-pub trait TestA<A> {}
+pub struct Bridge<const N: usize>;
 
-impl<const T: usize, S: Float + Copy, U: Float + Copy> TestA<TestStructWithFloatGenerics<T, S>> for U {}
+pub trait TestA {
+    type T;
+}
+
+impl<U: Float + Copy> TestA for U {
+    type T = Bridge<0>;
+}
 
 #[macro_export]
 macro_rules! TestStructWithFloatGenerics {
