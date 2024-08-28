@@ -108,3 +108,28 @@ pub mod test3 {
         call_with_generics!(tester::<(TestSetting!(BTy), TestSetting!(TestSetting::<2>)), (F32!(0.5), TestSetting!(8, TestSetting))>());
     }
 }
+
+// #[cfg(test)]
+// pub mod test4 {
+//     pub trait Float {}
+
+//     impl Float for f32 {}
+
+//     use const_struct::{const_struct, ConstStruct};
+
+//     #[const_struct(Float: ::test_code::generics::test4::Float)]
+//     #[derive(ConstStruct, Debug)]
+//     pub struct TestGenerics<const T: usize, S: Float> {
+//         s: S,
+//     }
+
+//     pub fn tester_test_generics<const T: usize, S: Float + core::fmt::Debug + Copy, U: TestGenericsTy<T, S>>() {
+//         no_std_compat::println!("tester_test_generics: {:?}", U::__DATA);
+//     }
+
+//     // This is expected build failure
+//     #[test]
+//     fn test() {
+//         tester_test_generics::<7, f32, TestGenerics!(TestGenerics { s: 0.0 })>();
+//     }
+// }
