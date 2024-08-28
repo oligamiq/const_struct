@@ -40,46 +40,30 @@ impl<const T: usize, S: Float> KeepType<0> for TestStructWithFloatGenerics<T, S>
     type Type = usize;
 }
 
-pub trait KeepMainType<const N: usize> {
-    type Type;
-}
+// const M: usize = {
+//     const fn get_const_generics<const T: usize>(
+//         _: TestStructWithFloatGenerics<T, f32>,
+//     ) -> usize {
+//         T
+//     }
 
-pub trait KeepMainTypeBridge<const N: usize> {
-    type Type;
+//     get_const_generics(TestStructWithFloatGenerics {
+//         test_data: Some(1),
+//         test_data2: Some(Some(2)),
+//         test_data3: 3,
+//         test_data4: [0; 8],
+//         str: "test",
+//         float: 0.0,
+//     })
+// };
 
-    fn get_main_type() -> Self::Type;
-}
-
-impl<const N: usize> KeepMainTypeBridge<N> for TestStructWithFloatGenerics<N, f32> {
-    type Type = usize;
-
-    fn get_main_type() -> Self::Type {
-        N
-    }
-}
-
-impl<const T: usize, S: Float + Copy> KeepMainType<1> for TestStructWithFloatGenerics<T, S> {
-    type Type = S;
-}
-
-trait FnBridge<T>
-where
-    T: Fn() -> U,
-{
-    type Type;
-}
-
-fn test_fn() {
-    const u_fn: dyn Fn() -> TestStructWithFloatGenerics<_, _> = || TestStructWithFloatGenerics {
-        test_data: Some(1),
-        test_data2: Some(Some(2)),
-        test_data3: 3,
-        test_data4: [0; 8],
-        str: "test",
-        float: 0.0,
-    };
-    type B = <u_fn as FnBridge>::Type;
-}
+// impl<S: Float> TestStructWithFloatGenerics<0, S> {
+//     const fn get_const_generics<const T: usize, S2: Float + Copy>(
+//         _: TestStructWithFloatGenerics<T, S2>,
+//     ) -> usize {
+//         T
+//     }
+// }
 
 #[macro_export]
 macro_rules! TestStructWithFloatGenerics {
@@ -113,7 +97,7 @@ macro_rules! TestStructWithFloatGenerics {
 
             type T = TestStructWithFloatGenerics<{
                 match_underscore!($t, {
-                    const fn get_generic<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) -> usize {
+                    const fn get_generic<const T: usize>(_: TestStructWithFloatGenerics<{ T }, $s>) -> usize {
                         T
                     }
 
@@ -136,7 +120,7 @@ macro_rules! TestStructWithFloatGenerics {
         },
         TestStructWithFloatGenerics<{
             match_underscore!($t, {
-                const fn get_generic<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) -> usize { T }
+                const fn get_generic<const T: usize>(_: TestStructWithFloatGenerics<{ T }, $s>) -> usize { T }
                 get_generic($value)
             })
         }, $s>
