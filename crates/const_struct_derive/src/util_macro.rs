@@ -187,7 +187,6 @@ pub struct ExpandCallFnWithGenericsArgs {
     pub addition_data: Option<AdditionDataArgs>,
     pub _comma: Option<Token![,]>,
     pub item: Punctuated<GenericsData, Token![,]>,
-    pub _comma2: Option<Token![,]>,
     pub call: MyExprCalls,
 }
 
@@ -204,7 +203,6 @@ impl Parse for ExpandCallFnWithGenericsArgs {
         };
         // println!("addition_data: {:#?}", addition_data);
         let mut item = Punctuated::new();
-        let mut _comma2 = None;
         loop {
             // println!("input: {}", input);
             if input.peek(Token![@]) {
@@ -217,7 +215,6 @@ impl Parse for ExpandCallFnWithGenericsArgs {
 
                     // println!("input1: {}", input);
                     if let Ok(_comma) = input.parse::<Token![,]>() {
-                        _comma2 = Some(_comma);
                         item.push_punct(_comma);
 
                         // println!("input2: {}", input);
@@ -241,7 +238,6 @@ impl Parse for ExpandCallFnWithGenericsArgs {
             addition_data,
             _comma,
             item,
-            _comma2,
             call,
         })
     }
@@ -326,7 +322,6 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
         addition_data: default_addition_data_args,
         _comma,
         item: addition_define_data,
-        _comma2,
         call: mut input,
     } = input_with_data;
     let default_addition_data_args_clone = default_addition_data_args.clone().unwrap_or_default();
@@ -408,7 +403,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     ::const_struct::call_with_generics
                 });
                 // println!("addition_data: {:#?}", addition_data);
-                let q = quote! { #self_macro!(#get_generics_data, #default_addition_data_args_clone, #call_with_generics_path, #addition_define_data #_comma2 #input_clone) };
+                let q = quote! { #self_macro!(#get_generics_data, #default_addition_data_args_clone, #call_with_generics_path, #addition_define_data #input_clone) };
                 // println!("q: {}", q.to_token_stream());
                 *return_data.lock().unwrap() = Some(q);
                 return mac.to_token_stream();
