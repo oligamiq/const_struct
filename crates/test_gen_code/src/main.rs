@@ -39,7 +39,39 @@ pub fn tester<const N: usize, const N2: usize, A: TupleTy<(TestSetting<N>, WestS
 #[const_struct]
 const B: TestSetting<0> = TestSetting;
 
-#[test]
 fn main() {
-    call_with_generics!(tester::<(TestSetting!(BTy), WestSetting!(WestSetting::<2>)), (F32!(0.5), TestSetting!(8, TestSetting))>());
+    // call_with_generics!(tester::<(TestSetting!(BTy), WestSetting!(WestSetting::<2>)), (F32!(0.5), TestSetting!(8, TestSetting))>());
+
+    // TestSetting!(
+    //     @TestSettingGetGenericsData,
+    //     @AdditionData(),
+    //     :: const_struct :: call_with_generics,
+    //     tester :: <(TestSetting! (BTy), WestSetting! (WestSetting::<2>)),(F32! (0.5), TestSetting! (8, TestSetting)) > ()
+    // );
+
+    // WestSetting!(@WestSettingGetGenericsData,
+    //     @AdditionData(),
+    //     :: const_struct :: call_with_generics,
+    //     @TestSettingGetGenericsData(
+    //         @AdditionData(),
+    //         struct,
+    //         pub const fn get_const_generics < const N : usize > (_ : TestSetting < { N } >) {}
+    //     ),
+    //     tester :: < (TestSetting! (BTy), WestSetting! (WestSetting::<2>)), (F32! (0.5), TestSetting! (8, TestSetting)) > ()
+    // );
+
+    call_with_generics!(
+        @ AdditionData(),
+        @ WestSettingGetGenericsData(
+            @ AdditionData(),
+            struct,
+            pub const fn get_const_generics < const N : usize > (_ : WestSetting < { N } >) {}
+        ),
+        @TestSettingGetGenericsData(
+            @AdditionData(),
+            struct,
+            pub const fn get_const_generics < const N : usize > (_ : TestSetting < { N } >) {}
+        ),
+        tester :: < (TestSetting! (BTy), WestSetting! (WestSetting::<2>)), (F32! (0.5), TestSetting! (8, TestSetting)) > ()
+    );
 }
