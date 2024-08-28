@@ -42,21 +42,22 @@ impl<const T: usize, S: Float> KeepType<0> for TestStructWithFloatGenerics<T, S>
 
 #[macro_export]
 macro_rules! TestStructWithFloatGenerics {
-    (@TestStructWithFloatGenericsGetGenericsData, $macro_path: path, $($arg:tt)*) => {
+    (@TestStructWithFloatGenericsGetGenericsData, @AdditionData($($addition_data:path: $addition_data2:path), *), $macro_path: path, $($arg:tt)*) => {
         {
             $macro_path!(
-                @AdditionData(
-                    // ::const_struct::primitive::ConstStructPrimEnd: ConstStructPrimEnd,
-                    // ::const_struct::primitive::ConstStructPrimQueue: ConstStructPrimQueue,
-                    ::const_struct::keeptype::KeepType: KeepType,
-                    ::const_struct::keeptype::KeepTypeConst: KeepTypeConst,
-                    ::const_struct::primitive::PrimitiveTraits: PrimitiveTraits,
-                    ::const_struct::primitive::str_hash: str_hash,
-                    ::const_struct::primitive::HashBridge: HashBridge,
-                    ::const_struct::primitive::HashBridgeBridge: HashBridgeBridge,
-                    F32: F32
-                ),
+                @AdditionData($($addition_data: $addition_data2), *),
                 @TestStructWithFloatGenericsGetGenericsData(
+                    @AdditionData(
+                        // ::const_struct::primitive::ConstStructPrimEnd: ConstStructPrimEnd,
+                        // ::const_struct::primitive::ConstStructPrimQueue: ConstStructPrimQueue,
+                        ::const_struct::keeptype::KeepType: KeepType,
+                        ::const_struct::keeptype::KeepTypeConst: KeepTypeConst,
+                        ::const_struct::primitive::PrimitiveTraits: PrimitiveTraits,
+                        ::const_struct::primitive::str_hash: str_hash,
+                        ::const_struct::primitive::HashBridge: HashBridge,
+                        ::const_struct::primitive::HashBridgeBridge: HashBridgeBridge,
+                        F32: F32
+                    ),
                     struct,
                     const fn get_const_generics<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) {}
                 ),

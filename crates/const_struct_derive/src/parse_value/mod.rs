@@ -1,6 +1,6 @@
 use crate::{
     const_struct_derive::PathAndIdent, ident::AbsolutePathOrType, macro_alt::match_underscore_alt,
-    rewriter::change_macro::Switcher,
+    rewriter::change_macro::Switcher, util::add_at_mark,
 };
 // use array::parse_value_array;
 use parse::{discouraged::Speculative as _, Parse, ParseStream};
@@ -22,6 +22,23 @@ pub struct AdditionDataArgs {
     pub _ident: Ident,
     pub _paren: token::Paren,
     pub data: Punctuated<PathAndIdent, Token![,]>,
+}
+
+impl ToTokens for AdditionDataArgs {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let Self {
+            _at,
+            _ident,
+            _paren,
+            data,
+        } = self;
+        let ident_with_at = add_at_mark(_ident.clone());
+        tokens.extend(quote::quote! {
+            #ident_with_at(
+                #data
+            )
+        });
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -61,6 +78,12 @@ impl AdditionData {
             .iter()
             .find(|path_and_ident| &path_and_ident.ident == path)
             .map(|path| path.path.path())
+    }
+
+    pub fn extend(self, other: Self) -> Self {
+        let mut data = self.data;
+        data.extend(other.data);
+        Self { data }
     }
 }
 

@@ -1,3 +1,5 @@
+use std::sync::{Arc, Mutex};
+
 use parse::{discouraged::Speculative as _, Parse, ParseStream, Parser as _};
 use proc_macro2::TokenStream;
 use punctuated::Punctuated;
@@ -42,9 +44,36 @@ pub struct GenericsData {
     pub _at: Token![@],
     pub ident: Ident,
     pub _paren_token: token::Paren,
-    pub label: Label,
+    pub addition_data: AdditionDataArgs,
     pub _comma: Token![,],
+    pub label: Label,
+    pub _comma2: Token![,],
     pub const_fn: ItemFn,
+}
+
+impl ToTokens for GenericsData {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let Self {
+            _at,
+            ident,
+            addition_data,
+            _comma,
+            label,
+            _comma2,
+            const_fn,
+            ..
+        } = self;
+        let ident_with_at = add_at_mark(ident.clone());
+        let label = match label {
+            Label::TupleStruct => format_ident!("tuple_struct"),
+            Label::VanillaStruct => format_ident!("vanilla_struct"),
+            Label::Struct => format_ident!("struct"),
+            Label::Enum => format_ident!("enum"),
+        };
+        tokens.extend(quote! {
+            #ident_with_at(#addition_data, #label, #const_fn)
+        });
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -134,16 +163,20 @@ impl Parse for GenericsData {
         let ident = input_try.parse::<Ident>()?;
         let content;
         let _paren_token = parenthesized!(content in input_try);
-        let label = content.parse::<Label>()?;
+        let addition_data = content.parse::<AdditionDataArgs>()?;
         let _comma = content.parse::<Token![,]>()?;
+        let label = content.parse::<Label>()?;
+        let _comma2 = content.parse::<Token![,]>()?;
         let const_fn = content.parse::<ItemFn>()?;
         input.advance_to(&input_try);
         Ok(Self {
             _at,
             ident,
             _paren_token,
-            label,
+            addition_data,
             _comma,
+            label,
+            _comma2,
             const_fn,
         })
     }
@@ -151,9 +184,9 @@ impl Parse for GenericsData {
 
 #[derive(Debug, Clone)]
 pub struct ExpandCallFnWithGenericsArgs {
-    pub addition_data: Option<AdditionData>,
-    pub item: Option<GenericsData>,
+    pub addition_data: Option<AdditionDataArgs>,
     pub _comma: Option<Token![,]>,
+    pub item: Punctuated<GenericsData, Token![,]>,
     pub call: MyExprCalls,
 }
 
@@ -161,38 +194,52 @@ impl Parse for ExpandCallFnWithGenericsArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         // println!("ExpandCallFnWithGenericsArgs: input: {}", input);
         let addition_data = input.parse::<AdditionDataArgs>().ok();
-        let addition_data = addition_data.map(|data| data.into());
-        if addition_data.is_some() {
+        let _comma = if addition_data.is_some() {
             // println!("success to parse AdditionDataArgs");
-            let _comma = input.parse::<Token![,]>()?;
-        }
-        match input.parse::<GenericsData>() {
-            Ok(item) => {
-                // println!("success to parse GenericsData");
-                let _comma = input.parse::<Token![,]>().ok();
-                // println!("success to parse Token![,]");
-                let call = input.parse::<MyExprCalls>()?;
-                // println!("success to parse MyExprCalls");
-                Ok(Self {
-                    addition_data,
-                    item: Some(item),
-                    _comma,
-                    call,
-                })
+            input.parse::<Token![,]>().ok()
+        } else {
+            // println!("failed to parse AdditionDataArgs");
+            None
+        };
+        // println!("addition_data: {:#?}", addition_data);
+        let mut item = Punctuated::new();
+        loop {
+            // println!("input: {}", input);
+            if input.peek(Token![@]) {
+                if let Ok(generics_data) = input.parse::<GenericsData>() {
+                    // println!("success to parse GenericsData");
+                    // println!("generics_data: {}", generics_data.to_token_stream());
+                    // println!("item: {}", item.to_token_stream());
+                    item.push_value(generics_data);
+                    // println!("item: {}", item.to_token_stream());
+
+                    // println!("input1: {}", input);
+                    if let Ok(_comma) = input.parse::<Token![,]>() {
+                        item.push_punct(_comma);
+
+                        // println!("input2: {}", input);
+                    } else {
+                        eprintln!("failed to parse Token![,]");
+                        unreachable!();
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                break;
             }
-            Err(_e) => {
-                // eprintln!("failed to parse GenericsData: {}", _e);
-                // println!("failed to parse GenericsData");
-                let call = input.parse::<MyExprCalls>()?;
-                // println!("success to parse MyExprCalls");
-                Ok(Self {
-                    addition_data,
-                    item: None,
-                    _comma: None,
-                    call,
-                })
-            }
         }
+
+        // println!("item: {}", item.to_token_stream());
+
+        let call = input.parse::<MyExprCalls>()?;
+        // println!("success to parse MyExprCalls");
+        Ok(Self {
+            addition_data,
+            _comma,
+            item,
+            call,
+        })
     }
 }
 
@@ -272,15 +319,17 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
     // println!("input_with_data2: {:#?}", input_with_data);
 
     let ExpandCallFnWithGenericsArgs {
-        item: define_data,
+        addition_data: default_addition_data_args,
+        _comma,
+        item: addition_define_data,
         call: mut input,
-        addition_data,
-        ..
     } = input_with_data;
-    let addition_data = addition_data.unwrap_or_default();
+    let default_addition_data_args_clone = default_addition_data_args.clone().unwrap_or_default();
+    let default_addition_data: AdditionData = default_addition_data_args.map(|args| args.into()).unwrap_or_default();
 
     // println!("define_data: {:#?}", define_data);
 
+    let input_clone = input.clone();
     let generics = input.generics_mut_ref().ok_or_else(|| {
         syn::Error::new(
             proc_macro2::Span::call_site(),
@@ -294,201 +343,236 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
     let mut new_generics: Punctuated<GenericArgument, Token![,]> = Punctuated::new();
 
     for arg in &*generics {
-        let extend = match &arg {
-            GenericArgument::Type(Type::Macro(mac)) => {
-                let mac = mac.mac.clone();
-                let tokens = mac.tokens.clone();
-                // println!("failed?");
-                let args = Punctuated::<Expr, Token![,]>::parse_terminated
-                    .parse2(tokens)
-                    .unwrap_or_else(|e| {
-                        eprintln!("failed!!! {}", e);
-                        panic!();
-                    });
-                // println!("not failed: {}", args.to_token_stream());
+        let extend = Arc::new(Mutex::new(Vec::<GenericArgument>::new()));
+        // let mut switched_arg = arg.clone();
+        let switched_arg = Arc::new(Mutex::new(arg.clone()));
+        let return_data = Arc::new(Mutex::new(None));
 
-                // dbg!(&args);
+        // println!("arg: {}", arg.to_token_stream());
 
-                let macro_name = mac.path.segments.last().unwrap().ident.to_string();
+        arg.clone().switcher(&|mac| {
+            if return_data.lock().unwrap().is_some() {
+                return mac.to_token_stream();
+            }
 
-                let mut exist_define_data = false;
-                if let Some(define_data) = define_data.clone() {
-                    if define_data.ident == format!("{macro_name}GetGenericsData") {
-                        exist_define_data = true;
-                    }
-                }
-                if !exist_define_data {
-                    // println!("q0:");
-                    let get_generics_data =
-                        add_at_mark(format_ident!("{macro_name}GetGenericsData"));
-                    // println!("q1: {:#?}", get_generics_data);
-                    let self_macro = mac.path.clone();
-                    let call_with_generics_path =
-                        addition_data.get_changed_path_from_quote(quote! {
-                            ::const_struct::call_with_generics
-                        });
-                    // println!("addition_data: {:#?}", addition_data);
-                    // println!("q: {}", quote! { #self_macro!(#get_generics_data, #call_with_generics_path, #input) });
-                    return Ok(
-                        quote! { #self_macro!(#get_generics_data, #call_with_generics_path, #input) },
-                    );
-                }
-                let define_data = define_data.as_ref().unwrap();
+            // check about the macro: F32, F64, etc.
+            // println!("mac: {}", mac.to_token_stream());
 
-                let get_generics = |num: usize, value: Expr| {
-                    //     let mut mac = mac.clone();
-                    //     let macro_first_arg =
-                    //         add_at_mark(format_ident!("{macro_name}GetInnerGenerics{num}"));
-                    //     mac.tokens = quote! { #macro_first_arg, #value };
-                    //     mac
-                    gen_get_const_generics(define_data.const_fn.clone(), value, num)
-                };
-
-                // println!("try get args_last");
-                let args_last = args.last().unwrap().clone();
-                // println!("get args_last: {}", args_last.to_token_stream());
-
-                // outer declarationの場合
-                let (is_outer_declaration, ty_path) = {
-                    let last = args.last().unwrap();
-                    let last_token = last.to_token_stream().to_string();
-                    if let Ok(path) = parse_str::<Path>(&last_token) {
-                        if is_end_with_ty(&path) {
-                            (true, Some(path))
-                        } else {
-                            (false, None)
-                        }
-                    } else {
-                        (false, None)
-                    }
-                };
-
-                let const_or_type = define_data.const_or_type();
-
-                let infer_process = |num| {
-                    if is_outer_declaration {
-                        let const_or_type = match const_or_type.get(num) {
-                            Some(const_or_type) => const_or_type,
-                            None => panic!("failed to get const_or_type"),
-                        };
-                        let ty_path = ty_path.clone().unwrap();
-                        match const_or_type {
-                            ConstOrType::Const => {
-                                let keep_type_const_path = addition_data
-                                    .get_changed_path_from_quote(quote! {
-                                        ::const_struct::keeptype::KeepTypeConst
-                                    });
-                                let ty: GenericArgument = parse_quote!({
-                                    <#ty_path as #keep_type_const_path<#num>>::N
-                                });
-                                ty
-                            }
-                            ConstOrType::Type => {
-                                let keep_type_path =
-                                    addition_data.get_changed_path_from_quote(quote! {
-                                        ::const_struct::keeptype::KeepType
-                                    });
-                                let ty: GenericArgument =
-                                    parse_quote!(<#ty_path as #keep_type_path<#num>>::Type);
-                                ty
-                            }
-                        }
-                    } else {
-                        let expr = get_generics(num, args_last.clone());
-                        GenericArgument::Const(expr.expect("failed to get_generics"))
-                    }
-                };
-
-                let type_num = const_or_type
-                    .iter()
-                    .filter(|const_or_type| matches!(const_or_type, ConstOrType::Type))
-                    .count();
-                let args_len = args.len();
-                let mut new_generic = if args_len == const_or_type.len() + 1 {
-                    args.into_iter()
-                        .enumerate()
-                        .filter(|(i, _)| *i < args_len - 1)
-                        .map(|(num, arg)| match arg {
-                            Expr::Infer(_) => infer_process(num),
-                            _ => {
-                                let str = arg.to_token_stream().to_string();
-                                // println!("str: {}", str);
-                                match parse_str::<GenericArgument>(&str) {
-                                    Ok(generics) => generics,
-                                    Err(_) => panic!("failed to parse Argument"),
-                                }
-                            }
-                        })
-                        .collect::<Vec<GenericArgument>>()
-                } else if args_len == 1 {
-                    const_or_type
-                        .iter()
-                        .enumerate()
-                        .map(|(num, _)| infer_process(num))
-                        .collect::<Vec<GenericArgument>>()
-                } else if args_len == type_num + 1 {
-                    let mut args = args.into_iter();
-                    const_or_type
-                        .iter()
-                        .enumerate()
-                        .map(|(num, const_or_type)| {
-                            if let ConstOrType::Type = const_or_type {
-                                let arg = args.next().unwrap();
-                                let str = arg.to_token_stream().to_string();
-                                match parse_str::<GenericArgument>(&str) {
-                                    Ok(generics) => generics,
-                                    Err(_) => panic!("failed to parse Argument"),
-                                }
-                            } else {
-                                infer_process(num)
-                            }
-                        })
-                        .collect::<Vec<GenericArgument>>()
-                } else {
-                    panic!("failed to parse Argument");
-                };
-
-                let new_generic_only_type = new_generic.clone();
-
-                new_generic.push(if is_outer_declaration {
-                    GenericArgument::Type(Type::Path(TypePath {
-                        qself: None,
-                        path: ty_path.unwrap(),
-                    }))
-                } else {
-                    // println!("arg: {}", args_last.to_token_stream());
-
-                    arg.clone()
-                });
-
-                // println!("new_generic: {}", quote! { #(#new_generic),* });
+            if let Some(ty) = crate::ident::gen_primitive_ty(&mac.path.segments.last().unwrap().ident) {
+                let ty = ty(parse2::<Expr>(mac.tokens.clone()).unwrap());
+                // println!("ty: {}", ty.to_token_stream());
 
                 let switcher = |inner_mac: Macro| -> TokenStream {
-                    if inner_mac.path == mac.path {
-                        let ty = struct_macro_alt(
-                            addition_data.clone(),
-                            define_data.clone(),
-                            new_generic_only_type.clone(),
-                        );
-                        let ty = ty(inner_mac.tokens.clone()).unwrap();
+                    if inner_mac == mac {
                         ty.to_token_stream()
                     } else {
                         inner_mac.to_token_stream()
                     }
                 };
 
-                new_generic.switcher(&switcher)
+                let switched_arg_clone = switched_arg.clone().lock().unwrap().clone();
+                *switched_arg.lock().unwrap() = switched_arg_clone.switcher(&switcher);
+
+                return mac.to_token_stream();
             }
-            _ => vec![arg.clone()],
-        };
+
+            let mac = mac.clone();
+            let tokens = mac.tokens.clone();
+            // println!("failed?");
+            let args = Punctuated::<Expr, Token![,]>::parse_terminated
+                .parse2(tokens)
+                .unwrap_or_else(|e| {
+                    eprintln!("failed!!! {}", e);
+                    panic!();
+                });
+            // println!("not failed: {}", args.to_token_stream());
+
+            // dbg!(&args);
+
+            let macro_name = mac.path.segments.last().unwrap().ident.to_string();
+
+            let exist_define_data = addition_define_data.iter().any(|data| {
+                data.ident == format!("{macro_name}GetGenericsData")
+            });
+            if !exist_define_data {
+                // println!("q0:");
+                let get_generics_data = add_at_mark(format_ident!("{macro_name}GetGenericsData"));
+                // println!("q1: {:#?}", get_generics_data);
+                let self_macro = mac.path.clone();
+                let call_with_generics_path = default_addition_data.get_changed_path_from_quote(quote! {
+                    ::const_struct::call_with_generics
+                });
+                // println!("addition_data: {:#?}", addition_data);
+                let q = quote! { #self_macro!(#get_generics_data, #default_addition_data_args_clone, #call_with_generics_path, #addition_define_data #input_clone) };
+                // println!("q: {}", q.to_token_stream());
+                *return_data.lock().unwrap() = Some(q);
+                return mac.to_token_stream();
+            }
+            let define_data = addition_define_data.iter().find(|data| {
+                data.ident == format!("{macro_name}GetGenericsData")
+            }).unwrap();
+            let addition_data = default_addition_data.clone().extend(define_data.addition_data.clone().into());
+
+            let get_generics = |num: usize, value: Expr| {
+                //     let mut mac = mac.clone();
+                //     let macro_first_arg =
+                //         add_at_mark(format_ident!("{macro_name}GetInnerGenerics{num}"));
+                //     mac.tokens = quote! { #macro_first_arg, #value };
+                //     mac
+                gen_get_const_generics(define_data.const_fn.clone(), value, num)
+            };
+
+            // println!("try get args_last");
+            let args_last = args.last().unwrap().clone();
+            // println!("get args_last: {}", args_last.to_token_stream());
+
+            // outer declarationの場合
+            let (is_outer_declaration, ty_path) = {
+                let last = args.last().unwrap();
+                let last_token = last.to_token_stream().to_string();
+                if let Ok(path) = parse_str::<Path>(&last_token) {
+                    if is_end_with_ty(&path) {
+                        (true, Some(path))
+                    } else {
+                        (false, None)
+                    }
+                } else {
+                    (false, None)
+                }
+            };
+
+            let const_or_type = define_data.const_or_type();
+
+            let infer_process = |num| {
+                if is_outer_declaration {
+                    let const_or_type = match const_or_type.get(num) {
+                        Some(const_or_type) => const_or_type,
+                        None => panic!("failed to get const_or_type"),
+                    };
+                    let ty_path = ty_path.clone().unwrap();
+                    match const_or_type {
+                        ConstOrType::Const => {
+                            let keep_type_const_path =
+                                addition_data.get_changed_path_from_quote(quote! {
+                                    ::const_struct::keeptype::KeepTypeConst
+                                });
+                            let ty: GenericArgument = parse_quote!({
+                                <#ty_path as #keep_type_const_path<#num>>::N
+                            });
+                            ty
+                        }
+                        ConstOrType::Type => {
+                            let keep_type_path =
+                                addition_data.get_changed_path_from_quote(quote! {
+                                    ::const_struct::keeptype::KeepType
+                                });
+                            let ty: GenericArgument =
+                                parse_quote!(<#ty_path as #keep_type_path<#num>>::Type);
+                            ty
+                        }
+                    }
+                } else {
+                    let expr = get_generics(num, args_last.clone());
+                    GenericArgument::Const(expr.expect("failed to get_generics"))
+                }
+            };
+
+            let type_num = const_or_type
+                .iter()
+                .filter(|const_or_type| matches!(const_or_type, ConstOrType::Type))
+                .count();
+            let args_len = args.len();
+            let new_generic = if args_len == const_or_type.len() + 1 {
+                args.into_iter()
+                    .enumerate()
+                    .filter(|(i, _)| *i < args_len - 1)
+                    .map(|(num, arg)| match arg {
+                        Expr::Infer(_) => infer_process(num),
+                        _ => {
+                            let str = arg.to_token_stream().to_string();
+                            // println!("str: {}", str);
+                            match parse_str::<GenericArgument>(&str) {
+                                Ok(generics) => generics,
+                                Err(_) => panic!("failed to parse Argument"),
+                            }
+                        }
+                    })
+                    .collect::<Vec<GenericArgument>>()
+            } else if args_len == 1 {
+                const_or_type
+                    .iter()
+                    .enumerate()
+                    .map(|(num, _)| infer_process(num))
+                    .collect::<Vec<GenericArgument>>()
+            } else if args_len == type_num + 1 {
+                let mut args = args.into_iter();
+                const_or_type
+                    .iter()
+                    .enumerate()
+                    .map(|(num, const_or_type)| {
+                        if let ConstOrType::Type = const_or_type {
+                            let arg = args.next().unwrap();
+                            let str = arg.to_token_stream().to_string();
+                            match parse_str::<GenericArgument>(&str) {
+                                Ok(generics) => generics,
+                                Err(_) => panic!("failed to parse Argument"),
+                            }
+                        } else {
+                            infer_process(num)
+                        }
+                    })
+                    .collect::<Vec<GenericArgument>>()
+            } else {
+                panic!("failed to parse Argument");
+            };
+
+            let switcher = |inner_mac: Macro| -> TokenStream {
+                if inner_mac == mac {
+                    if is_outer_declaration {
+                        return GenericArgument::Type(Type::Path(TypePath {
+                            qself: None,
+                            path: ty_path.clone().unwrap(),
+                        }))
+                        .to_token_stream();
+                    }
+                    let ty = struct_macro_alt(
+                        addition_data.clone(),
+                        define_data.clone(),
+                        new_generic.clone(),
+                    );
+                    let ty = ty(inner_mac.tokens.clone()).unwrap();
+                    ty.to_token_stream()
+                } else {
+                    inner_mac.to_token_stream()
+                }
+            };
+
+            let switched_arg_clone = switched_arg.clone().lock().unwrap().clone();
+            *switched_arg.lock().unwrap() = switched_arg_clone.switcher(&switcher);
+
+            extend.lock().unwrap().extend(new_generic);
+
+            mac.to_token_stream()
+        });
+
+        let extend = extend.lock().unwrap().clone();
+
+        // println!("extend: {}", quote! { #( #extend )* });
+        // println!("switched_arg: {}", switched_arg.lock().unwrap().clone().to_token_stream());
+
+        if let Some(return_data) = return_data.lock().unwrap().clone() {
+            return Ok(return_data);
+        }
 
         new_generics.extend(extend);
+        let switched_arg = switched_arg.lock().unwrap().clone();
+        new_generics.push(switched_arg);
     }
 
     // println!("new_generics: {}", new_generics.to_token_stream());
 
     let new_generics = new_generics.switcher(&|mac| {
-        if let Some(path) = addition_data.get_addition_data(&mac.path) {
+        if let Some(path) = default_addition_data.get_addition_data(&mac.path) {
             let mut mac = mac;
             mac.path = path;
             mac.to_token_stream()

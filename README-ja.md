@@ -216,6 +216,46 @@ fn main() {
 }
 ```
 
+## 複合型(Outside into Inside/derive)
+deriveで生成された構造体も受け取ることができます。<br>
+```rust
+use const_struct::{primitive::TupleTy, ConstStruct, F32};
+
+#[derive(ConstStruct, Debug)]
+pub struct TestSetting;
+
+pub fn tester<A: TupleTy<(f32, TestSetting)>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[test]
+fn main() {
+    tester::<(F32!(0.5), TestSetting!(TestSetting))>();
+}
+```
+
+## 複合型(Outside into Inside/derive/generics)
+deriveで生成されたジェネリクス構造体も受け取ることができます。<br>
+```rust
+use const_struct::{call_with_generics, const_struct, primitive::TupleTy, ConstStruct, F32};
+
+#[derive(ConstStruct, Debug)]
+pub struct TestSetting<const N: usize>;
+
+pub fn tester<const N: usize, A: TupleTy<(f32, TestSetting<N>)>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[const_struct]
+const B: TestSetting<0> = TestSetting;
+
+#[test]
+fn main() {
+    tester::<0, (F32!(0.5), BTy)>();
+    call_with_generics!(tester::<(F32!(0.5), TestSetting!(BTy))>());
+}
+```
+
 ## ConstCompat
 通常の関数などをcfgフラグに基づいて、ジェネリクス受け取りに変更する属性マクロです。
 <br>
@@ -224,7 +264,7 @@ fn main() {
 cfgフラグのときに元の関数を呼び出すため、cfgフラグがないときは、元の関数を呼び出すようになります。<br>
 もう一つcfgフラグを追加することで、対応コードに対してもcfgフラグを付けれます。<br>
 現在、通常の関数のみ対応しています。<br>
-
+現在、ReduceMacroReclusionを行っていないため、何重にもした場合、recursion_limitエラーが発生する可能性があります。<br>
 ```rust
 use const_struct::ConstCompat;
 
@@ -242,13 +282,9 @@ pub fn tester(test_setting: TestSetting) {
 ```
 
 # 未実装機能
-## マクロを使わない手動実装:テスト済み
-- 構造体に対するインサイドマクロ
-- 構造体に対するインサイドマクロのジェネリクス
-
 ## マクロを使わない手動実装:未テスト
-- プリミティブ型（アウトサイドマクロ）
-- Enumに対するConstStruct、アウトサイドマクロ、インサイドマクロ
+- Enumに対するConstStruct、アウトサイドマクロ、インサイドマクロ、etc
+## 依存ライブラリを減らす: 21
 
 # 開発者へ
 ## 気を付けるべきエラー
@@ -264,4 +300,8 @@ constructing invalid value: encountered a dangling reference (0x48[noalloc] has 
 
 ```rust
 destructor of `generics::TestStructWithFloatGenerics<T, S>` cannot be evaluated at compile-time
+```
+
+```rust
+error: reached the recursion limit while instantiating `...`
 ```

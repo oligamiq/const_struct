@@ -337,13 +337,14 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
     let mut macro_matches = Vec::new();
     macro_matches.push(quote! {
-        (#name_with_get_generics_data, $macro_path: path, $($arg:tt)*) => {
+        (#name_with_get_generics_data, @AdditionData($($addition_data:path: $addition_data2:path), *), $macro_path: path, $($arg:tt)*) => {
             {
                 $macro_path!(
-                    @AdditionData(
-                        #addition_data
-                    ),
+                    @AdditionData($($addition_data: $addition_data2), *),
                     #name_with_get_generics_data(
+                        @AdditionData(
+                            #addition_data
+                        ),
                         struct,
                         #const_fn
                     ),

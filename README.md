@@ -131,10 +131,35 @@ fn main() {
 ```
 
 ## Structs (inside declaration const/generics)
-The basic theory is established, but there are limitations.<br>
-Since it expands a lot and there are many trait interactions, it is believed to affect compile time if used extensively.<br>
-The type passed as generics must implement the inside macro, and since it is used internally, it needs to be imported.<br>
-You can use trait bounds, but since trait bounds are expanded internally to check the type of the received argument, it is recommended to specify the absolute path using $crate if using trait bounds. Otherwise, import errors may occur.<br>
+In addition to the conditions mentioned, the Copy trait is automatically added to trait bounds.<br> When generics are present, you must specify types in the order they are defined when invoking the struct macro.<br> For const generics, if the value can be inferred from the provided arguments, you may use _ as a placeholder.<br> If all const generics can be omitted, you don't need to write them.<br> By using the call_with_generics! macro, you can omit const generics when they can be inferred.<br> Since types are expanded in the order they are defined, you must specify the types in the same order when using the call_with_generics! macro.<br> Non-const generic types cannot be omitted.<br> When you use #[const_struct] with a type like ???Ty, you can omit non-const generic types as well.<br> The following is an example:<br>
+```rust
+use const_struct::{call_with_generics, const_struct, ConstStruct};
+
+#[derive(ConstStruct, Debug)]
+pub struct TestSetting<const N: usize>;
+
+pub fn tester<const N: usize, A: TestSettingTy<N>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[const_struct]
+const B: TestSetting<5> = TestSetting;
+
+#[test]
+fn main() {
+    tester::<5, TestSetting!(5, TestSetting::<5>)>();
+    tester::<5, TestSetting!(_, TestSetting::<5>)>();
+    tester::<4, TestSetting!(4, TestSetting)>();
+    tester::<9, TestSetting!(TestSetting::<9>)>();
+
+    tester::<5, TestSetting!(B)>();
+    tester::<5, BTy>();
+    call_with_generics!(tester::<TestSetting!(B)>());
+    call_with_generics!(tester::<5, BTy>());
+    call_with_generics!(tester::<TestSetting!(_, BTy)>());
+    call_with_generics!(tester::<TestSetting!(BTy)>());
+}
+```
 
 ## Composite Types(Option)
 When receiving composite types, only the outermost type should have Ty appended.
@@ -184,6 +209,47 @@ fn main() {
 }
 ```
 
+## Composite Types (Outside into Inside/derive)
+It is possible to accept structs generated via derive.<br> For instance, consider the following example:
+```rust
+use const_struct::{primitive::TupleTy, ConstStruct, F32};
+
+#[derive(ConstStruct, Debug)]
+pub struct TestSetting;
+
+pub fn tester<A: TupleTy<(f32, TestSetting)>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[test]
+fn main() {
+    tester::<(F32!(0.5), TestSetting!(TestSetting))>();
+}
+```
+
+## Composite Types (Outside into Inside/derive/generics)
+It is possible to accept structs with generics that are generated via derive. Here's an example:
+```rust
+use const_struct::{call_with_generics, const_struct, primitive::TupleTy, ConstStruct, F32};
+
+#[derive(ConstStruct, Debug)]
+pub struct TestSetting<const N: usize>;
+
+pub fn tester<const N: usize, A: TupleTy<(f32, TestSetting<N>)>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[const_struct]
+const B: TestSetting<0> = TestSetting;
+
+#[test]
+fn main() {
+    tester::<0, (F32!(0.5), BTy)>();
+    call_with_generics!(tester::<(F32!(0.5), TestSetting!(BTy))>());
+}
+
+```
+
 ## ConstCompat
 This is an attribute macro that changes normal functions to receive generics based on a cfg flag.<br>
 It works by rewriting the internals, so it operates as is.<br>
@@ -210,11 +276,28 @@ pub fn tester(test_setting: TestSetting) {
 ```
 
 # Unimplemented Features
-## Manual Implementation Without Using Macros: Tested
-- Inside macros for structs
-- Inside macros for generics on structs
-
 ## Manual Implementation Without Using Macros: Untested
-- Primitive types (outside macros)
-- Generics in outside macros for structs
-- ConstStruct, outside macros, and inside macros for enums
+- ConstStruct for enums, including outside macros, inside macros, etc., has not yet been tested.
+## Reducing Dependency Libraries
+- The current number of dependencies is 21. Efforts should be made to minimize this number.
+
+# Notes for Developers
+## Common Errors to Be Aware Of
+
+```rust
+pointers cannot be cast to integers during const eval
+at compile-time, pointers do not have an integer value
+avoiding this restriction via `transmute`, `union`, or raw pointers leads to compile-time undefined behavior
+```
+
+```rust
+constructing invalid value: encountered a dangling reference (0x48[noalloc] has no provenance)
+```
+
+```rust
+destructor of `generics::TestStructWithFloatGenerics<T, S>` cannot be evaluated at compile-time
+```
+
+```rust
+error: reached the recursion limit while instantiating `...`
+```
