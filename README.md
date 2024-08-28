@@ -1,7 +1,10 @@
 # const_struct
-<!-- [![Latest version](https://img.shields.io/crates/v/bitflags.svg)](https://crates.io/crates/bitflags) -->
-<!-- [![Documentation](https://docs.rs/bitflags/badge.svg)](https://docs.rs/bitflags) -->
-<!-- ![License](https://img.shields.io/crates/l/bitflags.svg) -->
+[![Latest version](https://img.shields.io/crates/v/const_struct.svg)](https://crates.io/crates/const_struct)
+[![Documentation](https://docs.rs/const_struct/badge.svg)](https://docs.rs/const_struct)
+![License](https://img.shields.io/crates/l/const_struct.svg)
+
+[![Japanese](https://img.shields.io/badge/lang-ja-blue.svg)](README-ja.md)
+[![English](https://img.shields.io/badge/lang-en-blue.svg)](README.md)
 
 `const_struct` is a macro that allows you to pass structs, f32, and other types in a manner similar to const generics. This is a different feature from `generic_const_expr`, and it is unclear whether there will be a standard replacement.<br>
 https://github.com/rust-lang/rust/issues/76560<br>

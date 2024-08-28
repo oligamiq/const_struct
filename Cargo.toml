@@ -5,15 +5,16 @@ default-members = ["crates/const_struct_derive", "crates/const_struct", "crates/
 
 [workspace.package]
 authors = ["oligami <nziq53@gmail.com>"]
-version = "0.4.6"
+version = "0.4.7"
 edition = "2021"
 description = "macro that allows const structures to be passed as const generics"
-license = "MIT"
+license = "MIT/Apache-2.0"
 rust-version = "1.80.0"
 keywords = ["const", "derive", "macro", "no_std", "const_generics"]
 repository = "https://github.com/oligamiq/const_struct"
 documentation = "https://docs.rs/const_struct"
 homepage = "https://docs.rs/const_struct"
+readme = "README.md"
 
 [workspace.dependencies]
 const_struct_derive = { path = "crates/const_struct_derive" }

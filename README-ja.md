@@ -1,7 +1,10 @@
 # const_struct
-<!-- [![Latest version](https://img.shields.io/crates/v/bitflags.svg)](https://crates.io/crates/bitflags) -->
-<!-- [![Documentation](https://docs.rs/bitflags/badge.svg)](https://docs.rs/bitflags) -->
-<!-- ![License](https://img.shields.io/crates/l/bitflags.svg) -->
+[![Latest version](https://img.shields.io/crates/v/const_struct.svg)](https://crates.io/crates/const_struct)
+[![Documentation](https://docs.rs/const_struct/badge.svg)](https://docs.rs/const_struct)
+![License](https://img.shields.io/crates/l/const_struct.svg)
+
+[![Japanese](https://img.shields.io/badge/lang-ja-blue.svg)](README-ja.md)
+[![English](https://img.shields.io/badge/lang-en-blue.svg)](README.md)
 
 `const_struct`は、const genericsの機能のように、構造体やf32などを渡すことができるようにするためのマクロです。
 これはgeneric_const_exprとは別の機能であり、標準の置き換えがあるかは不明です。
