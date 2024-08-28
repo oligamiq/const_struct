@@ -139,6 +139,7 @@ const genericsの場合は、渡した値から推定可能な場合は、`_`を
 定義順に型は展開されるため、`call_with_generics!`マクロを使う場合、受け取る側では定義順に型を指定する必要があります。<br>
 const genericsでない型は、省略することはできません。<br>
 `#[const_struct]`で定義した`???Ty`を引数に用いた場合、const genericsでない型も省略することができます。<br>
+メンバ変数はderiveマクロを実装している必要はありません。<br>
 例は以下の通りです。<br>
 ```rust
 use const_struct::{call_with_generics, const_struct, ConstStruct};

@@ -293,7 +293,7 @@ mod test13 {
 
     #[derive(Debug)]
     pub struct TestSetting<F: Float> {
-        a: F,
+        _a: F,
     }
 
     pub fn tester<F: Float + core::fmt::Debug + Copy, A: TupleTy<(TestSetting<F>, )>>() {
@@ -301,7 +301,7 @@ mod test13 {
     }
 
     #[const_struct]
-    const B: TestSetting<f32> = TestSetting { a: 0.5 };
+    const B: TestSetting<f32> = TestSetting { _a: 0.5 };
 
     #[test]
     fn main() {
@@ -325,6 +325,38 @@ pub mod test14 {
         #[test]
         fn main() {
             super::tester::<TestSettingB!(super::TestSettingB)>();
+        }
+    }
+}
+
+#[cfg(test)]
+pub mod test15 {
+    use const_struct::{const_struct, ConstStruct};
+
+    #[derive(Debug, Copy, Clone)]
+    pub struct Float32;
+
+    pub trait Float {}
+
+    impl Float for Float32 {}
+
+    #[derive(ConstStruct, Debug)]
+    #[const_struct(
+        TestSettingC: crate::test15::TestSettingC,
+        Float32: crate::test15::Float32
+    )]
+    pub struct TestSettingC<const N: usize, F: Float> {
+        _a: F,
+    }
+
+    pub fn tester<const N: usize, F: Float + Copy + core::fmt::Debug, A: TestSettingCTy<N, F>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    pub mod module {
+        #[test]
+        fn main() {
+            const_struct::call_with_generics!(super::tester::<TestSettingC!(_, super::Float32, super::TestSettingC::<7, f32> { _a: super::Float32 })>());
         }
     }
 }

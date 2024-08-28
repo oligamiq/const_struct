@@ -6,6 +6,8 @@ use syn::*;
 
 use super::AdditionData;
 
+// use quote::ToTokens as _;
+
 /// _ は、GenericInfoを作成するときに考慮する
 pub fn parse_value_struct_ty(
     addition_data: AdditionData,
@@ -14,6 +16,10 @@ pub fn parse_value_struct_ty(
     expr: Expr,
 ) -> Result<Type> {
     let struct_ident = struct_data.get_ty_ident();
+
+    let absolute_struct_path = addition_data.get_changed_path(&parse_quote! { #struct_ident });
+
+    // println!("absolute_struct_path: {}", absolute_struct_path.to_token_stream());
 
     if struct_data.label != Label::Struct {
         return Err(Error::new(struct_ident.span(), "This is not a struct type"));
@@ -109,7 +115,7 @@ pub fn parse_value_struct_ty(
     // println!("gen_tys: {}", quote::quote! { #(#gen_tys),* });
 
     let head_ty: Type = parse_quote! {
-        #struct_ident<#(#gen_tys),*>
+        #absolute_struct_path<#(#gen_tys),*>
     };
 
     // println!("head_ty: {}", head_ty.to_token_stream());

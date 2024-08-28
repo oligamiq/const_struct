@@ -129,8 +129,8 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     };
 
     let name = &input.ident;
-    let datatype = {
-        let mut datatype: Path = parse_quote! { #name };
+    let gen_datatype_fn = |name: &Path| -> Path {
+        let mut datatype = name.clone();
         let path_segments = datatype.segments.last_mut().unwrap();
         path_segments.arguments = PathArguments::AngleBracketed(AngleBracketedGenericArguments {
             colon2_token: None,
@@ -149,6 +149,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         });
         datatype
     };
+    let datatype = gen_datatype_fn(&parse_quote! { #name });
 
     let keep_type_impls = generics
         .params
@@ -252,8 +253,12 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
     let name_with_get_generics_data = add_at_mark(format_ident!("{}GetGenericsData", name));
     let addition_data = &user_attrs.addition_data;
+
+    let absolute_struct_name = user_attrs.get_absolute_path_path(&parse_quote! { #name });
+    let datatype_absolute = gen_datatype_fn(&absolute_struct_name);
+
     let mut const_fn: ItemFn = parse_quote!(
-        const fn get_const_generics(_: #datatype) {}
+        const fn get_const_generics(_: #datatype_absolute) {}
     );
     const_fn.vis = vis.clone();
     const_fn.sig.generics = generics_with_copy.clone();
@@ -359,7 +364,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             #hash_bridge<{
                 const NAME_HASH: u64 = #str_hash(stringify!($value));
 
-                type T = #name<#gen_args>;
+                type T = #absolute_struct_name<#gen_args>;
 
                 impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for T {
                     type DATATYPE = T;
@@ -376,7 +381,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             }, {
                 line!()
             },
-            #name<#gen_args>
+            #absolute_struct_name<#gen_args>
             >
         }
     };
