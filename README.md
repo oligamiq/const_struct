@@ -280,6 +280,7 @@ pub fn tester(test_setting: TestSetting) {
 - ConstStruct for enums, including outside macros, inside macros, etc., has not yet been tested.
 ## Reducing Dependency Libraries
 - The current number of dependencies is 15. Efforts should be made to minimize this number.
+## Add document comment.
 
 # Notes for Developers
 ## Common Errors to Be Aware Of

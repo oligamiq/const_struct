@@ -15,6 +15,8 @@
 //! used unsafe code:
 //! * `core::mem::zeroed`
 //! * `core::mem::transmute`
+//!
+//! See the Github README for more information.
 #![no_std]
 
 pub mod prelude;

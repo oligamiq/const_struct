@@ -287,6 +287,8 @@ pub fn tester(test_setting: TestSetting) {
 
 ## 依存ライブラリを減らす: 15（自身を含めて）
 
+## ドキュメントコメントの追加
+
 # 開発者へ
 ## 気を付けるべきエラー
 ```rust
