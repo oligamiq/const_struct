@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::{sync::Mutex, rc::Rc};
 
 use parse::{discouraged::Speculative as _, Parse, ParseStream, Parser as _};
 use proc_macro2::TokenStream;
@@ -345,10 +345,10 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
     let mut new_generics: Punctuated<GenericArgument, Token![,]> = Punctuated::new();
 
     for arg in &*generics {
-        let extend = Arc::new(Mutex::new(Vec::<GenericArgument>::new()));
+        let extend = Rc::new(Mutex::new(Vec::<GenericArgument>::new()));
         // let mut switched_arg = arg.clone();
-        let switched_arg = Arc::new(Mutex::new(arg.clone()));
-        let return_data = Arc::new(Mutex::new(None));
+        let switched_arg = Rc::new(Mutex::new(arg.clone()));
+        let return_data = Rc::new(Mutex::new(None));
 
         // println!("arg: {}", arg.to_token_stream());
 
