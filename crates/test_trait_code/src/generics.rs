@@ -40,6 +40,18 @@ impl<const T: usize, S: Float> KeepType<0> for TestStructWithFloatGenerics<T, S>
     type Type = usize;
 }
 
+pub trait KeepMainType<const N: usize> {
+    type Type;
+}
+
+pub trait KeepMainTypeBridge<const N: usize> {
+    type Type;
+}
+
+pub trait KeepMainTypeBridgeWith<const N: usize, T> {
+    type Type;
+}
+
 pub struct Bridge<const N: usize>;
 
 pub trait TestA {
@@ -48,6 +60,18 @@ pub trait TestA {
 
 impl<U: Float + Copy> TestA for U {
     type T = Bridge<0>;
+}
+
+impl KeepMainTypeBridge<0> for TestStructWithFloatGenerics<8, f32> {
+    type Type = f32;
+}
+
+impl<U: KeepMainTypeBridge<0>> KeepMainTypeBridgeWith<0, U> for Bridge<0> {
+    type Type = U::Type;
+}
+
+impl<L: KeepMainTypeBridgeWith<0, U>, U> KeepMainType<0> for L {
+    type Type = L::Type;
 }
 
 #[macro_export]
