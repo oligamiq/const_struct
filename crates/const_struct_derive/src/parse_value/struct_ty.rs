@@ -2,18 +2,26 @@ use crate::{
     util::gen_get_const_generics,
     util_macro::{GenericInfo, GenericsData, Label, TypeOrExpr},
 };
+use proc_macro2::TokenStream;
 use syn::*;
 
 use super::AdditionData;
 
+// use quote::ToTokens as _;
+
 /// _ は、GenericInfoを作成するときに考慮する
 pub fn parse_value_struct_ty(
     addition_data: AdditionData,
+    ident_tys: Vec<TokenStream>,
     struct_data: GenericsData,
     info: GenericInfo,
     expr: Expr,
 ) -> Result<Type> {
     let struct_ident = struct_data.get_ty_ident();
+
+    let absolute_struct_path = addition_data.get_changed_path(&parse_quote! { #struct_ident });
+
+    // println!("absolute_struct_path: {}", absolute_struct_path.to_token_stream());
 
     if struct_data.label != Label::Struct {
         return Err(Error::new(struct_ident.span(), "This is not a struct type"));
@@ -90,8 +98,12 @@ pub fn parse_value_struct_ty(
                 if let Expr::Infer(_) = inner_expr {
                     // println!("num: {}", num);
 
-                    let expr =
-                        gen_get_const_generics(struct_data.const_fn.clone(), expr.clone(), num);
+                    let expr = gen_get_const_generics(
+                        struct_data.const_fn.clone(),
+                        ident_tys.clone(),
+                        expr.clone(),
+                        num,
+                    );
 
                     if let Some(expr) = expr {
                         return GenericArgument::Const(expr);
@@ -109,7 +121,7 @@ pub fn parse_value_struct_ty(
     // println!("gen_tys: {}", quote::quote! { #(#gen_tys),* });
 
     let head_ty: Type = parse_quote! {
-        #struct_ident<#(#gen_tys),*>
+        #absolute_struct_path<#(#gen_tys),*>
     };
 
     // println!("head_ty: {}", head_ty.to_token_stream());

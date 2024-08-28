@@ -2,6 +2,7 @@ use proc_macro2::{Spacing, TokenStream};
 use punctuated::Punctuated;
 use quote::{quote, ToTokens as _, TokenStreamExt as _};
 use syn::*;
+use FnArg::Typed;
 
 pub fn add_at_mark(ident: Ident) -> TokenStream {
     let mut tokens = TokenStream::new();
@@ -148,10 +149,12 @@ pub fn is_end_with_ty(path: &Path) -> bool {
 /// get_const_generics_a($value)
 pub fn gen_get_const_generics(
     get_const_generics_fn_seed: ItemFn,
+    ident_tys: Vec<TokenStream>,
     value: Expr,
     num: usize,
 ) -> Option<Expr> {
-    let get_const_generics_fn_seed = gen_get_const_generics_inner(get_const_generics_fn_seed, num)?;
+    let get_const_generics_fn_seed =
+        gen_get_const_generics_inner(get_const_generics_fn_seed, ident_tys, num)?;
     let fn_ident = get_const_generics_fn_seed.sig.ident.clone();
 
     let expr: Expr = parse_quote!({
@@ -165,6 +168,7 @@ pub fn gen_get_const_generics(
 
 pub fn gen_get_const_generics_inner(
     get_const_generics_fn_seed: ItemFn,
+    ident_tys: Vec<TokenStream>,
     num: usize,
 ) -> Option<ItemFn> {
     let mut get_const_generics_fn_seed = get_const_generics_fn_seed;
@@ -192,6 +196,93 @@ pub fn gen_get_const_generics_inner(
         }),
         None,
     )];
+
+    // let mut generics = &mut get_const_generics_fn_seed.sig.generics;
+    let generics = get_const_generics_fn_seed.sig.generics;
+    let params_clone = generics.params.clone();
+    let rm_target_ident = generics
+        .params
+        .iter()
+        // .cloned()
+        // .zip(generics.where_clause.unwrap().predicates.iter().cloned())
+        .filter_map(|param| match param {
+            GenericParam::Type(TypeParam { ident, .. }) => Some(ident.clone()),
+            GenericParam::Lifetime(_) => unimplemented!(),
+            GenericParam::Const(_) => None,
+        })
+        .collect::<Vec<_>>();
+    // println!("rm_target_ident: {:?}", rm_target_ident);
+    let new_generics_param = generics
+        .params
+        .iter()
+        .filter(|param| matches!(param, GenericParam::Const(_)))
+        .cloned()
+        .collect::<Punctuated<_, Token![,]>>();
+    let new_predicates = generics.where_clause.unwrap_or(WhereClause { where_token: Default::default(), predicates: Default::default() }).predicates.iter().filter(|predicate|
+        if let WherePredicate::Type(PredicateType { bounded_ty, .. }) = predicate {
+            let where_ident = if let Type::Path(TypePath { path, .. }) = bounded_ty {
+                if let Some(PathSegment { ident, .. }) = path.segments.last() {
+                    // println!("ident: {:?}", ident);
+                    ident
+                } else {
+                    return true;
+                }
+            } else {
+                return true;
+            };
+            !rm_target_ident.iter().any(|ident| ident == where_ident)
+        } else {
+            unimplemented!()
+        }
+    ).cloned().collect::<Punctuated<_, Token![,]>>();
+    let generics = Generics {
+        params: new_generics_param,
+        where_clause: Some(WhereClause {
+            where_token: Default::default(),
+            predicates: new_predicates,
+        }),
+        ..generics
+    };
+
+    get_const_generics_fn_seed.sig.generics = generics;
+
+    let input_args = if let Typed(PatType { ty, .. }) =
+        get_const_generics_fn_seed.sig.inputs.get_mut(0).unwrap()
+    {
+        if let Type::Path(TypePath {
+            path: Path { segments, .. },
+            ..
+        }) = ty.as_mut()
+        {
+            if let PathArguments::AngleBracketed(AngleBracketedGenericArguments { args, .. }) =
+                &mut segments.last_mut().unwrap().arguments
+            {
+                args
+            } else {
+                return None;
+            }
+        } else {
+            return None;
+        }
+    } else {
+        return None;
+    };
+
+    input_args
+        .iter_mut()
+        .zip(params_clone.iter())
+        .filter(|(_, param)| match param {
+            GenericParam::Type(_) => true,
+            GenericParam::Lifetime(_) => unimplemented!(),
+            GenericParam::Const(_) => false,
+        })
+        .map(|(input_arg, _param)| input_arg)
+        .zip(ident_tys.iter())
+        .for_each(|(input_arg, ident_ty)| {
+            if let GenericArgument::Type(type_) = input_arg {
+                *type_ = Type::Verbatim(ident_ty.clone());
+            }
+        });
 
     Some(get_const_generics_fn_seed)
 }

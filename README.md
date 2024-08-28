@@ -131,7 +131,15 @@ fn main() {
 ```
 
 ## Structs (inside declaration const/generics)
-In addition to the conditions mentioned, the Copy trait is automatically added to trait bounds.<br> When generics are present, you must specify types in the order they are defined when invoking the struct macro.<br> For const generics, if the value can be inferred from the provided arguments, you may use _ as a placeholder.<br> If all const generics can be omitted, you don't need to write them.<br> By using the call_with_generics! macro, you can omit const generics when they can be inferred.<br> Since types are expanded in the order they are defined, you must specify the types in the same order when using the call_with_generics! macro.<br> Non-const generic types cannot be omitted.<br> When you use #[const_struct] with a type like ???Ty, you can omit non-const generic types as well.<br> The following is an example:<br>
+In addition to the conditions mentioned, the Copy trait is automatically added to trait bounds.<br>
+When generics are present, you must specify types in the order they are defined when invoking the struct macro.<br>
+For const generics, if the value can be inferred from the provided arguments, you may use _ as a placeholder.<br>
+If all const generics can be omitted, you don't need to write them.<br>
+By using the call_with_generics! macro, you can omit const generics when they can be inferred.<br>
+Since types are expanded in the order they are defined, you must specify the types in the same order when using the call_with_generics! macro.<br>
+Non-const generic types cannot be omitted.<br> When you use #[const_struct] with a type like ???Ty, you can omit non-const generic types as well.<br>
+Member variables need not implement the derive macro.<br>
+The following is an example:<br>
 ```rust
 use const_struct::{call_with_generics, const_struct, ConstStruct};
 

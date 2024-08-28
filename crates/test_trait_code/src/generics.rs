@@ -68,11 +68,22 @@ macro_rules! TestStructWithFloatGenerics {
 
     ($t:tt, $s:path, $value:expr) => {
         HashBridge<{
+            // Check value type
+            let _: TestStructWithFloatGenerics<{
+                match_underscore!($t, {
+                    const fn get_generic<const T: usize>(_: TestStructWithFloatGenerics<{ T }, $s>) -> usize {
+                        T
+                    }
+
+                    get_generic($value)
+                })
+            }, $s> = $value;
+
             const NAME_HASH: u64 = str_hash(stringify!($value));
 
             type T = TestStructWithFloatGenerics<{
                 match_underscore!($t, {
-                    const fn get_generic<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) -> usize {
+                    const fn get_generic<const T: usize>(_: TestStructWithFloatGenerics<{ T }, $s>) -> usize {
                         T
                     }
 
@@ -95,7 +106,7 @@ macro_rules! TestStructWithFloatGenerics {
         },
         TestStructWithFloatGenerics<{
             match_underscore!($t, {
-                const fn get_generic<const T: usize, S: Float + Copy>(_: TestStructWithFloatGenerics<{ T }, S>) -> usize { T }
+                const fn get_generic<const T: usize>(_: TestStructWithFloatGenerics<{ T }, $s>) -> usize { T }
                 get_generic($value)
             })
         }, $s>

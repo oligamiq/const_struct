@@ -86,6 +86,7 @@ impl Parse for StructMacroAltArgs {
 
 pub fn struct_macro_alt(
     addition_data: AdditionData,
+    ident_tys: Vec<TokenStream>,
     data: GenericsData,
     new_generic: Vec<GenericArgument>,
 ) -> impl Fn(TokenStream) -> Result<Type> {
@@ -182,6 +183,7 @@ pub fn struct_macro_alt(
 
         let parse_value_struct = parse_value_struct_ty(
             addition_data.clone(),
+            ident_tys.clone(),
             data.clone(),
             GenericInfo {
                 correspondence: generic_info,

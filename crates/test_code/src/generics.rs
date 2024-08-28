@@ -89,13 +89,17 @@ pub mod test3 {
 
     impl<const N: usize> core::fmt::Debug for TestSetting<N> {
         fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-            f.debug_struct("TestSetting")
-                .field("N", &N)
-                .finish()
+            f.debug_struct("TestSetting").field("N", &N).finish()
         }
     }
 
-    pub fn tester<const N: usize, const N2: usize, A: TupleTy<(TestSetting<N>, TestSetting<N2>)>, const N3: usize, B: TupleTy<(f32, TestSetting<N3>)>>() {
+    pub fn tester<
+        const N: usize,
+        const N2: usize,
+        A: TupleTy<(TestSetting<N>, TestSetting<N2>)>,
+        const N3: usize,
+        B: TupleTy<(f32, TestSetting<N3>)>,
+    >() {
         no_std_compat::println!("a: {:?}", A::__DATA);
         no_std_compat::println!("b: {:?}", B::__DATA);
     }
@@ -105,7 +109,10 @@ pub mod test3 {
 
     #[test]
     fn main() {
-        call_with_generics!(tester::<(TestSetting!(BTy), TestSetting!(TestSetting::<2>)), (F32!(0.5), TestSetting!(8, TestSetting))>());
+        call_with_generics!(tester::<
+            (TestSetting!(BTy), TestSetting!(TestSetting::<2>)),
+            (F32!(0.5), TestSetting!(8, TestSetting)),
+        >());
     }
 }
 

@@ -10,7 +10,8 @@ pub enum AbsolutePathOrType {
 
 pub fn get_primitive_ident_path(str: &str) -> Option<AbsolutePath> {
     match str {
-        "U8" | "I8" | "Bool" | "U16" | "I16" | "U32" | "I32" | "F32" | "Char" | "U64" | "I64" | "F64" | "U128" | "I128" | "Usize" | "Isize" | "Some" | "None" => {
+        "U8" | "I8" | "Bool" | "U16" | "I16" | "U32" | "I32" | "F32" | "Char" | "U64" | "I64"
+        | "F64" | "U128" | "I128" | "Usize" | "Isize" | "Some" | "None" => {
             let new_path = format!("::const_struct::{}", str);
             Some(AbsolutePath::new(parse_str(&new_path).unwrap()))
         }

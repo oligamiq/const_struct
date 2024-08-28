@@ -325,7 +325,9 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
         call: mut input,
     } = input_with_data;
     let default_addition_data_args_clone = default_addition_data_args.clone().unwrap_or_default();
-    let default_addition_data: AdditionData = default_addition_data_args.map(|args| args.into()).unwrap_or_default();
+    let default_addition_data: AdditionData = default_addition_data_args
+        .map(|args| args.into())
+        .unwrap_or_default();
 
     // println!("define_data: {:#?}", define_data);
 
@@ -413,15 +415,6 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
             }).unwrap();
             let addition_data = default_addition_data.clone().extend(define_data.addition_data.clone().into());
 
-            let get_generics = |num: usize, value: Expr| {
-                //     let mut mac = mac.clone();
-                //     let macro_first_arg =
-                //         add_at_mark(format_ident!("{macro_name}GetInnerGenerics{num}"));
-                //     mac.tokens = quote! { #macro_first_arg, #value };
-                //     mac
-                gen_get_const_generics(define_data.const_fn.clone(), value, num)
-            };
-
             // println!("try get args_last");
             let args_last = args.last().unwrap().clone();
             // println!("get args_last: {}", args_last.to_token_stream());
@@ -442,6 +435,52 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
             };
 
             let const_or_type = define_data.const_or_type();
+
+            let type_num = const_or_type
+                .iter()
+                .filter(|const_or_type| matches!(const_or_type, ConstOrType::Type))
+                .count();
+            let args_len = args.len();
+
+            let mut args_iter = args.clone().into_iter();
+            let ident_tys = if args_len == const_or_type.len() + 1 {
+                const_or_type
+                .iter()
+                .filter_map(|const_or_type| {
+                    if let ConstOrType::Type = const_or_type {
+                        let arg = args_iter.next().unwrap();
+                        Some(arg.to_token_stream())
+                    } else {
+                        args_iter.next();
+                        None
+                    }
+                })
+                .collect::<Vec<TokenStream>>()
+            } else if args.len() == 1 {
+                Vec::new()
+            } else if args.len() == type_num + 1 {
+                const_or_type
+                .iter()
+                .filter_map(|const_or_type| {
+                    if let ConstOrType::Type = const_or_type {
+                        let arg = args_iter.next().unwrap();
+                        Some(arg.to_token_stream())
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<TokenStream>>()
+            } else {
+                panic!("failed to parse Argument");
+            };
+            let get_generics = |num: usize, value: Expr| {
+                //     let mut mac = mac.clone();
+                //     let macro_first_arg =
+                //         add_at_mark(format_ident!("{macro_name}GetInnerGenerics{num}"));
+                //     mac.tokens = quote! { #macro_first_arg, #value };
+                //     mac
+                gen_get_const_generics(define_data.const_fn.clone(), ident_tys.clone(), value, num)
+            };
 
             let infer_process = |num| {
                 if is_outer_declaration {
@@ -477,11 +516,6 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                 }
             };
 
-            let type_num = const_or_type
-                .iter()
-                .filter(|const_or_type| matches!(const_or_type, ConstOrType::Type))
-                .count();
-            let args_len = args.len();
             let new_generic = if args_len == const_or_type.len() + 1 {
                 args.into_iter()
                     .enumerate()
@@ -537,6 +571,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                     }
                     let ty = struct_macro_alt(
                         addition_data.clone(),
+                        ident_tys.clone(),
                         define_data.clone(),
                         new_generic.clone(),
                     );
