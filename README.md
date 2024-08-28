@@ -251,7 +251,101 @@ fn main() {
     tester::<0, (F32!(0.5), BTy)>();
     call_with_generics!(tester::<(F32!(0.5), TestSetting!(BTy))>());
 }
+```
 
+## Non derive
+Structs that do not have the derive macro applied have considerable limitations.<br>
+Firstly, it cannot be used with structs that employ const generics. This is because the type cannot be determined.<br>
+Additionally, it is not possible to perform inner declaration consts using macros.<br>
+By using PrimitiveTraits, you can directly receive the type.<br>
+Since the member variables do not need to implement derive, you can create a simple wrapper that wraps existing structs, allowing them to be used without any restrictions.<br>
+```rust
+use const_struct::{const_struct, primitive::TupleTy, PrimitiveTraits};
+
+#[derive(Debug)]
+pub struct TestSetting;
+
+pub fn tester<A: TupleTy<(TestSetting,)>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+pub fn tester_alt<A: PrimitiveTraits<DATATYPE = TestSetting>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[const_struct]
+const B: TestSetting = TestSetting;
+
+fn main() {
+    tester::<(BTy,)>();
+    tester_alt::<BTy>();
+}
+```
+Also, generics that are not const generics can be used.<br>
+However, you cannot use the call_with_generics! macro.<br>
+This is because there is no information on which generics to expand.<br>
+```rust
+use const_struct::{const_struct, primitive::TupleTy};
+
+pub trait Float {}
+
+impl Float for f32 {}
+
+#[derive(Debug)]
+pub struct TestSetting<F: Float> {
+    a: F,
+}
+
+pub fn tester<F: Float + core::fmt::Debug + Copy, A: TupleTy<(TestSetting<F>,)>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[const_struct]
+const B: TestSetting<f32> = TestSetting { a: 0.5 };
+
+fn main() {
+    tester::<f32, (BTy,)>();
+}
+```
+
+## Path Specification
+With const_struct, you can specify paths as shown below.<br>
+Using this technique, you can specify the absolute path of a struct, which eliminates the need to import the struct when using a macro for the struct name from another module or an external library.<br>
+Moreover, you don't need to specify the path for traits.<br>
+Since this doesn't rewrite the internal values that are passed, when creating a value or passing a type as generics, you need to specify the path using super, as shown below.<br>
+```rust
+use const_struct::{const_struct, ConstStruct};
+use core::fmt::Debug;
+
+#[derive(Debug, Copy, Clone)]
+pub struct Float32;
+
+pub trait Float {}
+
+impl Float for Float32 {}
+
+#[derive(ConstStruct, Debug)]
+#[const_struct(
+    TestSettingC: crate::test15::TestSettingC,
+)]
+pub struct TestSettingC<const N: usize, F: Float> {
+    _a: F,
+}
+
+pub fn tester<const N: usize, F: Float + Copy + Debug, A: TestSettingCTy<N, F>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+pub mod module {
+    fn main() {
+        const_struct::call_with_generics!(super::tester::<
+            TestSettingC!(
+                super::Float32,
+                super::TestSettingC::<7, super::Float32> { _a: super::Float32 }
+            ),
+        >());
+    }
+}
 ```
 
 ## ConstCompat
