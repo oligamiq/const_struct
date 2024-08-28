@@ -40,6 +40,10 @@ impl<const T: usize, S: Float> KeepType<0> for TestStructWithFloatGenerics<T, S>
     type Type = usize;
 }
 
+pub trait TestA<A> {}
+
+impl<const T: usize, S: Float + Copy, U: Float + Copy> TestA<TestStructWithFloatGenerics<T, S>> for U {}
+
 #[macro_export]
 macro_rules! TestStructWithFloatGenerics {
     (@TestStructWithFloatGenericsGetGenericsData, @AdditionData($($addition_data:path: $addition_data2:path), *), $macro_path: path, $($arg:tt)*) => {
