@@ -27,9 +27,10 @@ impl<U: PrimitiveTraits<DATATYPE = TestStructWithGenerics<{ T }>>, const T: usiz
 
 #[macro_export]
 macro_rules! TestStructWithGenerics {
-    (@TestStructWithGenericsGetGenericsData, $macro_path: path, $($arg:tt)*) => {
+    (@TestStructWithGenericsGetGenericsData, @AdditionData($($addition_data:path: $addition_data2:path), *), $macro_path: path, $($arg:tt)*) => {
         {
             $macro_path!(
+                @AdditionData($($addition_data: $addition_data2), *),
                 @TestStructWithGenericsGetGenericsData(
                     @AdditionData(
                         // ::const_struct::primitive::ConstStructPrimEnd: ConstStructPrimEnd,

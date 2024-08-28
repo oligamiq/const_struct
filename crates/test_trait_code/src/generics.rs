@@ -223,33 +223,23 @@ mod tests {
             ),
         >();
 
-        // let c = call_with_generics!(
-        //     @AdditionData(
-        //         ::const_struct::call_with_generics: call_with_generics
-        //     ),
-        //     caller::<
-        //     TestStructWithFloatGenerics!(
-        //         f32,
-        //         TestStructWithFloatGenerics {
-        //             test_data: Some(1),
-        //             test_data2: Some(Some(2)),
-        //             test_data3: 3,
-        //             test_data4: [0; 8],
-        //             str: "test",
-        //             float: 0.0,
-        //         }
-        //     ),
-        // >());
-
-        TestStructWithFloatGenerics! (
-            @TestStructWithFloatGenericsGetGenericsData,
-            @AdditionData(::const_struct::call_with_generics :call_with_generics),
-            call_with_generics,
-            caller::<TestStructWithFloatGenerics!(f32, TestStructWithFloatGenerics {
-                test_data: Some(1), test_data2: Some(Some(2)), test_data3: 3, test_data4:
-                [0; 8], str: "test", float: 0.0,
-            })> (),
-        );
+        let c = call_with_generics!(
+            @AdditionData(
+                ::const_struct::call_with_generics: call_with_generics
+            ),
+            caller::<
+            TestStructWithFloatGenerics!(
+                f32,
+                TestStructWithFloatGenerics {
+                    test_data: Some(1),
+                    test_data2: Some(Some(2)),
+                    test_data3: 3,
+                    test_data4: [0; 8],
+                    str: "test",
+                    float: 0.0,
+                }
+            ),
+        >());
 
         let d = caller::<
             8,
