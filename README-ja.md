@@ -372,3 +372,11 @@ destructor of `generics::TestStructWithFloatGenerics<T, S>` cannot be evaluated 
 ```rust
 error: reached the recursion limit while instantiating `...`
 ```
+
+```rust
+the placeholder `_` is not allowed within types on item signatures for return types
+```
+
+```rust
+can't capture dynamic environment in a fn item
+```

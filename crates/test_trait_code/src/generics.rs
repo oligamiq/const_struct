@@ -46,32 +46,39 @@ pub trait KeepMainType<const N: usize> {
 
 pub trait KeepMainTypeBridge<const N: usize> {
     type Type;
+
+    fn get_main_type() -> Self::Type;
 }
 
-pub trait KeepMainTypeBridgeWith<const N: usize, T> {
+impl<const N: usize> KeepMainTypeBridge<N> for TestStructWithFloatGenerics<N, f32> {
+    type Type = usize;
+
+    fn get_main_type() -> Self::Type {
+        N
+    }
+}
+
+impl<const T: usize, S: Float + Copy> KeepMainType<1> for TestStructWithFloatGenerics<T, S> {
+    type Type = S;
+}
+
+trait FnBridge<T>
+where
+    T: Fn() -> U,
+{
     type Type;
 }
 
-pub struct Bridge<const N: usize>;
-
-pub trait TestA {
-    type T;
-}
-
-impl<U: Float + Copy> TestA for U {
-    type T = Bridge<0>;
-}
-
-impl KeepMainTypeBridge<0> for TestStructWithFloatGenerics<8, f32> {
-    type Type = f32;
-}
-
-impl<U: KeepMainTypeBridge<0>> KeepMainTypeBridgeWith<0, U> for Bridge<0> {
-    type Type = U::Type;
-}
-
-impl<L: KeepMainTypeBridgeWith<0, U>, U> KeepMainType<0> for L {
-    type Type = L::Type;
+fn test_fn() {
+    const u_fn: dyn Fn() -> TestStructWithFloatGenerics<_, _> = || TestStructWithFloatGenerics {
+        test_data: Some(1),
+        test_data2: Some(Some(2)),
+        test_data3: 3,
+        test_data4: [0; 8],
+        str: "test",
+        float: 0.0,
+    };
+    type B = <u_fn as FnBridge>::Type;
 }
 
 #[macro_export]
