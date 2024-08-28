@@ -265,7 +265,7 @@ mod test12 {
     #[derive(Debug)]
     pub struct TestSetting;
 
-    pub fn tester<A: TupleTy<(TestSetting, )>>() {
+    pub fn tester<A: TupleTy<(TestSetting,)>>() {
         println!("a: {:?}", A::__DATA);
     }
 
@@ -278,7 +278,7 @@ mod test12 {
 
     #[test]
     fn main() {
-        tester::<(BTy, )>();
+        tester::<(BTy,)>();
         tester_alt::<BTy>();
     }
 }
@@ -296,7 +296,7 @@ mod test13 {
         _a: F,
     }
 
-    pub fn tester<F: Float + core::fmt::Debug + Copy, A: TupleTy<(TestSetting<F>, )>>() {
+    pub fn tester<F: Float + core::fmt::Debug + Copy, A: TupleTy<(TestSetting<F>,)>>() {
         println!("a: {:?}", A::__DATA);
     }
 
@@ -305,7 +305,7 @@ mod test13 {
 
     #[test]
     fn main() {
-        tester::<f32, (BTy, )>();
+        tester::<f32, (BTy,)>();
     }
 }
 
@@ -356,7 +356,13 @@ pub mod test15 {
     pub mod module {
         #[test]
         fn main() {
-            const_struct::call_with_generics!(super::tester::<TestSettingC!(_, super::Float32, super::TestSettingC::<7, f32> { _a: super::Float32 })>());
+            const_struct::call_with_generics!(super::tester::<
+                TestSettingC!(
+                    _,
+                    super::Float32,
+                    super::TestSettingC::<7, super::Float32> { _a: super::Float32 }
+                ),
+            >());
         }
     }
 }

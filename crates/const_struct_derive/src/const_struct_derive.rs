@@ -312,6 +312,15 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     let match_end_with_path =
         user_attrs.get_absolute_path_meta_path(&parse_quote! { ::const_struct::match_end_with });
 
+    let ident_tys = generics_snake
+        .iter()
+        .filter(|(_, const_or_type)| *const_or_type == ConstOrType::Type)
+        .map(|(ident, _)| {
+            let ident_with_dollar = add_dollar_mark(ident.clone());
+            quote! { #ident_with_dollar }
+        })
+        .collect::<Vec<_>>();
+
     let gen_args = generics_snake
         .iter()
         .enumerate()
@@ -321,7 +330,8 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             match const_or_type {
                 ConstOrType::Const => {
                     let get_const_generics_fn_seed =
-                        gen_get_const_generics_inner(const_fn.clone(), num).unwrap();
+                        gen_get_const_generics_inner(const_fn.clone(), ident_tys.clone(), num)
+                            .unwrap();
                     let fn_ident = get_const_generics_fn_seed.sig.ident.clone();
                     quote! { {
                         #match_underscore_path!(#ident_with_dollar, {
@@ -407,7 +417,8 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             .map(|(num, (ident, const_or_type))| match const_or_type {
                 ConstOrType::Const => {
                     let get_const_generics_fn_seed =
-                        gen_get_const_generics_inner(const_fn.clone(), num).unwrap();
+                        gen_get_const_generics_inner(const_fn.clone(), ident_tys.clone(), num)
+                            .unwrap();
                     let fn_ident = get_const_generics_fn_seed.sig.ident.clone();
                     quote! { {
                         #get_const_generics_fn_seed

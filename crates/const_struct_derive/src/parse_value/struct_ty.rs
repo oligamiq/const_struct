@@ -2,6 +2,7 @@ use crate::{
     util::gen_get_const_generics,
     util_macro::{GenericInfo, GenericsData, Label, TypeOrExpr},
 };
+use proc_macro2::TokenStream;
 use syn::*;
 
 use super::AdditionData;
@@ -11,6 +12,7 @@ use super::AdditionData;
 /// _ は、GenericInfoを作成するときに考慮する
 pub fn parse_value_struct_ty(
     addition_data: AdditionData,
+    ident_tys: Vec<TokenStream>,
     struct_data: GenericsData,
     info: GenericInfo,
     expr: Expr,
@@ -96,8 +98,12 @@ pub fn parse_value_struct_ty(
                 if let Expr::Infer(_) = inner_expr {
                     // println!("num: {}", num);
 
-                    let expr =
-                        gen_get_const_generics(struct_data.const_fn.clone(), expr.clone(), num);
+                    let expr = gen_get_const_generics(
+                        struct_data.const_fn.clone(),
+                        ident_tys.clone(),
+                        expr.clone(),
+                        num,
+                    );
 
                     if let Some(expr) = expr {
                         return GenericArgument::Const(expr);
