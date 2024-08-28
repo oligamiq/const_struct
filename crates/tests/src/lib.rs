@@ -357,7 +357,6 @@ pub mod test15 {
         fn main() {
             const_struct::call_with_generics!(super::tester::<
                 TestSettingC!(
-                    _,
                     super::Float32,
                     super::TestSettingC::<7, super::Float32> { _a: super::Float32 }
                 ),
