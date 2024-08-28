@@ -264,7 +264,7 @@ fn main() {
 cfgフラグのときに元の関数を呼び出すため、cfgフラグがないときは、元の関数を呼び出すようになります。<br>
 もう一つcfgフラグを追加することで、対応コードに対してもcfgフラグを付けれます。<br>
 現在、通常の関数のみ対応しています。<br>
-
+現在、ReduceMacroReclusionを行っていないため、何重にもした場合、recursion_limitエラーが発生する可能性があります。<br>
 ```rust
 use const_struct::ConstCompat;
 
@@ -284,6 +284,7 @@ pub fn tester(test_setting: TestSetting) {
 # 未実装機能
 ## マクロを使わない手動実装:未テスト
 - Enumに対するConstStruct、アウトサイドマクロ、インサイドマクロ、etc
+## 依存ライブラリを減らす: 現在22個
 
 # 開発者へ
 ## 気を付けるべきエラー
@@ -299,4 +300,8 @@ constructing invalid value: encountered a dangling reference (0x48[noalloc] has 
 
 ```rust
 destructor of `generics::TestStructWithFloatGenerics<T, S>` cannot be evaluated at compile-time
+```
+
+```rust
+error: reached the recursion limit while instantiating `...`
 ```
