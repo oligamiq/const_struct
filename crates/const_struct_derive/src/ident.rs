@@ -1,32 +1,7 @@
 use crate::const_struct_derive::{AbsolutePath, PathAndIdent};
 use proc_macro2::TokenStream;
 use quote::format_ident;
-use std::str::FromStr;
-use strum::EnumString;
 use syn::*;
-
-#[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, EnumString)]
-pub enum PrimitiveIdent {
-    U8,
-    I8,
-    Bool,
-    U16,
-    I16,
-    U32,
-    I32,
-    F32,
-    Char,
-    U64,
-    I64,
-    F64,
-    U128,
-    I128,
-    Usize,
-    Isize,
-    Some,
-    None,
-}
 
 pub enum AbsolutePathOrType {
     Path(AbsolutePath),
@@ -34,10 +9,13 @@ pub enum AbsolutePathOrType {
 }
 
 pub fn get_primitive_ident_path(str: &str) -> Option<AbsolutePath> {
-    PrimitiveIdent::from_str(str).ok().map(|_| {
-        let new_path = format!("::const_struct::{}", str);
-        AbsolutePath::new(parse_str(&new_path).unwrap())
-    })
+    match str {
+        "U8" | "I8" | "Bool" | "U16" | "I16" | "U32" | "I32" | "F32" | "Char" | "U64" | "I64" | "F64" | "U128" | "I128" | "Usize" | "Isize" | "Some" | "None" => {
+            let new_path = format!("::const_struct::{}", str);
+            Some(AbsolutePath::new(parse_str(&new_path).unwrap()))
+        }
+        _ => None,
+    }
 }
 
 pub fn get_absolute_ident_path_from_ident(
