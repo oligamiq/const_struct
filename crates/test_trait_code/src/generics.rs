@@ -40,31 +40,6 @@ impl<const T: usize, S: Float> KeepType<0> for TestStructWithFloatGenerics<T, S>
     type Type = usize;
 }
 
-// const M: usize = {
-//     const fn get_const_generics<const T: usize>(
-//         _: TestStructWithFloatGenerics<T, f32>,
-//     ) -> usize {
-//         T
-//     }
-
-//     get_const_generics(TestStructWithFloatGenerics {
-//         test_data: Some(1),
-//         test_data2: Some(Some(2)),
-//         test_data3: 3,
-//         test_data4: [0; 8],
-//         str: "test",
-//         float: 0.0,
-//     })
-// };
-
-// impl<S: Float> TestStructWithFloatGenerics<0, S> {
-//     const fn get_const_generics<const T: usize, S2: Float + Copy>(
-//         _: TestStructWithFloatGenerics<T, S2>,
-//     ) -> usize {
-//         T
-//     }
-// }
-
 #[macro_export]
 macro_rules! TestStructWithFloatGenerics {
     (@TestStructWithFloatGenericsGetGenericsData, @AdditionData($($addition_data:path: $addition_data2:path), *), $macro_path: path, $($arg:tt)*) => {
