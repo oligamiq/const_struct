@@ -343,7 +343,6 @@ pub mod test15 {
     #[derive(ConstStruct, Debug)]
     #[const_struct(
         TestSettingC: crate::test15::TestSettingC,
-        Float32: crate::test15::Float32
     )]
     pub struct TestSettingC<const N: usize, F: Float> {
         _a: F,
