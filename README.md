@@ -124,7 +124,6 @@ pub const fn default() -> TestSetting {
     }
 }
 
-#[test]
 fn main() {
     tester::<TestSetting!(default())>();
 }
@@ -153,7 +152,6 @@ pub fn tester<const N: usize, A: TestSettingTy<N>>() {
 #[const_struct]
 const B: TestSetting<5> = TestSetting;
 
-#[test]
 fn main() {
     tester::<5, TestSetting!(5, TestSetting::<5>)>();
     tester::<5, TestSetting!(_, TestSetting::<5>)>();
@@ -229,7 +227,6 @@ pub fn tester<A: TupleTy<(f32, TestSetting)>>() {
     println!("a: {:?}", A::__DATA);
 }
 
-#[test]
 fn main() {
     tester::<(F32!(0.5), TestSetting!(TestSetting))>();
 }
@@ -250,7 +247,6 @@ pub fn tester<const N: usize, A: TupleTy<(f32, TestSetting<N>)>>() {
 #[const_struct]
 const B: TestSetting<0> = TestSetting;
 
-#[test]
 fn main() {
     tester::<0, (F32!(0.5), BTy)>();
     call_with_generics!(tester::<(F32!(0.5), TestSetting!(BTy))>());

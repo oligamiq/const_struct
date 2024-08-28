@@ -124,7 +124,6 @@ pub const fn default() -> TestSetting {
     }
 }
 
-#[test]
 fn main() {
     tester::<TestSetting!(default())>();
 }
@@ -154,7 +153,6 @@ pub fn tester<const N: usize, A: TestSettingTy<N>>() {
 #[const_struct]
 const B: TestSetting<5> = TestSetting;
 
-#[test]
 fn main() {
     tester::<5, TestSetting!(5, TestSetting::<5>)>();
     tester::<5, TestSetting!(_, TestSetting::<5>)>();
@@ -229,7 +227,6 @@ pub fn tester<A: TupleTy<(f32, TestSetting)>>() {
     println!("a: {:?}", A::__DATA);
 }
 
-#[test]
 fn main() {
     tester::<(F32!(0.5), TestSetting!(TestSetting))>();
 }
@@ -250,7 +247,6 @@ pub fn tester<const N: usize, A: TupleTy<(f32, TestSetting<N>)>>() {
 #[const_struct]
 const B: TestSetting<0> = TestSetting;
 
-#[test]
 fn main() {
     tester::<0, (F32!(0.5), BTy)>();
     call_with_generics!(tester::<(F32!(0.5), TestSetting!(BTy))>());
@@ -262,30 +258,27 @@ Deriveマクロが付いていない構造体にはかなりの制限があり�
 まず、const genericsを用いている構造体には使うことができません。これは、型がわからないためです。<br>
 また、マクロを用いて、inner declaration constは行えません。<br>
 PrimitiveTraitsを使うことで、型を直接受け取ることができます。<br>
+メンバ変数がderiveを実装している必要はないため、既存の構造体をラップする簡単なラッパーを作ることで、一切の制限なく使うことができます。<br>
 ```rust
-#[cfg(test)]
-mod test12 {
-    use const_struct::{const_struct, primitive::TupleTy, PrimitiveTraits};
+use const_struct::{const_struct, primitive::TupleTy, PrimitiveTraits};
 
-    #[derive(Debug)]
-    pub struct TestSetting;
+#[derive(Debug)]
+pub struct TestSetting;
 
-    pub fn tester<A: TupleTy<(TestSetting, )>>() {
-        println!("a: {:?}", A::__DATA);
-    }
+pub fn tester<A: TupleTy<(TestSetting, )>>() {
+    println!("a: {:?}", A::__DATA);
+}
 
-    pub fn tester_alt<A: PrimitiveTraits<DATATYPE = TestSetting>>() {
-        println!("a: {:?}", A::__DATA);
-    }
+pub fn tester_alt<A: PrimitiveTraits<DATATYPE = TestSetting>>() {
+    println!("a: {:?}", A::__DATA);
+}
 
-    #[const_struct]
-    const B: TestSetting = TestSetting;
+#[const_struct]
+const B: TestSetting = TestSetting;
 
-    #[test]
-    fn main() {
-        tester::<(BTy, )>();
-        tester_alt::<BTy>();
-    }
+fn main() {
+    tester::<(BTy, )>();
+    tester_alt::<BTy>();
 }
 ```
 
@@ -311,14 +304,50 @@ pub fn tester<F: Float + core::fmt::Debug + Copy, A: TupleTy<(TestSetting<F>, )>
 #[const_struct]
 const B: TestSetting<f32> = TestSetting { a: 0.5 };
 
-#[test]
 fn main() {
     tester::<f32, (BTy, )>();
 }
 ```
 
 ## パス指定
+下記のように、`const_struct`を用いてパスを指定することができます。<br>
+これを用いて、構造体の絶対パスを指定することで、別のモジュールから構造体名のマクロを使用する際に、構造体をインポートする必要がなくなります。<br>
+また、トレイトなどのパスは指定しなくて良いです。<br>
+渡す値の内部を書き換えるわけではないため、下記のように、ジェネリクスとして渡す型のパスや、渡す値を作る際ははsuperなどを用いて指定する必要があります。<br>
+```rust
+use const_struct::{const_struct, ConstStruct};
+use core::fmt::Debug;
 
+#[derive(Debug, Copy, Clone)]
+pub struct Float32;
+
+pub trait Float {}
+
+impl Float for Float32 {}
+
+#[derive(ConstStruct, Debug)]
+#[const_struct(
+    TestSettingC: crate::test15::TestSettingC,
+)]
+pub struct TestSettingC<const N: usize, F: Float> {
+    _a: F,
+}
+
+pub fn tester<const N: usize, F: Float + Copy + Debug, A: TestSettingCTy<N, F>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+pub mod module {
+    fn main() {
+        const_struct::call_with_generics!(super::tester::<
+            TestSettingC!(
+                super::Float32,
+                super::TestSettingC::<7, super::Float32> { _a: super::Float32 }
+            ),
+        >());
+    }
+}
+```
 
 ## ConstCompat
 通常の関数などをcfgフラグに基づいて、ジェネリクス受け取りに変更する属性マクロです。
