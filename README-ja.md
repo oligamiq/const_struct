@@ -256,6 +256,69 @@ fn main() {
 }
 ```
 
+## Non derive
+Deriveマクロが付いていない構造体にはかなりの制限があります。<br>
+まず、const genericsを用いている構造体には使うことができません。これは、型がわからないためです。<br>
+また、マクロを用いて、inner declaration constは行えません。<br>
+PrimitiveTraitsを使うことで、型を直接受け取ることができます。<br>
+```rust
+#[cfg(test)]
+mod test12 {
+    use const_struct::{const_struct, primitive::TupleTy, PrimitiveTraits};
+
+    #[derive(Debug)]
+    pub struct TestSetting;
+
+    pub fn tester<A: TupleTy<(TestSetting, )>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    pub fn tester_alt<A: PrimitiveTraits<DATATYPE = TestSetting>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    #[const_struct]
+    const B: TestSetting = TestSetting;
+
+    #[test]
+    fn main() {
+        tester::<(BTy, )>();
+        tester_alt::<BTy>();
+    }
+}
+```
+
+また、const genericsでないジェネリクスは使うことができます。<br>
+ただし、call_with_generics!マクロを使うことはできません。<br>
+これは、展開するべきジェネリクスの情報がないためです。<br>
+```rust
+use const_struct::{const_struct, primitive::TupleTy};
+
+pub trait Float {}
+
+impl Float for f32 {}
+
+#[derive(Debug)]
+pub struct TestSetting<F: Float> {
+    a: F,
+}
+
+pub fn tester<F: Float + core::fmt::Debug + Copy, A: TupleTy<(TestSetting<F>, )>>() {
+    println!("a: {:?}", A::__DATA);
+}
+
+#[const_struct]
+const B: TestSetting<f32> = TestSetting { a: 0.5 };
+
+#[test]
+fn main() {
+    tester::<f32, (BTy, )>();
+}
+```
+
+## パス指定
+
+
 ## ConstCompat
 通常の関数などをcfgフラグに基づいて、ジェネリクス受け取りに変更する属性マクロです。
 <br>

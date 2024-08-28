@@ -257,3 +257,74 @@ mod test11 {
         call_with_generics!(tester::<(F32!(0.5), TestSetting!(BTy))>());
     }
 }
+
+#[cfg(test)]
+mod test12 {
+    use const_struct::{const_struct, primitive::TupleTy, PrimitiveTraits};
+
+    #[derive(Debug)]
+    pub struct TestSetting;
+
+    pub fn tester<A: TupleTy<(TestSetting, )>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    pub fn tester_alt<A: PrimitiveTraits<DATATYPE = TestSetting>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    #[const_struct]
+    const B: TestSetting = TestSetting;
+
+    #[test]
+    fn main() {
+        tester::<(BTy, )>();
+        tester_alt::<BTy>();
+    }
+}
+
+#[cfg(test)]
+mod test13 {
+    use const_struct::{const_struct, primitive::TupleTy};
+
+    pub trait Float {}
+
+    impl Float for f32 {}
+
+    #[derive(Debug)]
+    pub struct TestSetting<F: Float> {
+        a: F,
+    }
+
+    pub fn tester<F: Float + core::fmt::Debug + Copy, A: TupleTy<(TestSetting<F>, )>>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    #[const_struct]
+    const B: TestSetting<f32> = TestSetting { a: 0.5 };
+
+    #[test]
+    fn main() {
+        tester::<f32, (BTy, )>();
+    }
+}
+
+#[cfg(test)]
+pub mod test14 {
+    use const_struct::{const_struct, ConstStruct};
+
+    #[derive(ConstStruct, Debug)]
+    #[const_struct(TestSettingB: crate::test14::TestSettingB)]
+    pub struct TestSettingB;
+
+    pub fn tester<A: TestSettingBTy>() {
+        println!("a: {:?}", A::__DATA);
+    }
+
+    pub mod module {
+        #[test]
+        fn main() {
+            super::tester::<TestSettingB!(super::TestSettingB)>();
+        }
+    }
+}
