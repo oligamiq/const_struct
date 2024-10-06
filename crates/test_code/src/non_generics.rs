@@ -18,7 +18,7 @@ const B: TestNonGenerics = TestNonGenerics { s: 0.0 };
 
 #[cfg(test)]
 pub mod test {
-    use super::{TestNonGenerics, TestNonGenericsTy};
+    use super::{TestNonGenerics, TestNonGenericsTy, macros::TestNonGenerics};
     use const_struct::call_with_generics;
 
     pub fn tester_test_generics<U: TestNonGenericsTy>() {

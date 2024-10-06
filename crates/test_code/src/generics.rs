@@ -18,7 +18,7 @@ const B: TestGenerics<7, f32> = TestGenerics { s: 0.0 };
 
 #[cfg(test)]
 pub mod test {
-    use super::{BTy, Float, TestGenerics, TestGenericsTy};
+    use super::{BTy, Float, TestGenerics, TestGenericsTy, macros::TestGenerics};
     use core::fmt::Debug;
 
     pub fn tester_test_generics<
@@ -62,19 +62,19 @@ pub mod test2 {
 
     #[test]
     fn test_generics() {
-        tester_test_generics::<7, f32, super::TestGenerics!(7, f32, TestGenerics { s: 0.0 })>();
+        tester_test_generics::<7, f32, super::macros::TestGenerics!(7, f32, TestGenerics { s: 0.0 })>();
         const_struct::call_with_generics!(tester_test_generics::<
-            super::TestGenerics!(7, f32, TestGenerics { s: 0.0 }),
+            super::macros::TestGenerics!(7, f32, TestGenerics { s: 0.0 }),
         >());
         const_struct::call_with_generics!(tester_test_generics::<
-            super::TestGenerics!(_, f32, TestGenerics::<7, f32> { s: 0.0 }),
+            super::macros::TestGenerics!(_, f32, TestGenerics::<7, f32> { s: 0.0 }),
         >());
         const_struct::call_with_generics!(tester_test_generics::<
-            super::TestGenerics!(f32, TestGenerics::<7, f32> { s: 0.0 }),
+            super::macros::TestGenerics!(f32, TestGenerics::<7, f32> { s: 0.0 }),
         >());
 
         const_struct::call_with_generics!(
-            tester_test_generics::<super::TestGenerics!(super::BTy)>()
+            tester_test_generics::<super::macros::TestGenerics!(super::BTy)>()
         );
         tester_test_generics::<7, f32, super::BTy>();
     }
@@ -110,7 +110,7 @@ pub mod test3 {
     #[test]
     fn main() {
         call_with_generics!(tester::<
-            (TestSetting!(BTy), TestSetting!(TestSetting::<2>)),
+            (macros::TestSetting!(BTy), TestSetting!(TestSetting::<2>)),
             (F32!(0.5), TestSetting!(8, TestSetting)),
         >());
     }

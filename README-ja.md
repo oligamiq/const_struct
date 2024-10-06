@@ -128,7 +128,7 @@ pub const fn default() -> TestSetting {
 }
 
 fn main() {
-    tester::<TestSetting!(default())>();
+    tester::<macros::TestSetting!(default())>();
 }
 ```
 
@@ -157,17 +157,17 @@ pub fn tester<const N: usize, A: TestSettingTy<N>>() {
 const B: TestSetting<5> = TestSetting;
 
 fn main() {
-    tester::<5, TestSetting!(5, TestSetting::<5>)>();
-    tester::<5, TestSetting!(_, TestSetting::<5>)>();
-    tester::<4, TestSetting!(4, TestSetting)>();
-    tester::<9, TestSetting!(TestSetting::<9>)>();
+    tester::<5, macros::TestSetting!(5, TestSetting::<5>)>();
+    tester::<5, macros::TestSetting!(_, TestSetting::<5>)>();
+    tester::<4, macros::TestSetting!(4, TestSetting)>();
+    tester::<9, macros::TestSetting!(TestSetting::<9>)>();
 
-    tester::<5, TestSetting!(B)>();
+    tester::<5, macros::TestSetting!(B)>();
     tester::<5, BTy>();
-    call_with_generics!(tester::<TestSetting!(B)>());
+    call_with_generics!(tester::<macros::TestSetting!(B)>());
     call_with_generics!(tester::<5, BTy>());
-    call_with_generics!(tester::<TestSetting!(_, BTy)>());
-    call_with_generics!(tester::<TestSetting!(BTy)>());
+    call_with_generics!(tester::<macros::TestSetting!(_, BTy)>());
+    call_with_generics!(tester::<macros::TestSetting!(BTy)>());
 }
 ```
 
@@ -231,7 +231,7 @@ pub fn tester<A: TupleTy<(f32, TestSetting)>>() {
 }
 
 fn main() {
-    tester::<(F32!(0.5), TestSetting!(TestSetting))>();
+    tester::<(F32!(0.5), macros::TestSetting!(TestSetting))>();
 }
 ```
 
@@ -252,7 +252,7 @@ const B: TestSetting<0> = TestSetting;
 
 fn main() {
     tester::<0, (F32!(0.5), BTy)>();
-    call_with_generics!(tester::<(F32!(0.5), TestSetting!(BTy))>());
+    call_with_generics!(tester::<(F32!(0.5), macros::TestSetting!(BTy))>());
 }
 ```
 
@@ -343,7 +343,7 @@ pub fn tester<const N: usize, F: Float + Copy + Debug, A: TestSettingCTy<N, F>>(
 pub mod module {
     fn main() {
         const_struct::call_with_generics!(super::tester::<
-            TestSettingC!(
+            super::macros::TestSettingC!(
                 super::Float32,
                 super::TestSettingC::<7, super::Float32> { _a: super::Float32 }
             ),

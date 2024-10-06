@@ -494,10 +494,10 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         let name_module = format_ident!("__{}", name.to_string().to_case(Case::Snake));
         let use_: ItemUse = parse_quote!(pub(crate) use #name as #name_with_underscore;);
         let use_outer: ItemUse =
-            parse_quote!(pub(crate) use #name_module::#name_with_underscore as #name;);
+            parse_quote!(pub(crate) use super::#name_module::#name_with_underscore as #name;);
         quote! {
             #[doc(hidden)]
-            pub mod #name_module {
+            pub(crate) mod #name_module {
                 #[macro_export]
                 #[allow(unused_macros)]
                 #macro_export
@@ -507,13 +507,19 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                 #use_
             }
             #[doc(hidden)]
-            #[allow(unused_imports)]
-            #use_outer
+            pub(crate) mod macros {
+                #[allow(unused_imports)]
+                #use_outer
+            }
         }
     } else {
         quote! {
-            #[allow(unused_macros)]
-            #macro_export
+            pub(crate) mod macros {
+                #[allow(unused_macros)]
+                #macro_export
+
+                pub(crate) use #name;
+            }
         }
     };
 

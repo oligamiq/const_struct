@@ -4,28 +4,16 @@ version = 3
 
 [[package]]
 name = "const_struct"
-version = "0.4.7"
+version = "0.4.8"
 dependencies = [
- "const_struct_derive 0.4.6",
+ "const_struct_derive",
  "crc",
  "paste",
 ]
 
 [[package]]
 name = "const_struct_derive"
-version = "0.4.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "222a05d4a9d62e13a473d103b5dc0792035240550056e813ec2b3837dd830579"
-dependencies = [
- "convert_case",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "const_struct_derive"
-version = "0.4.7"
+version = "0.4.8"
 dependencies = [
  "convert_case",
  "proc-macro2",
@@ -89,9 +77,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.76"
+version = "2.0.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "578e081a14e0cefc3279b0472138c513f37b41a08d5a3cca9b6e4e8ceb6cd525"
+checksum = "89132cd0bf050864e1d38dc3bbc07a0eb8e7530af26344d3d2bbbef83499f590"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -100,7 +88,7 @@ dependencies = [
 
 [[package]]
 name = "test_code"
-version = "0.4.7"
+version = "0.4.8"
 dependencies = [
  "const_struct",
  "no-std-compat",
@@ -108,16 +96,16 @@ dependencies = [
 
 [[package]]
 name = "test_gen_code"
-version = "0.4.7"
+version = "0.4.8"
 dependencies = [
  "const_struct",
 ]
 
 [[package]]
 name = "test_trait_code"
-version = "0.4.7"
+version = "0.4.8"
 dependencies = [
- "const_struct_derive 0.4.7",
+ "const_struct_derive",
  "crc",
  "no-std-compat",
  "paste",
@@ -125,23 +113,23 @@ dependencies = [
 
 [[package]]
 name = "test_trait_code_old_old"
-version = "0.4.7"
+version = "0.4.8"
 
 [[package]]
 name = "tests"
-version = "0.4.7"
+version = "0.4.8"
 dependencies = [
  "const_struct",
 ]
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.12"
+version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
+checksum = "e91b56cd4cadaeb79bbf1a5645f6b4f8dc5bde8834ad5894a8db35fda9efa1fe"
 
 [[package]]
 name = "unicode-segmentation"
-version = "1.11.0"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4c87d22b6e3f4a18d4d40ef354e97c90fcb14dd91d7dc0aa9d8a1172ebf7202"
+checksum = "f6ccf251212114b54433ec949fd6a7841275f9ada20dddd2f29e9ceea4501493"
