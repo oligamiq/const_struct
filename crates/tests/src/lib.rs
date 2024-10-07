@@ -380,3 +380,5 @@ pub mod test15 {
         }
     }
 }
+
+const_struct::init!();

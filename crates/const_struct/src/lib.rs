@@ -26,3 +26,17 @@ pub mod struct_prim;
 pub mod util_macro;
 pub use const_struct_derive::*;
 pub mod keeptype;
+
+#[macro_export]
+macro_rules! init {
+    () => {
+        #[doc(hidden)]
+        #[allow(dead_code)]
+        pub(crate) struct ConstStructHashBridge<
+            const NAME_HASH: u64,
+            const FILE_NAME_HASH: u64,
+            const COLUMN: u32,
+            const LINE: u32
+        >;
+    }
+}

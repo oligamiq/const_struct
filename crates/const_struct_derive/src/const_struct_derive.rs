@@ -256,6 +256,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
     let absolute_struct_name = user_attrs.get_absolute_path_path(&parse_quote! { #name });
     let datatype_absolute = gen_datatype_fn(&absolute_struct_name);
+    let absolute_meta_struct_name = user_attrs.get_absolute_path_meta_path(&parse_quote! { #name });
 
     let mut const_fn: ItemFn = parse_quote!(
         const fn get_const_generics(_: #datatype_absolute) {}
@@ -370,13 +371,14 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     });
 
     let generate_macro_match = |gen_args: &Punctuated<TokenStream, Token![,]>| {
+        let root_hash_bridge_ident = crate::root_hash_bridge_ident();
         quote! {
             #hash_bridge<{
                 const NAME_HASH: u64 = #str_hash(stringify!($value));
 
-                type T = #absolute_struct_name<#gen_args>;
+                type T = #absolute_meta_struct_name<#gen_args>;
 
-                impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for T {
+                impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for #root_hash_bridge_ident<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> {
                     type DATATYPE = T;
                     const DATA: Self::DATATYPE = {
                         $value
@@ -391,7 +393,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             }, {
                 line!()
             },
-            #absolute_struct_name<#gen_args>
+            #root_hash_bridge_ident<{ #str_hash(stringify!($value)) }, {#str_hash(file!())}, {column!()}, {line!()}>
             >
         }
     };
@@ -523,8 +525,6 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         }
     };
 
-    // println!("macro_export: {}", macro_export.to_token_stream());
-
     Ok(quote! {
         #(#keep_type_impls)*
         #new_trait_impl
@@ -637,7 +637,7 @@ impl AbsolutePath {
 
     pub fn path(&self) -> Path {
         let crate_name = std::env::var("CARGO_CRATE_NAME").unwrap();
-        if self.path.segments.first().unwrap().ident == crate_name {
+        if self.path.segments.first().unwrap().ident == crate_name || self.path.segments.first().unwrap().ident == "crate" {
             let mut path = self.path.clone();
             path.segments.get_mut(0).unwrap().ident = Ident::new("crate", Span::call_site());
             path.leading_colon = None;
@@ -665,6 +665,7 @@ impl Parse for PathAndIdent {
 
 impl ToTokens for PathAndIdent {
     fn to_tokens(&self, tokens: &mut TokenStream) {
+        // println!("ident: {}", self.ident.to_token_stream());
         let ident = &self.ident;
         let path = &self.path;
         tokens.extend(quote! { #ident: #path });
@@ -680,7 +681,7 @@ impl Parse for AbsolutePath {
 
 impl ToTokens for AbsolutePath {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let path = &self.path;
+        let path = check_meta_path(&self.path);
         tokens.extend(quote! { #path });
     }
 }

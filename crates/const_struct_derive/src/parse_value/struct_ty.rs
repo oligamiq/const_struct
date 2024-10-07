@@ -134,13 +134,14 @@ pub fn parse_value_struct_ty(
         .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridge });
     let hash_bridge_bridge = addition_data
         .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridgeBridge });
+    let root_hash_bridge_ident = crate::root_hash_bridge_ident();
     let ty: Type = parse_quote! {
         #hash_bridge<{
             const NAME_HASH: u64 = #str_hash(stringify!(#expr));
 
             type T = #head_ty;
 
-            impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for T {
+            impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for #root_hash_bridge_ident<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> {
                 type DATATYPE = T;
                 const DATA: Self::DATATYPE = #expr;
             }
@@ -153,7 +154,7 @@ pub fn parse_value_struct_ty(
         }, {
             line!()
         },
-        #head_ty
+        #root_hash_bridge_ident<{ #str_hash(stringify!(#expr)) }, {#str_hash(file!())}, {column!()}, {line!()}>
         >
     };
 

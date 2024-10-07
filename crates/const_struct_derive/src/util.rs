@@ -1,6 +1,7 @@
+use parse::discouraged::Speculative as _;
 use proc_macro2::{Spacing, TokenStream};
 use punctuated::Punctuated;
-use quote::{quote, ToTokens as _, TokenStreamExt as _};
+use quote::{quote, ToTokens, TokenStreamExt as _};
 use syn::*;
 use FnArg::Typed;
 
@@ -59,6 +60,16 @@ pub fn item_fn_with_meta(mut item_fn: ItemFn) -> ItemFn {
         .as_mut()
         .unwrap()
         .predicates;
+
+    item_fn.sig.inputs.iter_mut().for_each(|input| {
+        if let Typed(PatType { ty, .. }) = input {
+            if let Type::Path(TypePath { path, .. }) = ty.as_mut() {
+                let path = check_meta_path(&path);
+                *ty = Box::new(Type::Verbatim(path));
+            }
+        }
+    });
+
     *predicates = predicates
         .iter()
         .cloned()
@@ -166,6 +177,43 @@ pub fn gen_get_const_generics(
     Some(expr)
 }
 
+pub struct MetaPath {
+    pub meta: Option<Token![$]>,
+    pub path: Path,
+}
+
+impl parse::Parse for MetaPath {
+    fn parse(input: parse::ParseStream) -> Result<Self> {
+        let fork = input.fork();
+        match fork.parse::<Token![$]>() {
+            Ok(meta) => {
+                let path: Path = fork.parse()?;
+                input.advance_to(&fork);
+                Ok(Self {
+                    meta: Some(meta),
+                    path,
+                })
+            }
+            Err(_) => {
+                let path: Path = input.parse()?;
+                Ok(Self {
+                    meta: None,
+                    path,
+                })
+            }
+        }
+    }
+}
+
+impl ToTokens for MetaPath {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        if let Some(meta) = &self.meta {
+            meta.to_tokens(tokens);
+        }
+        self.path.to_tokens(tokens);
+    }
+}
+
 pub fn gen_get_const_generics_inner(
     get_const_generics_fn_seed: ItemFn,
     ident_tys: Vec<TokenStream>,
@@ -246,6 +294,9 @@ pub fn gen_get_const_generics_inner(
 
     get_const_generics_fn_seed.sig.generics = generics;
 
+    let mut meta_path = None;
+    let mut change_meta_path_before = None;
+
     let input_args = if let Typed(PatType { ty, .. }) =
         get_const_generics_fn_seed.sig.inputs.get_mut(0).unwrap()
     {
@@ -258,6 +309,22 @@ pub fn gen_get_const_generics_inner(
                 &mut segments.last_mut().unwrap().arguments
             {
                 args
+            } else {
+                return None;
+            }
+        } else if let Type::Verbatim(token_stream) = ty.as_mut() {
+            if let Ok(meta_path_) = parse2::<MetaPath>(token_stream.clone()) {
+                meta_path = Some(meta_path_);
+                if let PathArguments::AngleBracketed(AngleBracketedGenericArguments { args, .. }) =
+                    &mut meta_path.as_mut().unwrap().path.segments.last_mut().unwrap().arguments
+                {
+                    change_meta_path_before = Some(|meta_path: MetaPath| {
+                        *token_stream = quote! { #meta_path };
+                    });
+                    args
+                } else {
+                    return None;
+                }
             } else {
                 return None;
             }
@@ -283,6 +350,10 @@ pub fn gen_get_const_generics_inner(
                 *type_ = Type::Verbatim(ident_ty.clone());
             }
         });
+
+    if let Some(mut change_meta_path_before) = change_meta_path_before {
+        change_meta_path_before(meta_path.unwrap());
+    }
 
     Some(get_const_generics_fn_seed)
 }

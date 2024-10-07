@@ -26,3 +26,5 @@ fn main() {
     #[cfg(not(feature = "dynamic"))]
     tester(WINDOW_SETTING);
 }
+
+const_struct::init!();

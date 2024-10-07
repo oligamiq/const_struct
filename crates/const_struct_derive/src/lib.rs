@@ -150,3 +150,7 @@ pub fn match_end_with(input: RawTokenStream) -> RawTokenStream {
         Err(err) => err.to_compile_error().into(),
     }
 }
+
+pub(crate) fn root_hash_bridge_ident() -> syn::Path {
+    parse_quote! { crate::ConstStructHashBridge }
+}

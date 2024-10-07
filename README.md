@@ -30,6 +30,12 @@ Additionally, the data extracted via `::__DATA` is type-inferred by the compiler
 For more detailed code, please refer to `/crates/test_code/`.<br>
 *The test code is complex to verify if it works even with unusual references.
 
+## Init
+If you use macros generated and exported by this package, you need to call this function in the crate root. Therefore, if the library to be used exists, this needs to be communicated.
+```rust
+const_struct::init!();
+```
+
 ## Primitive Types (inside declaration const)
 Here, it may be referred to as the inside macro.<br>
 When using primitive types, use the `primitive` module.<br>
