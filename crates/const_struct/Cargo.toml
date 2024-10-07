@@ -13,9 +13,9 @@ documentation.workspace = true
 publish = true
 
 [dependencies]
-const_struct_derive.workspace = true
+# const_struct_derive.workspace = true
 crc = "3.2.1"
-# const_struct_derive = "0.4"
+const_struct_derive = "0.5"
 paste = "1.0.15"
 
 [package.metadata.release]
