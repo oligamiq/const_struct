@@ -18,6 +18,9 @@ crc = "3.2.1"
 const_struct_derive = "0.5"
 paste = "1.0.15"
 
+[features]
+rand_support = ["const_struct_derive/rand_support"]
+
 [package.metadata.release]
 tag = true
 tag-prefix =""

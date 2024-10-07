@@ -19,8 +19,10 @@ quote = "1.0.36"
 syn = {version = "2.0.74", features = ["full", "extra-traits"]}
 convert_case = "0.6.0"
 crc = "3.2.1"
+rand = { version = "0.8.4", optional = true }
+
+[features]
+rand_support = ["rand"]
 
 [package.metadata.release]
 tag = false
-
-

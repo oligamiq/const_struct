@@ -89,6 +89,7 @@ pub fn struct_macro_alt(
     ident_tys: Vec<TokenStream>,
     data: GenericsData,
     new_generic: Vec<GenericArgument>,
+    hash: u64,
 ) -> impl Fn(TokenStream) -> Result<Type> {
     if data.label != util_macro::Label::Struct {
         panic!("Expected struct");
@@ -189,6 +190,7 @@ pub fn struct_macro_alt(
                 correspondence: generic_info,
             },
             value,
+            hash,
         )?;
 
         Ok(parse_value_struct)

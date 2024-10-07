@@ -151,6 +151,11 @@ pub fn match_end_with(input: RawTokenStream) -> RawTokenStream {
     }
 }
 
+pub(crate) fn str_hash(s: &str) -> u64 {
+    let crc: crc::Crc<u64> = crc::Crc::<u64>::new(&crc::CRC_64_ECMA_182);
+    crc.checksum(s.as_bytes())
+}
+
 pub(crate) fn root_hash_bridge_ident() -> syn::Path {
     parse_quote! { crate::ConstStructHashBridge }
 }

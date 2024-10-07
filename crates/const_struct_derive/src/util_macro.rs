@@ -308,6 +308,8 @@ impl MyExprCalls {
 }
 
 pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
+    let hash = crate::str_hash(&input.clone().to_string());
+
     // println!("input_with_data: {}", input.to_token_stream());
 
     let input_with_data = parse2::<ExpandCallFnWithGenericsArgs>(input)?;
@@ -574,6 +576,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                         ident_tys.clone(),
                         define_data.clone(),
                         new_generic.clone(),
+                        hash,
                     );
                     let ty = ty(inner_mac.tokens.clone()).unwrap();
                     ty.to_token_stream()

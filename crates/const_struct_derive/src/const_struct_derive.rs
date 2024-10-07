@@ -372,6 +372,8 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
     let generate_macro_match = |gen_args: &Punctuated<TokenStream, Token![,]>| {
         let root_hash_bridge_ident = crate::root_hash_bridge_ident();
+
+        #[cfg(not(feature = "rand_support"))]
         quote! {
             #hash_bridge<{
                 const NAME_HASH: u64 = #str_hash(stringify!($value));
@@ -395,6 +397,33 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             },
             #root_hash_bridge_ident<{ #str_hash(stringify!($value)) }, {#str_hash(file!())}, {column!()}, {line!()}>
             >
+        }
+
+        #[cfg(feature = "rand_support")]
+        {
+            let random_hash = rand::random::<u64>();
+            quote! {
+                #hash_bridge<{
+                    type T = #absolute_meta_struct_name<#gen_args>;
+
+                    impl #hash_bridge_bridge<#random_hash, {#str_hash(file!())}, {column!()}, {line!()}> for #root_hash_bridge_ident<#random_hash, {#str_hash(file!())}, {column!()}, {line!()}> {
+                        type DATATYPE = T;
+                        const DATA: Self::DATATYPE = {
+                            $value
+                        };
+                    }
+
+                    #random_hash
+                }, {
+                    #str_hash(file!())
+                }, {
+                    column!()
+                }, {
+                    line!()
+                },
+                #root_hash_bridge_ident<{ #random_hash }, {#str_hash(file!())}, {column!()}, {line!()}>
+                >
+            }
         }
     };
 

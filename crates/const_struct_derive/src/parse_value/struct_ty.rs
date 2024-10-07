@@ -10,12 +10,14 @@ use super::AdditionData;
 // use quote::ToTokens as _;
 
 /// _ は、GenericInfoを作成するときに考慮する
+#[allow(unused_variables)]
 pub fn parse_value_struct_ty(
     addition_data: AdditionData,
     ident_tys: Vec<TokenStream>,
     struct_data: GenericsData,
     info: GenericInfo,
     expr: Expr,
+    hash: u64,
 ) -> Result<Type> {
     let struct_ident = struct_data.get_ty_ident();
 
@@ -135,28 +137,56 @@ pub fn parse_value_struct_ty(
     let hash_bridge_bridge = addition_data
         .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridgeBridge });
     let root_hash_bridge_ident = crate::root_hash_bridge_ident();
-    let ty: Type = parse_quote! {
-        #hash_bridge<{
-            const NAME_HASH: u64 = #str_hash(stringify!(#expr));
+    #[cfg(not(feature = "rand_support"))]
+    {
+        let ty: Type = parse_quote! {
+            #hash_bridge<{
+                type T = #head_ty;
 
-            type T = #head_ty;
+                const NAME_HASH: u64 = (#str_hash(stringify!(#expr)) as u32 as u64 + #hash as u32 as u64);
 
-            impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for #root_hash_bridge_ident<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> {
-                type DATATYPE = T;
-                const DATA: Self::DATATYPE = #expr;
-            }
+                impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for #root_hash_bridge_ident<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> {
+                    type DATATYPE = T;
+                    const DATA: Self::DATATYPE = #expr;
+                }
 
-            NAME_HASH
-        }, {
-            #str_hash(file!())
-        }, {
-            column!()
-        }, {
-            line!()
-        },
-        #root_hash_bridge_ident<{ #str_hash(stringify!(#expr)) }, {#str_hash(file!())}, {column!()}, {line!()}>
-        >
+                NAME_HASH
+            }, {
+                #str_hash(file!())
+            }, {
+                column!()
+            }, {
+                line!()
+            },
+            #root_hash_bridge_ident<{ (#str_hash(stringify!(#expr)) as u32 as u64 + #hash as u32 as u64) }, {#str_hash(file!())}, {column!()}, {line!()}>
+            >
+        };
+        return Ok(ty);
+    }
+
+    #[cfg(feature = "rand_support")]
+    {
+        let hash = rand::random::<u64>();
+        let ty: Type = parse_quote! {
+            #hash_bridge<{
+                type T = #head_ty;
+
+                impl #hash_bridge_bridge<#hash, {#str_hash(file!())}, {column!()}, {line!()}> for #root_hash_bridge_ident<#hash, {#str_hash(file!())}, {column!()}, {line!()}> {
+                    type DATATYPE = T;
+                    const DATA: Self::DATATYPE = #expr;
+                }
+
+                #hash
+            }, {
+                #str_hash(file!())
+            }, {
+                column!()
+            }, {
+                line!()
+            },
+            #root_hash_bridge_ident<{ #hash }, {#str_hash(file!())}, {column!()}, {line!()}>
+            >
+        };
+        return Ok(ty);
     };
-
-    Ok(ty)
 }
