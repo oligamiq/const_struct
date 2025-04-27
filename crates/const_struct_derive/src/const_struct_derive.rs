@@ -549,6 +549,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                 #[allow(unused_macros)]
                 #macro_export
 
+                #[allow(unused_imports)]
                 pub(crate) use #name;
             }
         }
