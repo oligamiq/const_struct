@@ -41,7 +41,7 @@ impl<const T: usize, S: Float> KeepType<0> for TestStructWithFloatGenerics<T, S>
 }
 
 #[macro_export]
-macro_rules! TestStructWithFloatGenerics {
+macro_rules! test_struct_with_float_generics {
     (@TestStructWithFloatGenericsGetGenericsData, @AdditionData($($addition_data:path: $addition_data2:path), *), $macro_path: path, $($arg:tt)*) => {
         {
             $macro_path!(
@@ -195,7 +195,7 @@ mod tests {
 
     #[test]
     fn test() {
-        type T = TestStructWithFloatGenerics!(
+        type T = test_struct_with_float_generics!(
             _,
             f32,
             TestStructWithFloatGenerics {
@@ -220,7 +220,7 @@ mod tests {
         caller::<
             8,
             f32,
-            TestStructWithFloatGenerics!(
+            test_struct_with_float_generics!(
                 _,
                 f32,
                 TestStructWithFloatGenerics {
@@ -239,7 +239,7 @@ mod tests {
                 ::const_struct::call_with_generics: call_with_generics
             ),
             caller::<
-            TestStructWithFloatGenerics!(
+            test_struct_with_float_generics!(
                 f32,
                 TestStructWithFloatGenerics {
                     test_data: Some(1),
@@ -255,7 +255,7 @@ mod tests {
         let d = caller::<
             8,
             f32,
-            TestStructWithFloatGenerics!(
+            test_struct_with_float_generics!(
                 f32,
                 TestStructWithFloatGenerics {
                     test_data: Some(1),
@@ -268,6 +268,6 @@ mod tests {
             ),
         >();
 
-        let e = caller::<8, f32, TestStructWithFloatGenerics!(BTy)>();
+        let e = caller::<8, f32, test_struct_with_float_generics!(BTy)>();
     }
 }

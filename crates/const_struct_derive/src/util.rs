@@ -196,10 +196,7 @@ impl parse::Parse for MetaPath {
             }
             Err(_) => {
                 let path: Path = input.parse()?;
-                Ok(Self {
-                    meta: None,
-                    path,
-                })
+                Ok(Self { meta: None, path })
             }
         }
     }
@@ -266,23 +263,33 @@ pub fn gen_get_const_generics_inner(
         .filter(|param| matches!(param, GenericParam::Const(_)))
         .cloned()
         .collect::<Punctuated<_, Token![,]>>();
-    let new_predicates = generics.where_clause.unwrap_or(WhereClause { where_token: Default::default(), predicates: Default::default() }).predicates.iter().filter(|predicate|
-        if let WherePredicate::Type(PredicateType { bounded_ty, .. }) = predicate {
-            let where_ident = if let Type::Path(TypePath { path, .. }) = bounded_ty {
-                if let Some(PathSegment { ident, .. }) = path.segments.last() {
-                    // println!("ident: {:?}", ident);
-                    ident
+    let new_predicates = generics
+        .where_clause
+        .unwrap_or(WhereClause {
+            where_token: Default::default(),
+            predicates: Default::default(),
+        })
+        .predicates
+        .iter()
+        .filter(|predicate| {
+            if let WherePredicate::Type(PredicateType { bounded_ty, .. }) = predicate {
+                let where_ident = if let Type::Path(TypePath { path, .. }) = bounded_ty {
+                    if let Some(PathSegment { ident, .. }) = path.segments.last() {
+                        // println!("ident: {:?}", ident);
+                        ident
+                    } else {
+                        return true;
+                    }
                 } else {
                     return true;
-                }
+                };
+                !rm_target_ident.iter().any(|ident| ident == where_ident)
             } else {
-                return true;
-            };
-            !rm_target_ident.iter().any(|ident| ident == where_ident)
-        } else {
-            unimplemented!()
-        }
-    ).cloned().collect::<Punctuated<_, Token![,]>>();
+                unimplemented!()
+            }
+        })
+        .cloned()
+        .collect::<Punctuated<_, Token![,]>>();
     let generics = Generics {
         params: new_generics_param,
         where_clause: Some(WhereClause {
@@ -315,8 +322,16 @@ pub fn gen_get_const_generics_inner(
         } else if let Type::Verbatim(token_stream) = ty.as_mut() {
             if let Ok(meta_path_) = parse2::<MetaPath>(token_stream.clone()) {
                 meta_path = Some(meta_path_);
-                if let PathArguments::AngleBracketed(AngleBracketedGenericArguments { args, .. }) =
-                    &mut meta_path.as_mut().unwrap().path.segments.last_mut().unwrap().arguments
+                if let PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                    args, ..
+                }) = &mut meta_path
+                    .as_mut()
+                    .unwrap()
+                    .path
+                    .segments
+                    .last_mut()
+                    .unwrap()
+                    .arguments
                 {
                     change_meta_path_before = Some(|meta_path: MetaPath| {
                         *token_stream = quote! { #meta_path };

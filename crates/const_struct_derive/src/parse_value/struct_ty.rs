@@ -145,6 +145,7 @@ pub fn parse_value_struct_ty(
 
                 const NAME_HASH: u64 = (#str_hash(stringify!(#expr)) as u32 as u64 + #hash as u32 as u64);
 
+                #[allow(non_local_definitions)]
                 impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for #root_hash_bridge_ident<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> {
                     type DATATYPE = T;
                     const DATA: Self::DATATYPE = #expr;
@@ -171,6 +172,7 @@ pub fn parse_value_struct_ty(
             #hash_bridge<{
                 type T = #head_ty;
 
+                #[allow(non_local_definitions)]
                 impl #hash_bridge_bridge<#hash, {#str_hash(file!())}, {column!()}, {line!()}> for #root_hash_bridge_ident<#hash, {#str_hash(file!())}, {column!()}, {line!()}> {
                     type DATATYPE = T;
                     const DATA: Self::DATATYPE = #expr;

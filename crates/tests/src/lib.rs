@@ -128,7 +128,7 @@ mod test7 {
 
     #[test]
     fn main() {
-        tester::<macros::TestSetting!(default())>();
+        tester::<test_setting!(default())>();
     }
 }
 
@@ -160,7 +160,7 @@ pub mod test8 {
     #[test]
     fn main() {
         tester::<
-            macros::TestSetting!(
+            test_setting!(
                 f32,
                 TestSetting {
                     a: None,
@@ -170,7 +170,7 @@ pub mod test8 {
         >();
         tester2::<
             f32,
-            macros::TestSetting!(
+            test_setting!(
                 f32,
                 TestSetting {
                     a: None,
@@ -179,7 +179,7 @@ pub mod test8 {
             ),
         >();
         call_with_generics!(tester2::<
-            macros::TestSetting!(
+            test_setting!(
                 f64,
                 TestSetting {
                     a: None,
@@ -206,17 +206,17 @@ mod test9 {
 
     #[test]
     fn main() {
-        tester::<5, macros::TestSetting!(5, TestSetting::<5>)>();
-        tester::<5, macros::TestSetting!(_, TestSetting::<5>)>();
-        tester::<4, macros::TestSetting!(4, TestSetting)>();
-        tester::<9, macros::TestSetting!(TestSetting::<9>)>();
+        tester::<5, test_setting!(5, TestSetting::<5>)>();
+        tester::<5, test_setting!(_, TestSetting::<5>)>();
+        tester::<4, test_setting!(4, TestSetting)>();
+        tester::<9, test_setting!(TestSetting::<9>)>();
 
-        tester::<5, macros::TestSetting!(B)>();
+        tester::<5, test_setting!(B)>();
         tester::<5, BTy>();
-        call_with_generics!(tester::<macros::TestSetting!(B)>());
+        call_with_generics!(tester::<test_setting!(B)>());
         call_with_generics!(tester::<5, BTy>());
-        call_with_generics!(tester::<macros::TestSetting!(_, BTy)>());
-        call_with_generics!(tester::<macros::TestSetting!(BTy)>());
+        call_with_generics!(tester::<test_setting!(_, BTy)>());
+        call_with_generics!(tester::<test_setting!(BTy)>());
     }
 }
 
@@ -248,7 +248,7 @@ mod test10 {
     #[test]
     fn main() {
         // let tt = ttt::say_hello!();
-        tester::<(F32!(0.5), macros::TestSetting!(TestSetting))>();
+        tester::<(F32!(0.5), test_setting!(TestSetting))>();
     }
 }
 
@@ -269,7 +269,7 @@ mod test11 {
     #[test]
     fn main() {
         tester::<0, (F32!(0.5), BTy)>();
-        call_with_generics!(tester::<(F32!(0.5), macros::TestSetting!(BTy))>());
+        call_with_generics!(tester::<(F32!(0.5), test_setting!(BTy))>());
     }
 }
 
@@ -339,7 +339,7 @@ pub mod test14 {
     pub mod module {
         #[test]
         fn main() {
-            super::tester::<super::macros::TestSettingB!(super::TestSettingB)>();
+            super::tester::<super::test_setting_b!(super::TestSettingB)>();
         }
     }
 }
@@ -372,7 +372,7 @@ pub mod test15 {
         #[test]
         fn main() {
             const_struct::call_with_generics!(super::tester::<
-                super::macros::TestSettingC!(
+                super::test_setting_c!(
                     super::Float32,
                     super::TestSettingC::<7, super::Float32> { _a: super::Float32 }
                 ),

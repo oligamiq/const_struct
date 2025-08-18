@@ -22,6 +22,7 @@ macro_rules! PrimTraitBySizes {
                 #[allow(clippy::transmute_int_to_bool)]
                 impl<const T: $base> PrimitiveTraits for [<$name:camel Impl>]<T> {
                     type DATATYPE = $name;
+                    #[allow(unnecessary_transmutes)]
                     const __DATA: <Self as PrimitiveTraits>::DATATYPE = unsafe { transmute::<$base, $name>(T) };
                 }
 
@@ -35,7 +36,10 @@ macro_rules! PrimTraitBySizes {
                         };
 
                         ($value:expr) => {
-                            $crate::primitive::[<$name:camel Impl>]::<{ unsafe { core::mem::transmute::<$name, $base>($value) } }>
+                            $crate::primitive::[<$name:camel Impl>]::<{
+                                #[allow(unnecessary_transmutes)]
+                                unsafe { core::mem::transmute::<$name, $base>($value) }
+                            }>
                         };
                     }
 

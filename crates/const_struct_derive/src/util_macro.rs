@@ -1,5 +1,6 @@
-use std::{sync::Mutex, rc::Rc};
+use std::{rc::Rc, sync::Mutex};
 
+use convert_case::{Case, Casing as _};
 use parse::{discouraged::Speculative as _, Parse, ParseStream, Parser as _};
 use proc_macro2::TokenStream;
 use punctuated::Punctuated;
@@ -394,13 +395,14 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
             // dbg!(&args);
 
             let macro_name = mac.path.segments.last().unwrap().ident.to_string();
+            let struct_name = macro_name.from_case(Case::Snake).to_case(Case::UpperCamel);
 
             let exist_define_data = addition_define_data.iter().any(|data| {
-                data.ident == format!("{macro_name}GetGenericsData")
+                data.ident == format!("{struct_name}GetGenericsData")
             });
             if !exist_define_data {
                 // println!("q0:");
-                let get_generics_data = add_at_mark(format_ident!("{macro_name}GetGenericsData"));
+                let get_generics_data = add_at_mark(format_ident!("{struct_name}GetGenericsData"));
                 // println!("q1: {:#?}", get_generics_data);
                 let self_macro = mac.path.clone();
                 let call_with_generics_path = default_addition_data.get_changed_path_from_quote(quote! {
@@ -413,7 +415,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
                 return mac.to_token_stream();
             }
             let define_data = addition_define_data.iter().find(|data| {
-                data.ident == format!("{macro_name}GetGenericsData")
+                data.ident == format!("{struct_name}GetGenericsData")
             }).unwrap();
             let addition_data = default_addition_data.clone().extend(define_data.addition_data.clone().into());
 
@@ -478,7 +480,7 @@ pub fn expand_call_fn_with_generics(input: TokenStream) -> Result<TokenStream> {
             let get_generics = |num: usize, value: Expr| {
                 //     let mut mac = mac.clone();
                 //     let macro_first_arg =
-                //         add_at_mark(format_ident!("{macro_name}GetInnerGenerics{num}"));
+                //         add_at_mark(format_ident!("{struct_name}GetInnerGenerics{num}"));
                 //     mac.tokens = quote! { #macro_first_arg, #value };
                 //     mac
                 gen_get_const_generics(define_data.const_fn.clone(), ident_tys.clone(), value, num)

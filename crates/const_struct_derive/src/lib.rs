@@ -20,6 +20,27 @@ mod rewriter;
 mod util;
 mod util_macro;
 
+/// This derive generates a const struct implementation from struct definitions.
+///
+/// This derive gen `{}Ty` and function can use that trait,
+/// and function can access constant field value from trait.
+/// If you see other complex example code,
+/// you see https://github.com/oligamiq/const_struct/tree/main/crates/test_code
+///
+/// ```ignore
+/// use const_struct::{call_with_generics, const_struct, ConstStruct};
+/// #[derive(ConstStruct, Debug)]
+/// pub struct TestGenerics<const T: usize> {
+///     float: f32,
+/// }
+/// const COUNT: usize = 7;
+/// #[const_struct]
+/// const B: TestGenerics<{ COUNT }> = TestGenerics { float: 0.0 };
+/// const fn constant<const T: usize, S: TestGenericsTy<T>>() -> f32 {
+///     S::FLOAT
+/// }
+/// const FLOAT: f32 = call_with_generics!(constant::<test_generics!(BTy)>());
+/// ```
 #[proc_macro_derive(ConstStruct)]
 pub fn const_struct_derive(input: RawTokenStream) -> RawTokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -31,6 +52,25 @@ pub fn const_struct_derive(input: RawTokenStream) -> RawTokenStream {
     }
 }
 
+/// This macro generates a const struct.
+///
+/// If you get error `expected type, found constant `COUNT` not a type`
+/// you should bracket the constant in a type ascription.
+///
+/// ```ignore
+/// use const_struct::{call_with_generics, const_struct, ConstStruct};
+/// #[derive(ConstStruct, Debug)]
+/// pub struct TestGenerics<const T: usize> {
+///     float: f32,
+/// }
+/// const COUNT: usize = 7;
+/// #[const_struct]
+/// const B: TestGenerics<{ COUNT }> = TestGenerics { float: 0.0 };
+/// const fn constant<const T: usize, S: TestGenericsTy<T>>() -> f32 {
+///     S::FLOAT
+/// }
+/// const FLOAT: f32 = call_with_generics!(constant::<test_generics!(BTy)>());
+/// ```
 #[proc_macro_attribute]
 pub fn const_struct(attr: RawTokenStream, item: RawTokenStream) -> RawTokenStream {
     fn check_derive_attr(attr: &Attribute) -> bool {

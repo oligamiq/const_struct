@@ -222,7 +222,9 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .collect::<Vec<_>>();
 
     let mut new_trait_impl: ItemTrait = parse_quote! {
-        #[automatically_derived]
+        /// Trait for accessing the const generics of a struct
+        /// you can use `Self::__DATA` to access the const struct fields
+        #[allow(unused)]
         pub trait #trait_name: #primitive_traits_path<DATATYPE = #datatype> {
             #(#const_field)*
         }
@@ -380,6 +382,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
                 type T = #absolute_meta_struct_name<#gen_args>;
 
+                #[allow(non_local_definitions)]
                 impl #hash_bridge_bridge<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> for #root_hash_bridge_ident<NAME_HASH, {#str_hash(file!())}, {column!()}, {line!()}> {
                     type DATATYPE = T;
                     const DATA: Self::DATATYPE = {
@@ -406,6 +409,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                 #hash_bridge<{
                     type T = #absolute_meta_struct_name<#gen_args>;
 
+                    #[allow(non_local_definitions)]
                     impl #hash_bridge_bridge<#random_hash, {#str_hash(file!())}, {column!()}, {line!()}> for #root_hash_bridge_ident<#random_hash, {#str_hash(file!())}, {column!()}, {line!()}> {
                         type DATATYPE = T;
                         const DATA: Self::DATATYPE = {
@@ -515,17 +519,16 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         });
     }
 
+    let export_macro_name = format_ident!("{}", name.to_string().to_case(Case::Snake));
+
     let macro_export = quote! {
-        macro_rules! #name {
+        macro_rules! #export_macro_name {
             #(#macro_matches)*
         }
     };
+    let name_module = format_ident!("__{}", name.to_string().to_case(Case::Snake));
+    let name_with_underscore = format_ident!("_{name}");
     let macro_export = if user_attrs.macro_export {
-        let name_with_underscore = format_ident!("_{name}");
-        let name_module = format_ident!("__{}", name.to_string().to_case(Case::Snake));
-        let use_: ItemUse = parse_quote!(pub(crate) use #name as #name_with_underscore;);
-        let use_outer: ItemUse =
-            parse_quote!(pub(crate) use super::#name_module::#name_with_underscore as #name;);
         quote! {
             #[doc(hidden)]
             pub(crate) mod #name_module {
@@ -535,23 +538,21 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
                 #[doc(hidden)]
                 #[allow(unused_imports)]
-                #use_
+                pub(crate) use #export_macro_name as #name_with_underscore;
             }
-            #[doc(hidden)]
-            pub(crate) mod macros {
-                #[allow(unused_imports)]
-                #use_outer
-            }
+            #[allow(unused_imports)]
+            pub(crate) use #name_module::#name_with_underscore as #export_macro_name;
         }
     } else {
         quote! {
-            pub(crate) mod macros {
+            #[doc(hidden)]
+            pub(crate) mod #name_module {
                 #[allow(unused_macros)]
                 #macro_export
 
-                #[allow(unused_imports)]
-                pub(crate) use #name;
+                pub(crate) use #export_macro_name as #name_with_underscore;
             }
+            pub(crate) use #name_module::#name_with_underscore as #export_macro_name;
         }
     };
 
@@ -667,7 +668,9 @@ impl AbsolutePath {
 
     pub fn path(&self) -> Path {
         let crate_name = std::env::var("CARGO_CRATE_NAME").unwrap();
-        if self.path.segments.first().unwrap().ident == crate_name || self.path.segments.first().unwrap().ident == "crate" {
+        if self.path.segments.first().unwrap().ident == crate_name
+            || self.path.segments.first().unwrap().ident == "crate"
+        {
             let mut path = self.path.clone();
             path.segments.get_mut(0).unwrap().ident = Ident::new("crate", Span::call_site());
             path.leading_colon = None;

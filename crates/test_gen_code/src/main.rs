@@ -41,10 +41,12 @@ pub fn tester<
 #[const_struct]
 const B: TestSetting<0> = TestSetting;
 
+const_struct::init!();
+
 fn main() {
     call_with_generics!(tester::<
-        (TestSetting!(BTy), WestSetting!(WestSetting::<2>)),
-        (F32!(0.5), TestSetting!(8, TestSetting)),
+        (test_setting!(BTy), west_setting!(WestSetting::<2>)),
+        (F32!(0.5), test_setting!(8, TestSetting)),
     >());
 
     // TestSetting!(

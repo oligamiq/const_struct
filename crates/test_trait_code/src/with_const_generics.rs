@@ -26,7 +26,7 @@ impl<U: PrimitiveTraits<DATATYPE = TestStructWithGenerics<{ T }>>, const T: usiz
 }
 
 #[macro_export]
-macro_rules! TestStructWithGenerics {
+macro_rules! test_struct_with_generics {
     (@TestStructWithGenericsGetGenericsData, @AdditionData($($addition_data:path: $addition_data2:path), *), $macro_path: path, $($arg:tt)*) => {
         {
             $macro_path!(
@@ -108,7 +108,7 @@ mod tests {
 
     #[test]
     fn test() {
-        type T = TestStructWithGenerics!(
+        type T = test_struct_with_generics!(
             _,
             TestStructWithGenerics {
                 test_data: Some(1),
@@ -130,7 +130,7 @@ mod tests {
 
         caller::<
             8,
-            TestStructWithGenerics!(
+            test_struct_with_generics!(
                 _,
                 TestStructWithGenerics {
                     test_data: Some(1),
@@ -147,7 +147,7 @@ mod tests {
                 ::const_struct::call_with_generics: call_with_generics
             ),
             caller::<
-            TestStructWithGenerics!(TestStructWithGenerics {
+            test_struct_with_generics!(TestStructWithGenerics {
                 test_data: Some(1),
                 test_data2: Some(Some(2)),
                 test_data3: 3,

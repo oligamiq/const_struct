@@ -10,6 +10,8 @@ mod generics;
 mod non_generics;
 // mod parse_value;
 
+mod generics_subspecies;
+
 mod ex;
 
 #[const_struct]

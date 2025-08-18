@@ -212,6 +212,7 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
 
     let struct_define = quote! {
         #[automatically_derived]
+        #[allow(dead_code)]
         pub struct #ty_name;
     };
 
@@ -256,12 +257,13 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
                                 #[doc(hidden)]
                                 impl ::const_struct::keeptype::KeepTypeConst<#num> for #ty_name {
                                     type DATATYPE = <#input_ty as ::const_struct::keeptype::KeepType<#num>>::Type;
+                                    #[allow(unused_braces)]
                                     const N: Self::DATATYPE = { #con };
                                 }
                             };
                             Some(item)
                         }
-                        _ => None,
+                    _ => None,
                     }).collect::<Vec<_>>();
                     Some(args)
                 }
