@@ -207,7 +207,7 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
         let name_pascal = name_upper_snake
             .from_case(Case::UpperSnake)
             .to_case(Case::Pascal);
-        quote::format_ident!("{}Ty", name_pascal)
+        quote::format_ident!("{name_pascal}Ty")
     };
 
     let struct_define = quote! {
@@ -281,8 +281,20 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
     //     #(#keep_type)*
     // });
 
+    // allow unused base consts
+    let const_ty = &input.ty;
+    let const_wrap = quote! {
+        #[automatically_derived]
+        #[doc(hidden)]
+        const _: () = {
+            #[allow(dead_code)]
+            const __CONST: #const_ty = #name;
+        };
+    };
+
     Ok(quote! {
         #input
+        #const_wrap
         #struct_define
         #struct_impl
         #(#keep_type)*
