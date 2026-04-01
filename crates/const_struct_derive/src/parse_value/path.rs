@@ -11,9 +11,6 @@ pub fn parse_value_path(
     additional_data: &AdditionData,
 ) -> Result<Type> {
     let path = path.path;
-
-    // dbg!(&path);
-
     // Option
     if path.leading_colon.is_none()
         && path.segments.len() == 1
@@ -88,9 +85,6 @@ pub fn parse_value_path(
     };
 
     let path = path.path();
-
-    // dbg!(&path);
-
     let (path_ident, path_arg) = {
         let mut path_ident = path.clone();
         let path_arg = &mut path_ident.segments.last_mut().unwrap().arguments;
@@ -98,8 +92,6 @@ pub fn parse_value_path(
         *path_arg = PathArguments::None;
         (path_ident, path_arg_kept)
     };
-
-    // println!("mac? {}", quote::quote!(#path_ident!(#expr)));
 
     match path_arg {
         PathArguments::None => {

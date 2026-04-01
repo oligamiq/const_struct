@@ -64,8 +64,8 @@ pub fn item_fn_with_meta(mut item_fn: ItemFn) -> ItemFn {
     item_fn.sig.inputs.iter_mut().for_each(|input| {
         if let Typed(PatType { ty, .. }) = input {
             if let Type::Path(TypePath { path, .. }) = ty.as_mut() {
-                let path = check_meta_path(&path);
-                *ty = Box::new(Type::Verbatim(path));
+                let path = check_meta_path(path);
+                **ty = Type::Verbatim(path);
             }
         }
     });
@@ -256,7 +256,6 @@ pub fn gen_get_const_generics_inner(
             GenericParam::Const(_) => None,
         })
         .collect::<Vec<_>>();
-    // println!("rm_target_ident: {:?}", rm_target_ident);
     let new_generics_param = generics
         .params
         .iter()
@@ -275,7 +274,6 @@ pub fn gen_get_const_generics_inner(
             if let WherePredicate::Type(PredicateType { bounded_ty, .. }) = predicate {
                 let where_ident = if let Type::Path(TypePath { path, .. }) = bounded_ty {
                     if let Some(PathSegment { ident, .. }) = path.segments.last() {
-                        // println!("ident: {:?}", ident);
                         ident
                     } else {
                         return true;

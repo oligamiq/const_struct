@@ -55,20 +55,16 @@ pub struct StructMacroAltArgs {
 
 impl Parse for StructMacroAltArgs {
     fn parse(input: ParseStream) -> Result<Self> {
-        // println!("input: {}", input);
         let fork = input.fork();
         let mut _expr_or_type: Vec<TypeOrExpr> =
             Punctuated::<TypeOrExpr, Token![,]>::parse_terminated(&fork)?
                 .into_iter()
                 .collect();
-        // println!("expr_or_type: {}", quote::quote! { #(#expr_or_type),* });
         // for item in &expr_or_type {
         //     match item {
         //         TypeOrExpr::Type(_) => {
-        //             println!("TypeOrExpr::Type");
         //         }
         //         TypeOrExpr::Expr(_) => {
-        //             println!("TypeOrExpr::Expr");
         //         }
         //     }
         // }
@@ -92,35 +88,11 @@ pub fn struct_macro_alt(
     hash: u64,
 ) -> impl Fn(TokenStream) -> Result<Type> {
     if data.label != util_macro::Label::Struct {
-        panic!("Expected struct");
+        panic!("expected struct label for macro alt generation, got {:?}", data.label);
     }
-    // let const_or_type = data.const_or_type();
 
     move |input: TokenStream| {
         let StructMacroAltArgs { value, .. } = parse2::<StructMacroAltArgs>(input)?;
-
-        // println!("expr_or_type: {}", quote::quote! { #(#expr_or_type),* });
-        // println!("value: {:?}", value);
-        // println!("const_or_type: {:?}", const_or_type);
-
-        // check
-        // for (expr_or_type, ty) in expr_or_type.iter_mut().zip(const_or_type.iter()) {
-        //     match (&expr_or_type, ty) {
-        //         (TypeOrExpr::Type(_), ConstOrType::Type) => {}
-        //         (TypeOrExpr::Expr(_), ConstOrType::Const) => {}
-        //         (TypeOrExpr::Type(ty), ConstOrType::Const) => {
-        //             // println!("ty: {}", quote::quote! { #ty });
-        //             let expr: Expr = parse_quote!(#ty);
-        //             *expr_or_type = TypeOrExpr::Expr(expr);
-        //         }
-        //         (TypeOrExpr::Expr(expr), ConstOrType::Type) => {
-        //             // println!("expr: {}", quote::quote! { #expr });
-        //             let ty: Type = parse_quote!( #expr );
-        //             // println!("ty: {}", quote::quote! { #ty });
-        //             *expr_or_type = TypeOrExpr::Type(ty);
-        //         }
-        //     }
-        // }
 
         // let generic_info = data
         //     .get_generics_types()
@@ -131,7 +103,6 @@ pub fn struct_macro_alt(
         //         let ident_and_expr_or_type = match ty {
         //             GenericParam::Type(ty) => {
         //                 if let TypeOrExpr::Type(Type::Infer(_)) = expr_or_type {
-        //                     eprintln!("_ is not allowed in type on inner declaration");
         //                     return Err(Error::new(ty.ident.span(), "expected type"));
         //                 }
         //                 Ok((ty.ident.clone(), expr_or_type))
@@ -164,23 +135,25 @@ pub fn struct_macro_alt(
                     if let GenericArgument::Type(ty_) = expr_or_type {
                         Ok((ty.ident.clone(), TypeOrExpr::Type(ty_)))
                     } else {
-                        eprintln!("_ is not allowed in type on inner declaration");
-                        unimplemented!()
+                        Err(Error::new(
+                            ty.ident.span(),
+                            "`_` is not allowed in type position on inner declaration",
+                        ))
                     }
                 }
                 GenericParam::Const(const_param) => {
                     if let GenericArgument::Const(expr) = expr_or_type {
                         Ok((const_param.ident.clone(), TypeOrExpr::Expr(expr)))
                     } else {
-                        eprintln!("_ is not allowed in type on inner declaration");
-                        unreachable!()
+                        Err(Error::new(
+                            const_param.ident.span(),
+                            "`_` is not allowed in const position on inner declaration",
+                        ))
                     }
                 }
                 _ => unimplemented!(),
             })
             .collect::<Result<Vec<_>>>()?;
-
-        // println!("generic_info: {:?}", generic_info);
 
         let parse_value_struct = parse_value_struct_ty(
             addition_data.clone(),

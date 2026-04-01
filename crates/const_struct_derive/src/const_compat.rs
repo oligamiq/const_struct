@@ -9,7 +9,7 @@ use crate::rewriter::const_compat::Rewriter as _;
 #[derive(Debug)]
 enum ConstCompatAttr {
     Ident(Ident),
-    Attribute(Attribute),
+    Attribute(Box<Attribute>),
 }
 
 impl Parse for ConstCompatAttr {
@@ -24,7 +24,7 @@ impl Parse for ConstCompatAttr {
                         "Expected exactly one attribute",
                     ));
                 }
-                Ok(ConstCompatAttr::Attribute(attrs.first().unwrap().clone()))
+                Ok(ConstCompatAttr::Attribute(Box::new(attrs.first().unwrap().clone())))
             }
         }
     }
@@ -44,7 +44,7 @@ pub fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<Toke
         }
     };
     let root_cfg = match iter.next() {
-        Some(ConstCompatAttr::Attribute(cfg)) => cfg,
+        Some(ConstCompatAttr::Attribute(cfg)) => *cfg,
         _ => {
             return Err(syn::Error::new_spanned(
                 attr,
@@ -53,15 +53,13 @@ pub fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<Toke
         }
     };
     let second_cfg = match iter.next() {
-        Some(ConstCompatAttr::Attribute(cfg)) => Some(cfg),
+        Some(ConstCompatAttr::Attribute(cfg)) => Some(*cfg),
         _ => None,
     };
     match iter.next() {
         None => {}
         _ => return Err(syn::Error::new_spanned(attr, "Too many attributes")),
     }
-
-    // dbg!(&root_cfg);
 
     let new_input = input.clone();
     let (new_input, ty) = match new_input.sig.inputs.iter().position(|arg| match arg {
@@ -183,10 +181,7 @@ pub fn generate_const_compat_fn(input: ItemFn, attr: TokenStream) -> Result<Toke
 #[allow(dead_code)]
 pub fn generate_const_compat_expr(input: Expr, attr: TokenStream) -> Result<TokenStream> {
     #[allow(unused_variables)]
-    let cfg = match syn::parse::<syn::MetaList>(attr.into()) {
-        Ok(cfg) => cfg,
-        Err(err) => return Err(err),
-    };
+    let cfg = syn::parse::<syn::MetaList>(attr.into())?;
 
     let output = quote! {
         #input
@@ -195,12 +190,9 @@ pub fn generate_const_compat_expr(input: Expr, attr: TokenStream) -> Result<Toke
 }
 
 pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
-    // println!("##################");
 
     let name = &input.ident;
     let ty = &input.ty;
-
-    // dbg!(&input);
 
     let ty_name = {
         let name_upper_snake = name.to_string();
@@ -224,8 +216,6 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
         }
     };
 
-    // dbg!(&input);
-
     let keep_type = match input.ty.as_ref() {
         Type::Path(path) => {
             let path = path.path.clone();
@@ -238,7 +228,6 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
                     let args = generics.args;
                     let args = args.into_iter().enumerate().filter_map(|(num, arg)| match arg {
                         GenericArgument::Type(ty) => {
-                            // println!("###ty {}", ty.to_token_stream());
                             let item: ItemImpl = parse_quote! {
                                 #[automatically_derived]
                                 #[doc(hidden)]
@@ -249,8 +238,6 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
                             Some(item)
                         },
                         GenericArgument::Const(con) => {
-                            // println!("###const {}", ty.to_token_stream());
-                            // println!("###const {}", con.to_token_stream());
                             let input_ty = &input.ty;
                             let item: ItemImpl = parse_quote! {
                                 #[automatically_derived]
@@ -273,15 +260,6 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
         // Tupleの実装を考えなければならない
         _ => None,
     }.unwrap_or_default();
-
-    // println!("quote: {}", quote! {
-    //     #input
-    //     #struct_define
-    //     #struct_impl
-    //     #(#keep_type)*
-    // });
-
-    // allow unused base consts
     let const_ty = &input.ty;
     let const_wrap = quote! {
         #[automatically_derived]

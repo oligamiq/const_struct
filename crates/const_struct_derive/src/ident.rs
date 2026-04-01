@@ -39,7 +39,6 @@ pub fn get_absolute_ident_path_from_ident(
 }
 
 pub fn gen_primitive_ty(ident: &Ident) -> Option<impl Fn(Expr) -> Type> {
-    // println!("ident: {:?}", ident);
     let mut is_some = false;
     let mut is_none = false;
     let base = match ident.to_string().as_str() {
@@ -79,7 +78,6 @@ pub fn gen_primitive_ty(ident: &Ident) -> Option<impl Fn(Expr) -> Type> {
         let ty: Type = parse_quote! {
             ::const_struct::primitive::#camel_name::<{ unsafe { core::mem::transmute::<#name, #base>(#expr) } }>
         };
-        // println!("ty: {:?}", ty);
         ty
     };
     Some(expr_fn)
@@ -93,19 +91,17 @@ pub fn gen_option_ty(ident: &Ident) -> Option<impl Fn(TokenStream) -> Type> {
     };
     let expr_fn = move |stream: TokenStream| {
         if is_some {
-            let ty: Type = parse2::<Type>(stream).unwrap_or_else(|_| {
-                eprintln!("error: Some! expects a type");
-                unimplemented!()
+            let ty: Type = parse2::<Type>(stream).unwrap_or_else(|e| {
+                panic!("Some! expects a type argument, got invalid input: {e}")
             });
             let ty: Type = parse_quote! {
                 ::const_struct::primitive::SomeImpl<#ty>
             };
             ty
         } else {
-            // streamは空っぽのはず
+            // stream should be empty for None!
             if !stream.is_empty() {
-                eprintln!("error: None! does not have any arguments");
-                unimplemented!()
+                panic!("None! does not accept any arguments");
             }
             let ty: Type = parse_quote! {
                 ::const_struct::primitive::NoneImpl

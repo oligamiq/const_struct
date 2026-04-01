@@ -44,7 +44,6 @@ mod util_macro;
 #[proc_macro_derive(ConstStruct)]
 pub fn const_struct_derive(input: RawTokenStream) -> RawTokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-    // dbg!(&input);
     let output = generate_const_struct_derive(input);
     match output {
         Ok(output) => output.into(),
@@ -152,11 +151,9 @@ pub fn const_compat(attr: RawTokenStream, item: RawTokenStream) -> RawTokenStrea
 // macro expansion ignores token `,` and any following rustc
 #[proc_macro]
 pub fn call_with_generics(input: RawTokenStream) -> RawTokenStream {
-    // println!("call_with_generics input: {}", input.to_string());
     let output = util_macro::expand_call_fn_with_generics(input.into());
     match output {
         Ok(output) => {
-            // println!("call_with_generics output: {}", output.to_token_stream());
             output.into()
         }
 
@@ -169,7 +166,6 @@ pub fn parse_value(input: RawTokenStream) -> RawTokenStream {
     let output = parse_value::parse_value_wrapper(input.into());
     match output {
         Ok(output) => {
-            // println!("parse_value output: {}", output.to_token_stream());
             output.to_token_stream().into()
         }
 
@@ -179,11 +175,9 @@ pub fn parse_value(input: RawTokenStream) -> RawTokenStream {
 
 #[proc_macro]
 pub fn match_end_with(input: RawTokenStream) -> RawTokenStream {
-    // println!("match_end_with input: {}", input.to_string());
     let output = match_end_with_ty::match_end_with_ty(input.into());
     match output {
         Ok(output) => {
-            // println!("match_end_with output: {}", output.to_token_stream());
             output.to_token_stream().into()
         }
 

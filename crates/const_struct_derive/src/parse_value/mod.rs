@@ -55,8 +55,7 @@ impl AdditionData {
         match self.get_absolute_path(path) {
             AbsolutePathOrType::Path(path) => path.path(),
             AbsolutePathOrType::Type(_) => {
-                eprintln!("error: expected path, found type");
-                unreachable!()
+                panic!("expected path, found type in addition data path resolution")
             }
         }
     }
@@ -117,11 +116,7 @@ impl Parse for AdditionDataArgs {
     fn parse(input: ParseStream) -> Result<Self> {
         let fork = input.fork();
         let _at: Token![@] = fork.parse()?;
-        // println!("at: {:?}", _at);
-        // println!("fork: {}", fork);
         let _ident: Ident = fork.parse()?;
-        // println!("ident: {:?}", _ident);
-        // println!("fork: {}", fork);
         if _ident != "AdditionData" {
             return Err(Error::new_spanned(_ident, "expected `AdditionData`"));
         }
@@ -172,8 +167,6 @@ impl Parse for TyAndExpr {
 }
 
 pub fn parse_value_wrapper(input: TokenStream) -> Result<Type> {
-    // println!("input: {}", input);
-    // parse_value!((f32, u32), expr)
     let TyAndExpr {
         ty,
         expr,
@@ -182,11 +175,9 @@ pub fn parse_value_wrapper(input: TokenStream) -> Result<Type> {
     } = syn::parse2(input)?;
     let additional_data = additional_data.unwrap_or_default();
     let additional_data: AdditionData = additional_data.into();
-    // dbg!(&expr);
 
     let expr = expr.switcher(&match_underscore_alt);
 
-    // dbg!(&additional_data);
     parse_value(ty, expr, &additional_data)
 }
 

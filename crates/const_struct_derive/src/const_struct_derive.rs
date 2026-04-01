@@ -93,7 +93,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                             TypeParamBound::Trait(ty) => TypeParamBound::Trait(TraitBound {
                                 path: match user_attrs.get_absolute_path(&ty.path) {
                                     AbsolutePathOrType::Path(path) => path.path(),
-                                    AbsolutePathOrType::Type(_) => panic!("Type is not allowed"),
+                                    AbsolutePathOrType::Type(_) => panic!("Type found where path was expected in trait bound"),
                                 },
                                 ..ty
                             }),
@@ -175,9 +175,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         })
         .collect::<Vec<_>>();
 
-    // println!("generics: {}", generics.to_token_stream());
 
-    // dbg!(&input.data);
 
     let fields = match &input.data {
         Data::Struct(DataStruct { fields, .. }) => match fields {
@@ -230,11 +228,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         }
     };
 
-    // dbg!(&new_trait_impl);
-
     new_trait_impl.generics = generics_with_copy.clone();
-
-    // println!("new_trait_impl: {}", new_trait_impl.to_token_stream());
 
     let trait_name_with_generics = {
         let mut trait_name_with_generics = datatype.clone();
@@ -250,8 +244,6 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .params
         .extend(generics_with_copy.params.clone());
     trait_impl.generics.where_clause = generics_with_copy.where_clause.clone();
-
-    // println!("### 1 ###");
 
     let name_with_get_generics_data = add_at_mark(format_ident!("{}GetGenericsData", name));
     let addition_data = &user_attrs.addition_data;
@@ -274,8 +266,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             GenericParam::Const(ConstParam { ident, .. }) => (ident, ConstOrType::Const),
             GenericParam::Type(TypeParam { ident, .. }) => (ident, ConstOrType::Type),
             GenericParam::Lifetime(LifetimeParam { .. }) => {
-                eprintln!("error: lifetime is not allowed");
-                unreachable!()
+                panic!("lifetime generic parameters are not supported by ConstStruct")
             }
         })
         .map(|(ident, const_or_type)| {
@@ -350,8 +341,6 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
             }
         })
         .collect::<Punctuated<TokenStream, Token![,]>>();
-
-    // println!("gen_args: {}", gen_args.to_token_stream());
 
     let mut macro_matches = Vec::new();
     macro_matches.push(quote! {
@@ -577,10 +566,9 @@ impl ConstStructAttr {
 
     pub fn get_absolute_path_path(&self, path: &Path) -> Path {
         match self.get_absolute_path(path) {
-            AbsolutePathOrType::Path(path) => path.path(),
+            AbsolutePathOrType::Path(p) => p.path(),
             AbsolutePathOrType::Type(_) => {
-                eprintln!("error: expected path, found type");
-                unreachable!()
+                panic!("expected path, found type in const_struct attribute")
             }
         }
     }
@@ -698,7 +686,6 @@ impl Parse for PathAndIdent {
 
 impl ToTokens for PathAndIdent {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        // println!("ident: {}", self.ident.to_token_stream());
         let ident = &self.ident;
         let path = &self.path;
         tokens.extend(quote! { #ident: #path });
@@ -731,8 +718,6 @@ pub fn register_ident_path(attr: &Attribute) -> Result<Vec<PathAndIdent>> {
     };
     let attr_args = syn::punctuated::Punctuated::<PathAndIdent, Token![,]>::parse_terminated
         .parse2(attr_token)?;
-
-    // dbg!(&attr_args);
 
     Ok(attr_args.into_iter().collect())
 }
