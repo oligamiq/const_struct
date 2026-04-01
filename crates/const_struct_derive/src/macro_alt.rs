@@ -87,11 +87,13 @@ pub fn struct_macro_alt(
     new_generic: Vec<GenericArgument>,
     hash: u64,
 ) -> impl Fn(TokenStream) -> Result<Type> {
-    if data.label != util_macro::Label::Struct {
-        panic!("expected struct label for macro alt generation, got {:?}", data.label);
-    }
-
     move |input: TokenStream| {
+        if data.label != util_macro::Label::Struct {
+            return Err(Error::new(
+                proc_macro2::Span::call_site(),
+                "expected struct label for macro alt generation",
+            ));
+        }
         let StructMacroAltArgs { value, .. } = parse2::<StructMacroAltArgs>(input)?;
 
         // let generic_info = data
@@ -151,7 +153,10 @@ pub fn struct_macro_alt(
                         ))
                     }
                 }
-                _ => unimplemented!(),
+                _ => Err(Error::new_spanned(
+                    ty,
+                    "unsupported generic parameter type (only type and const are supported)"
+                )),
             })
             .collect::<Result<Vec<_>>>()?;
 

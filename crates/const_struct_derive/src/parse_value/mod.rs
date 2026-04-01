@@ -51,17 +51,17 @@ impl AdditionData {
         crate::const_struct_derive::ConstStructAttr::get_absolute_path_inner(path, &self.data)
     }
 
-    pub fn get_changed_path(&self, path: &Path) -> Path {
+    pub fn get_changed_path(&self, path: &Path) -> Result<Path> {
         match self.get_absolute_path(path) {
-            AbsolutePathOrType::Path(path) => path.path(),
+            AbsolutePathOrType::Path(path) => Ok(path.path()),
             AbsolutePathOrType::Type(_) => {
-                panic!("expected path, found type in addition data path resolution")
+                Err(Error::new_spanned(path, "expected path, found type in addition data path resolution"))
             }
         }
     }
 
-    pub fn get_changed_path_from_quote(&self, path: TokenStream) -> Path {
-        let path = parse2::<Path>(path).unwrap();
+    pub fn get_changed_path_from_quote(&self, path: TokenStream) -> Result<Path> {
+        let path = parse2::<Path>(path)?;
         self.get_changed_path(&path)
     }
 

@@ -19,9 +19,9 @@ pub fn parse_value_struct_ty(
     expr: Expr,
     hash: u64,
 ) -> Result<Type> {
-    let struct_ident = struct_data.get_ty_ident();
+    let struct_ident = struct_data.get_ty_ident()?;
 
-    let absolute_struct_path = addition_data.get_changed_path(&parse_quote! { #struct_ident });
+    let absolute_struct_path = addition_data.get_changed_path(&parse_quote! { #struct_ident })?;
 
     if struct_data.label != Label::Struct {
         return Err(Error::new(struct_ident.span(), "This is not a struct type"));
@@ -104,11 +104,11 @@ pub fn parse_value_struct_ty(
     };
 
     let str_hash = addition_data
-        .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::str_hash });
+        .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::str_hash })?;
     let hash_bridge = addition_data
-        .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridge });
+        .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridge })?;
     let hash_bridge_bridge = addition_data
-        .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridgeBridge });
+        .get_changed_path_from_quote(quote::quote! { ::const_struct::primitive::HashBridgeBridge })?;
     let root_hash_bridge_ident = crate::root_hash_bridge_ident();
     #[cfg(not(feature = "rand_support"))]
     {

@@ -65,7 +65,7 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
 
     let generics: Generics = generics_into_where_clause(input.generics.clone());
 
-    let generics_where_clause_fn = |with_copy: bool| {
+    let generics_where_clause_fn = |with_copy: bool| -> Result<Punctuated<WherePredicate, Token![,]>> {
         generics
             .where_clause
             .clone()
@@ -90,28 +90,30 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
                     let ty = ty
                         .into_iter()
                         .map(|ty| match ty {
-                            TypeParamBound::Trait(ty) => TypeParamBound::Trait(TraitBound {
+                            TypeParamBound::Trait(ty) => Ok(TypeParamBound::Trait(TraitBound {
                                 path: match user_attrs.get_absolute_path(&ty.path) {
                                     AbsolutePathOrType::Path(path) => path.path(),
-                                    AbsolutePathOrType::Type(_) => panic!("Type found where path was expected in trait bound"),
+                                    AbsolutePathOrType::Type(_) => {
+                                        return Err(Error::new_spanned(&ty.path, "Type found where path was expected in trait bound"));
+                                    }
                                 },
                                 ..ty
-                            }),
-                            _ => ty,
+                            })),
+                            _ => Ok(ty),
                         })
-                        .collect::<Punctuated<TypeParamBound, Token![+]>>();
-                    WherePredicate::Type(PredicateType {
+                        .collect::<Result<Punctuated<TypeParamBound, Token![+]>>>()?;
+                    Ok(WherePredicate::Type(PredicateType {
                         bounds: ty,
                         ..pred.clone()
-                    })
+                    }))
                 }
-                _ => pred.clone(),
+                _ => Ok(pred.clone()),
             })
-            .collect::<Punctuated<WherePredicate, Token![,]>>()
+            .collect::<Result<Punctuated<WherePredicate, Token![,]>>>()
     };
 
-    let generics_where_clause = generics_where_clause_fn(false);
-    let generics_where_clause_with_copy = generics_where_clause_fn(true);
+    let generics_where_clause = generics_where_clause_fn(false)?;
+    let generics_where_clause_with_copy = generics_where_clause_fn(true)?;
 
     let generics = Generics {
         where_clause: Some(WhereClause {
@@ -248,9 +250,9 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
     let name_with_get_generics_data = add_at_mark(format_ident!("{}GetGenericsData", name));
     let addition_data = &user_attrs.addition_data;
 
-    let absolute_struct_name = user_attrs.get_absolute_path_path(&parse_quote! { #name });
+    let absolute_struct_name = user_attrs.get_absolute_path_path(&parse_quote! { #name })?;
     let datatype_absolute = gen_datatype_fn(&absolute_struct_name);
-    let absolute_meta_struct_name = user_attrs.get_absolute_path_meta_path(&parse_quote! { #name });
+    let absolute_meta_struct_name = user_attrs.get_absolute_path_meta_path(&parse_quote! { #name })?;
 
     let mut const_fn: ItemFn = parse_quote!(
         const fn get_const_generics(_: #datatype_absolute) {}
@@ -263,25 +265,30 @@ pub fn generate_const_struct_derive(input: DeriveInput) -> Result<TokenStream> {
         .params
         .iter()
         .map(|param| match param {
-            GenericParam::Const(ConstParam { ident, .. }) => (ident, ConstOrType::Const),
-            GenericParam::Type(TypeParam { ident, .. }) => (ident, ConstOrType::Type),
-            GenericParam::Lifetime(LifetimeParam { .. }) => {
-                panic!("lifetime generic parameters are not supported by ConstStruct")
+            GenericParam::Const(ConstParam { ident, .. }) => Ok((ident, ConstOrType::Const)),
+            GenericParam::Type(TypeParam { ident, .. }) => Ok((ident, ConstOrType::Type)),
+            GenericParam::Lifetime(LifetimeParam { lifetime, .. }) => {
+                Err(Error::new(
+                    lifetime.span(),
+                    "lifetime generic parameters are not supported by ConstStruct",
+                ))
             }
         })
-        .map(|(ident, const_or_type)| {
-            (
-                format_ident!(
-                    "{}",
-                    ident
-                        .to_string()
-                        .from_case(Case::UpperCamel)
-                        .to_case(Case::Snake)
-                ),
-                const_or_type,
-            )
+        .map(|result| {
+            result.map(|(ident, const_or_type)| {
+                (
+                    format_ident!(
+                        "{}",
+                        ident
+                            .to_string()
+                            .from_case(Case::UpperCamel)
+                            .to_case(Case::Snake)
+                    ),
+                    const_or_type,
+                )
+            })
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>>>()?;
 
     let mut macro_args = generics_snake
         .iter()
@@ -564,17 +571,17 @@ impl ConstStructAttr {
         Self::get_absolute_path_inner(path, &self.addition_data.data)
     }
 
-    pub fn get_absolute_path_path(&self, path: &Path) -> Path {
+    pub fn get_absolute_path_path(&self, path: &Path) -> Result<Path> {
         match self.get_absolute_path(path) {
-            AbsolutePathOrType::Path(p) => p.path(),
+            AbsolutePathOrType::Path(p) => Ok(p.path()),
             AbsolutePathOrType::Type(_) => {
-                panic!("expected path, found type in const_struct attribute")
+                Err(Error::new_spanned(path, "expected path, found type in const_struct attribute"))
             }
         }
     }
 
-    pub fn get_absolute_path_meta_path(&self, path: &Path) -> TokenStream {
-        check_meta_path(&self.get_absolute_path_path(path))
+    pub fn get_absolute_path_meta_path(&self, path: &Path) -> Result<TokenStream> {
+        Ok(check_meta_path(&self.get_absolute_path_path(path)?))
     }
 
     pub fn get_absolute_path_inner(

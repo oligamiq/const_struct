@@ -91,9 +91,13 @@ pub fn gen_option_ty(ident: &Ident) -> Option<impl Fn(TokenStream) -> Type> {
     };
     let expr_fn = move |stream: TokenStream| {
         if is_some {
-            let ty: Type = parse2::<Type>(stream).unwrap_or_else(|e| {
-                panic!("Some! expects a type argument, got invalid input: {e}")
-            });
+            let ty: Type = match parse2::<Type>(stream) {
+                Ok(ty) => ty,
+                Err(e) => {
+                    let msg = e.to_string();
+                    return parse_quote!(compile_error!(#msg));
+                }
+            };
             let ty: Type = parse_quote! {
                 ::const_struct::primitive::SomeImpl<#ty>
             };
@@ -101,7 +105,7 @@ pub fn gen_option_ty(ident: &Ident) -> Option<impl Fn(TokenStream) -> Type> {
         } else {
             // stream should be empty for None!
             if !stream.is_empty() {
-                panic!("None! does not accept any arguments");
+                return parse_quote!(compile_error!("None! does not accept any arguments"));
             }
             let ty: Type = parse_quote! {
                 ::const_struct::primitive::NoneImpl
