@@ -213,6 +213,7 @@ pub fn generate_const_struct(input: ItemConst) -> Result<TokenStream> {
     let struct_define = quote! {
         #[automatically_derived]
         #[allow(dead_code)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
         pub struct #ty_name;
     };
 
