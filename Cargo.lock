@@ -33,18 +33,18 @@ dependencies = [
 
 [[package]]
 name = "const_struct"
-version = "0.6.5"
+version = "0.6.6"
 dependencies = [
- "const_struct_derive 0.6.4",
+ "const_struct_derive 0.6.5",
  "crc",
  "paste",
 ]
 
 [[package]]
 name = "const_struct_derive"
-version = "0.6.4"
+version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a826a86812811697608b61d703f3129cc3247c15163358353e38c0c3ced08e5a"
+checksum = "c52db3e1d1f80e1a989dca3e3e3b56c66d00c81d53ea13557295b0288a448b24"
 dependencies = [
  "convert_case",
  "crc",
@@ -56,7 +56,7 @@ dependencies = [
 
 [[package]]
 name = "const_struct_derive"
-version = "0.6.5"
+version = "0.6.6"
 dependencies = [
  "convert_case",
  "crc",
@@ -318,7 +318,7 @@ dependencies = [
 
 [[package]]
 name = "test_code"
-version = "0.6.5"
+version = "0.6.6"
 dependencies = [
  "const_struct",
  "no-std-compat",
@@ -326,16 +326,16 @@ dependencies = [
 
 [[package]]
 name = "test_gen_code"
-version = "0.6.5"
+version = "0.6.6"
 dependencies = [
  "const_struct",
 ]
 
 [[package]]
 name = "test_trait_code"
-version = "0.6.5"
+version = "0.6.6"
 dependencies = [
- "const_struct_derive 0.6.5",
+ "const_struct_derive 0.6.6",
  "crc",
  "no-std-compat",
  "paste",
@@ -343,11 +343,11 @@ dependencies = [
 
 [[package]]
 name = "test_trait_code_old_old"
-version = "0.6.5"
+version = "0.6.6"
 
 [[package]]
 name = "tests"
-version = "0.6.5"
+version = "0.6.6"
 dependencies = [
  "const_struct",
 ]
