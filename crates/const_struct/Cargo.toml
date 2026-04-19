@@ -14,7 +14,7 @@ publish = true
 
 [dependencies]
 # const_struct_derive.workspace = true
-crc = "3.3.0"
+crc = "3.4.0"
 const_struct_derive = "0.6"
 paste = "1.0.15"
 
