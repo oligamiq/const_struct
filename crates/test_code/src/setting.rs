@@ -16,6 +16,10 @@ impl TestSetting {
     }
 }
 
+impl const_struct::ConstDefault for TestSetting {
+    const DEFAULT: Self = Self::default();
+}
+
 #[const_compat(test_setting, #[cfg(not(feature = "dynamic"))])]
 pub fn tester(test_setting: TestSetting) {
     let t = test_setting.abc_def;

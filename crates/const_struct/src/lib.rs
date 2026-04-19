@@ -46,6 +46,8 @@ pub mod struct_prim;
 pub mod util_macro;
 pub use const_struct_derive::*;
 pub mod keeptype;
+pub mod const_default;
+pub use const_default::ConstDefault;
 
 #[macro_export]
 macro_rules! init {
